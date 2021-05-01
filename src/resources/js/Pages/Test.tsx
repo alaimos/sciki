@@ -1,5 +1,6 @@
 import React from "react";
 import { InertiaLink } from "@inertiajs/inertia-react";
+import { Helmet } from "react-helmet";
 import route from "ziggy-js";
 
 interface Props {
@@ -9,6 +10,9 @@ interface Props {
 const Test: React.FC<Props> = ({ hello }: Props) => {
     return (
         <div>
+            <Helmet>
+                <title>Hello World!!</title>
+            </Helmet>
             <h1>Welcome</h1>
 
             <h2>{hello}</h2>
