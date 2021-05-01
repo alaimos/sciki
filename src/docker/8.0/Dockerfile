@@ -37,6 +37,15 @@ RUN apt-get update \
     && apt-get install -y yarn \
     && apt-get install -y mysql-client \
     && apt-get install -y postgresql-client \
+    && apt-get install -y openjdk-13-jre \
+    && apt-get install -y perl dialog software-properties-common \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9 \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
+    && add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/' \
+    && apt-get install -y r-base-dev \
+    && apt-get install -y libxml2-dev libssl-dev libcurl4-openssl-dev librsvg2-dev \
+    && R -e "install.packages(c('optparse', 'BiocManager'), dependencies = TRUE)" \
+    && R -e "BiocManager::install(c('rjson', 'dplyr', 'SBGNview', 'pathview'), dependencies = TRUE)" \
     && apt-get -y autoremove \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
