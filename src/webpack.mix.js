@@ -1,4 +1,5 @@
-const mix = require('laravel-mix');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const mix = require("laravel-mix");
 
 /*
  |--------------------------------------------------------------------------
@@ -11,6 +12,22 @@ const mix = require('laravel-mix');
  |
  */
 
-mix.js('resources/js/app.js', 'public/js')
-    .react()
-    .sass('resources/sass/app.scss', 'public/css');
+mix.webpackConfig({
+    module: {
+        rules: [
+            {
+                enforce: "pre",
+                exclude: /node_modules/,
+                loader: "eslint-loader",
+                test: /\.(js|ts|tsx)?$/,
+            },
+        ],
+    },
+    output: {
+        chunkFilename: "js/[name].js?id=[chunkhash]",
+    },
+})
+    .extract()
+    .ts("resources/js/app.tsx", "public/js")
+    .sourceMaps()
+    .sass("resources/sass/app.scss", "public/css");
