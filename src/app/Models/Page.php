@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Sluggable\HasSlug;
@@ -22,6 +23,7 @@ class Page extends Model implements HasMedia
     use HasTags;
     use InteractsWithMedia;
     use RevisionableTrait;
+    use Searchable;
     use SoftDeletes;
 
     protected $fillable = [
@@ -56,6 +58,29 @@ class Page extends Model implements HasMedia
     {
         return 'slug';
     }
+
+    /**
+     * Get the name of the index associated with the model.
+     *
+     * @return string
+     */
+    public function searchableAs(): string
+    {
+        return 'pages_index';
+    }
+
+//    /**
+//     * Get the indexable data array for the model.
+//     *
+//     * @return array
+//     */
+//    public function toSearchableArray(): array
+//    {
+//        $array = $this->toArray();
+//
+//
+//        return $array;
+//    }
 
     public function simulation(): HasOne
     {
