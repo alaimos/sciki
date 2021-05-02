@@ -11,9 +11,9 @@ class DatabaseSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(): void
     {
-        $this->call(RolesSeeder::class);
-        // \App\Models\User::factory(10)->create();
+        $this->call(RolesSeeder::class)->call(UsersSeeder::class);
+        $this->call(OrganismsAndNodesTableSeeder::class);
     }
 }

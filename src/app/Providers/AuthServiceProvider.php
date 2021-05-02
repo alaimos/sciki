@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Comment;
+use App\Models\Page;
+use App\Models\Simulation;
+use App\Policies\CommentPolicy;
+use App\Policies\PagePolicy;
+use App\Policies\SimulationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -14,6 +20,9 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        Page::class       => PagePolicy::class,
+        Simulation::class => SimulationPolicy::class,
+        Comment::class    => CommentPolicy::class,
     ];
 
     /**
