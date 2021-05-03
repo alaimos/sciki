@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use JetBrains\PhpStorm\ArrayShape;
+use Thomaswelton\LaravelGravatar\Facades\Gravatar;
 
 class User extends Authenticatable
 {
@@ -46,5 +48,19 @@ class User extends Authenticatable
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Returns the content of the avatar attribute (computed on the fly by laravel magic)
+     *
+     * @return array
+     */
+    #[ArrayShape(['small' => "string", 'medium' => "string", 'large' => "string"])] public function getAvatarAttribute(): array
+    {
+        return [
+            'small'  => Gravatar::src($this->email, 40),
+            'medium' => Gravatar::src($this->email, 800),
+            'large'  => Gravatar::src($this->email, 1920),
+        ];
     }
 }

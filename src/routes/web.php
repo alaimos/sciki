@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\WikiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,16 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get(
-    '/',
-    function () {
-        return view('welcome');
-    }
-);
+Route::get('/', [WikiController::class, 'index'])->name('wiki.index');
 
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-Route::get('/test', [App\Http\Controllers\TestController::class, 'index'])->name('test');
-Route::get('/test1', [App\Http\Controllers\TestController::class, 'index'])->name('test1');
+Route::get('/wiki/{page}', [WikiController::class, 'show'])->name('wiki.show');
