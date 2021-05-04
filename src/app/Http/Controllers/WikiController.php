@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Page;
+use App\Services\PageService;
+use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\Request;
 
 class WikiController extends Controller
 {
@@ -14,11 +16,10 @@ class WikiController extends Controller
         return Inertia::render('Wiki/Index');
     }
 
-    public function show(string $page): Response
+    public function show(Request $request, string $page): JsonResponse|Response|\Symfony\Component\HttpFoundation\Response
     {
-        //@todo: get page by slug
-        //@todo: if page does not exist show the 404 page
-        //@todo: otherwise parse the page and return the Inertia page component
-        return Inertia::render('Wiki/Index');
+        $pageService = new PageService($page);
+
+        return $pageService->render($request);
     }
 }
