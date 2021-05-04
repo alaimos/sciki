@@ -46,8 +46,8 @@ class HandleInertiaRequests extends Middleware
         return array_merge(
             parent::share($request),
             [
-                'auth.check' => $userIsLoggedIn,
-                'auth.user'  => fn() => $userIsLoggedIn ? auth()->user()->only(
+                'auth.check'    => $userIsLoggedIn,
+                'auth.user'     => fn() => $userIsLoggedIn ? auth()->user()->only(
                     [
                         'id',
                         'name',
@@ -56,6 +56,9 @@ class HandleInertiaRequests extends Middleware
                         'avatar',
                     ]
                 ) : null,
+                'flash.success' => fn() => $request->session()->get('success'),
+                'flash.error'   => fn() => $request->session()->get('error'),
+                'flash.status'  => fn() => $request->session()->get('status'),
             ]
         );
     }

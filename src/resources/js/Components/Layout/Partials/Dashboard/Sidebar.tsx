@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import {
     Collapse,
-    Form,
-    Input,
-    InputGroupAddon,
-    InputGroupText,
-    InputGroup,
     NavbarBrand,
     Navbar,
     Nav,
@@ -18,6 +13,7 @@ import {
 import { InertiaLink } from "@inertiajs/inertia-react";
 import route from "ziggy-js";
 import UserDropdown from "./UserDropdown";
+import Search from "./Search";
 
 const Sidebar: React.FC = () => {
     const [collapseOpen, setCollapseOpen] = useState(true);
@@ -109,21 +105,7 @@ const Sidebar: React.FC = () => {
                         </Row>
                     </div>
                     {/* Form */}
-                    <Form className="mt-4 mb-3 d-md-none">
-                        <InputGroup className="input-group-rounded input-group-merge">
-                            <Input
-                                aria-label="Search"
-                                className="form-control-rounded form-control-prepended"
-                                placeholder="Search"
-                                type="search"
-                            />
-                            <InputGroupAddon addonType="prepend">
-                                <InputGroupText>
-                                    <span className="fa fa-search" />
-                                </InputGroupText>
-                            </InputGroupAddon>
-                        </InputGroup>
-                    </Form>
+                    <Search sidebar />
                     {/* Navigation */}
                     <Nav navbar>
                         <NavItem>

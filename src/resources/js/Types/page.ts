@@ -1,3 +1,5 @@
+import { Nullable } from "./common";
+
 export interface AuthUser {
     id: number;
     name: string;
@@ -15,6 +17,13 @@ export interface AuthContent {
     user: AuthUser | null | undefined;
 }
 
+export interface FlashMessages {
+    success?: Nullable<string>;
+    error?: Nullable<string>;
+    status?: Nullable<string>;
+}
+
 export interface CommonPageProps {
     auth: AuthContent;
+    flash: FlashMessages;
 }

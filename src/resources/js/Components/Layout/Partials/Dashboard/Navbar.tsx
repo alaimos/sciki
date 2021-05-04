@@ -1,11 +1,5 @@
 import React from "react";
 import {
-    Form,
-    FormGroup,
-    InputGroupAddon,
-    InputGroupText,
-    Input,
-    InputGroup,
     Navbar as BootstrapNavbar,
     Nav,
     Container,
@@ -18,6 +12,7 @@ import UserDropdown from "./UserDropdown";
 import { Page } from "@inertiajs/inertia";
 import { useNavbarContext } from "../../../../Contexts/NavbarProvider";
 import { CommonPageProps } from "../../../../Types/page";
+import Search from "./Search";
 
 const Navbar: React.FC = () => {
     const {
@@ -38,18 +33,7 @@ const Navbar: React.FC = () => {
                     >
                         {customNavbarTitle ?? "SciKi"}
                     </InertiaLink>
-                    <Form className="navbar-search navbar-search-dark form-inline mr-3 d-none d-md-flex ml-lg-auto">
-                        <FormGroup className="mb-0">
-                            <InputGroup className="input-group-alternative">
-                                <InputGroupAddon addonType="prepend">
-                                    <InputGroupText>
-                                        <i className="fas fa-search" />
-                                    </InputGroupText>
-                                </InputGroupAddon>
-                                <Input placeholder="Search" type="text" />
-                            </InputGroup>
-                        </FormGroup>
-                    </Form>
+                    <Search />
                     <Nav className="align-items-center d-none d-md-flex" navbar>
                         {userIsLoggedIn && <UserDropdown showUserName={true} />}
                         {!userIsLoggedIn && (
