@@ -21,7 +21,7 @@ import { Row, Col } from "reactstrap";
 const Footer: React.FC = () => {
     return (
         <footer className="footer">
-            <Row className="align-items-center justify-content-xl-between">
+            <Row className="align-items-center justify-content-xl-between mx-2">
                 <Col xl="6">
                     <div className="copyright text-center text-xl-left text-muted">
                         © {new Date().getFullYear()}{" "}
@@ -38,7 +38,7 @@ const Footer: React.FC = () => {
                 </Col>
 
                 <Col xl="6">
-                    <div className="copyright text-center text-xl-left text-muted">
+                    <div className="copyright text-center text-xl-right text-muted">
                         Theme provided by
                         <a
                             href="https://www.creative-tim.com"

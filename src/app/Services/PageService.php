@@ -1,4 +1,5 @@
 <?php
+/** @noinspection NonSecureUniqidUsageInspection */
 
 namespace App\Services;
 
@@ -9,6 +10,7 @@ use Illuminate\Http\Response as LaravelHttpResponse;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use League\CommonMark\CommonMarkConverter;
 use Symfony\Component\HttpFoundation\Response as SymfonyHttpResponse;
 
 class PageService
@@ -21,6 +23,7 @@ class PageService
     private bool $userIsLoggedIn = false;
     private bool $userCanCreateNewPage = false;
     private bool $userCanUpdatePage = false;
+    private bool $userCanDeletePage = false;
 
     public function __construct(string $page)
     {
@@ -31,7 +34,7 @@ class PageService
 
     private function findRequestedPage(): void
     {
-        $this->model = Page::whereSlug($this->slug)->first();
+        $this->model = Page::whereSlug($this->slug)->with('user')->first();
         $this->pageNotFound = $this->model === null;
         $this->pageIsDraft = !$this->pageNotFound && $this->model->draft;
     }
@@ -44,6 +47,7 @@ class PageService
                 ($this->pageNotFound && $this->userCanCreateNewPage) ||
                 (!$this->pageNotFound && auth()->user()->can('update', $this->model))
             );
+        $this->userCanDeletePage = $this->userIsLoggedIn && !$this->pageNotFound && auth()->user()->can('delete', $this->model);
     }
 
     private function getTitleFromSlug(): string
@@ -62,9 +66,47 @@ class PageService
                 'can'   => [
                     'create' => $this->userCanCreateNewPage,
                     'update' => $this->userCanUpdatePage,
+                    'delete' => $this->userCanDeletePage,
                 ],
             ]
         );
+    }
+
+    private function parsePageContent(): array
+    {
+        $originalContent = $this->model->content;
+        //@todo
+        $converter = new CommonMarkConverter();
+
+        return [
+            [
+                'key'       => uniqid(more_entropy: true),
+                'component' => 'Html',
+                'props'     => [
+                    'content' => $converter->convertToHtml($originalContent),
+                ],
+            ],
+            [
+                'key'       => uniqid(more_entropy: true),
+                'component' => 'Plugins/Test',
+                'props'     => [
+                    'hello' => 'World!',
+                ],
+            ],
+            [
+                'key'       => uniqid(more_entropy: true),
+                'component' => 'Plugins/Pippo',
+                'props'     => [
+                    'hello' => 'World!',
+                ],
+            ],
+            [
+                'key'   => uniqid(more_entropy: true),
+                'props' => [
+                    'hello' => 'World!',
+                ],
+            ],
+        ];
     }
 
     private function renderExistingPage(): Response
@@ -74,14 +116,12 @@ class PageService
             [
                 'slug'    => $this->slug,
                 'page'    => $this->model,
-                'content' => [
-                    //todo
-                    '<strong>Hello World</strong>',
-                ],
+                'content' => $this->parsePageContent(),
                 'draft'   => $this->userIsLoggedIn && $this->pageIsDraft,
                 'can'     => [
                     'create' => $this->userCanCreateNewPage,
                     'update' => $this->userCanUpdatePage,
+                    'delete' => $this->userCanDeletePage,
                 ],
             ]
         );

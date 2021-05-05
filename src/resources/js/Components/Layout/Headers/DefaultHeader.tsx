@@ -11,7 +11,7 @@ const DefaultHeader: React.FC<Props> = ({ headerBg, title }: Props) => {
         <>
             <div
                 className={`header pb-8 pt-5 pt-lg-8 d-flex align-items-center ${
-                    headerBg ?? "bg-gradient-default"
+                    headerBg ?? "bg-gradient-gray-dark"
                 }`}
             >
                 <Container

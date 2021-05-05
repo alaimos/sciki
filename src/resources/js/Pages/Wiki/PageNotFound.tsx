@@ -1,12 +1,20 @@
 import React from "react";
 import Header from "../../Components/Layout/Headers/DefaultHeader";
-import { Card, CardBody, Col, Container, Row } from "reactstrap";
+import {
+    Card,
+    CardBody,
+    Col,
+    Container,
+    Nav,
+    NavItem,
+    NavLink,
+    Row,
+} from "reactstrap";
 import { Helmet } from "react-helmet";
-import { InertiaLink, usePage } from "@inertiajs/inertia-react";
-import { Page } from "@inertiajs/inertia";
+import { usePage } from "@inertiajs/inertia-react";
+import { Inertia, Page } from "@inertiajs/inertia";
 import { CommonPageProps } from "../../Types/page";
-// import {InertiaLink} from "@inertiajs/inertia-react";
-// import route from "ziggy-js";
+import route from "ziggy-js";
 
 interface Props {
     slug: string;
@@ -26,6 +34,14 @@ const PageNotFound: React.FC<Props> = ({
     const {
         auth: { check: userIsLoggedIn },
     } = usePage<Page<CommonPageProps>>().props;
+
+    const handleCreate = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        return Inertia.post(route("page.store"), {
+            title,
+        });
+    };
+
     return (
         <>
             <Helmet>
@@ -36,12 +52,21 @@ const PageNotFound: React.FC<Props> = ({
                 {!pageIsDraft && userIsLoggedIn && userCanCreate && (
                     <Row className="mb-2">
                         <Col lg={12} className="text-right">
-                            <InertiaLink
-                                href="/"
-                                className="text-white text-underline"
+                            <Nav
+                                className="nav-fill flex-column-reverse flex-sm-row-reverse"
+                                pills
                             >
-                                Create
-                            </InertiaLink>
+                                <NavItem className="flex-grow-0">
+                                    <NavLink
+                                        className="mb-sm-3 mb-md-0"
+                                        onClick={handleCreate}
+                                        href="#"
+                                    >
+                                        <i className="fas fa-plus-square mr-2" />
+                                        Create
+                                    </NavLink>
+                                </NavItem>
+                            </Nav>
                         </Col>
                     </Row>
                 )}

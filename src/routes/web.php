@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Editor\PageController;
 use App\Http\Controllers\WikiController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,3 +22,12 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::get('/wiki/{page}', [WikiController::class, 'show'])->name('wiki.show');
+
+Route::group(
+    [
+        'middleware' => 'auth',
+    ],
+    static function () {
+        Route::resource('page', PageController::class)->only(['store', 'edit', 'update', 'destroy']);
+    }
+);
