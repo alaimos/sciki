@@ -28,6 +28,7 @@ Route::group(
         'middleware' => 'auth',
     ],
     static function () {
+        Route::post('/page/{page}/upload', [PageController::class, 'upload'])->name('page.upload');
         Route::resource('page', PageController::class)->only(['store', 'edit', 'update', 'destroy']);
     }
 );

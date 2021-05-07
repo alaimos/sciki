@@ -22,12 +22,20 @@ import {
 import { Nullable } from "../../Types/common";
 import { useForm } from "@inertiajs/inertia-react";
 import classNames from "classnames";
-import { Editor } from "@toast-ui/react-editor";
-import "codemirror/lib/codemirror.css";
-import "@toast-ui/editor/dist/toastui-editor.css";
+import Editor from "../../Components/Wiki/Editor";
+import Uppy from "@uppy/core";
+import Xhr from "@uppy/xhr-upload";
+import ImageEditor from "@uppy/image-editor";
+import { Dashboard, useUppy } from "@uppy/react";
+import "@uppy/core/dist/style.min.css";
+import "@uppy/dashboard/dist/style.min.css";
+import "@uppy/image-editor/dist/style.min.css";
+import route from "ziggy-js";
+import Cookies from "browser-cookies";
 
 interface Props {
     page: {
+        slug: string;
         title: string;
         content: string;
         draft: boolean;
@@ -38,13 +46,25 @@ interface Props {
 }
 
 const Index: React.FC<Props> = ({
-    page: { title, content, draft },
+    page: { slug, title, content, draft },
     formatted_tags: tags,
     simulation,
     media,
 }: Props) => {
     const newTagRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-    const editorRef = useRef<Editor>(null);
+    const uppy = useUppy(() => {
+        const instance = new Uppy.Uppy({});
+        instance.use(Xhr, {
+            endpoint: route("page.upload", slug),
+            headers: {
+                "X-XSRF-TOKEN": Cookies.get("XSRF-TOKEN"),
+            },
+        });
+        instance.use(ImageEditor, {
+            quality: 0.8,
+        });
+        return instance;
+    });
     console.log([simulation, media]);
     //put, processing
     const { data, setData, errors } = useForm({
@@ -157,7 +177,7 @@ const Index: React.FC<Props> = ({
                     </Col>
                 </Row>
                 <Row>
-                    <Col className="mb-5 mb-xl-0" xl="8">
+                    <Col className="mb-5 mb-xl-2" xl="8">
                         <Card className="shadow">
                             <CardHeader className="bg-transparent">
                                 <h6 className="text-uppercase text-dark ls-1 mb-1">
@@ -166,22 +186,10 @@ const Index: React.FC<Props> = ({
                             </CardHeader>
                             <CardBody>
                                 <Editor
-                                    initialValue={content}
-                                    previewStyle="tab"
-                                    height="600px"
-                                    initialEditType="markdown"
-                                    useCommandShortcut={true}
-                                    usageStatistics={false}
-                                    hideModeSwitch={true}
-                                    onChange={() =>
-                                        setData(
-                                            "content",
-                                            editorRef.current
-                                                ?.getInstance()
-                                                .getMarkdown() ?? ""
-                                        )
+                                    value={content}
+                                    onChange={(newContent) =>
+                                        setData("content", newContent)
                                     }
-                                    ref={editorRef}
                                 />
                             </CardBody>
                         </Card>
@@ -238,6 +246,28 @@ const Index: React.FC<Props> = ({
                                         </InputGroup>
                                     </Col>
                                 </Row>
+                            </CardBody>
+                        </Card>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col className="mb-5 mb-xl-2" md="8"></Col>
+                    <Col className="mb-5 mb-xl-2" md="4">
+                        <Card className="bg-gradient-dark shadow">
+                            <CardHeader className="bg-transparent">
+                                <h6 className="text-uppercase text-light ls-1 mb-1">
+                                    Upload media
+                                </h6>
+                            </CardHeader>
+                            <CardBody>
+                                <Dashboard
+                                    uppy={uppy}
+                                    width="100%"
+                                    height={250}
+                                    fileManagerSelectionType="files"
+                                    theme="dark"
+                                    plugins={["ImageEditor"]}
+                                />
                             </CardBody>
                         </Card>
                     </Col>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Editor;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Editor\StorePageRequest;
 use App\Models\Page;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -67,6 +68,17 @@ CONTENT;
                 'formatted_tags' => $page->formatted_tags,
                 'simulation'     => $page->simulation,
                 'media'          => $page->media,
+            ]
+        );
+    }
+
+    public function upload(Request $request, Page $page): JsonResponse
+    {
+        dd($request);
+
+        return response()->json(
+            [
+                'ok' => true,
             ]
         );
     }
