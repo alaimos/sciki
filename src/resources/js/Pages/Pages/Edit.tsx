@@ -23,15 +23,10 @@ import { Nullable } from "../../Types/common";
 import { useForm } from "@inertiajs/inertia-react";
 import classNames from "classnames";
 import Editor from "../../Components/Wiki/Editor";
-import Uppy from "@uppy/core";
-import Xhr from "@uppy/xhr-upload";
-import ImageEditor from "@uppy/image-editor";
-import { Dashboard, useUppy } from "@uppy/react";
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
 import "@uppy/image-editor/dist/style.min.css";
-import route from "ziggy-js";
-import Cookies from "browser-cookies";
+import MediaManager, { Media } from "../../Components/Wiki/MediaManager";
 
 interface Props {
     page: {
@@ -42,7 +37,7 @@ interface Props {
     };
     formatted_tags: string[];
     simulation: Nullable<unknown>;
-    media: unknown[];
+    media: Record<string, Media>;
 }
 
 const Index: React.FC<Props> = ({
@@ -52,26 +47,15 @@ const Index: React.FC<Props> = ({
     media,
 }: Props) => {
     const newTagRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-    const uppy = useUppy(() => {
-        const instance = new Uppy.Uppy({});
-        instance.use(Xhr, {
-            endpoint: route("page.upload", slug),
-            headers: {
-                "X-XSRF-TOKEN": Cookies.get("XSRF-TOKEN"),
-            },
-        });
-        instance.use(ImageEditor, {
-            quality: 0.8,
-        });
-        return instance;
-    });
-    console.log([simulation, media]);
     //put, processing
     const { data, setData, errors } = useForm({
         title,
         content,
         tags,
+        media,
+        deletedMedia: [] as string[],
     });
+    console.log([simulation, data.media]);
 
     const handleAddTag = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -100,7 +84,6 @@ const Index: React.FC<Props> = ({
             tags: previousData.tags.filter((t) => t !== tag),
         }));
 
-    // @ts-ignore
     return (
         <Form>
             <Header
@@ -194,7 +177,7 @@ const Index: React.FC<Props> = ({
                             </CardBody>
                         </Card>
                     </Col>
-                    <Col xl="4">
+                    <Col className="mb-5 mb-xl-2" xl="4">
                         <Card className="bg-gradient-dark shadow">
                             <CardHeader className="bg-transparent">
                                 <h6 className="text-uppercase text-light ls-1 mb-1">
@@ -250,28 +233,39 @@ const Index: React.FC<Props> = ({
                         </Card>
                     </Col>
                 </Row>
-                <Row>
-                    <Col className="mb-5 mb-xl-2" md="8"></Col>
-                    <Col className="mb-5 mb-xl-2" md="4">
-                        <Card className="bg-gradient-dark shadow">
-                            <CardHeader className="bg-transparent">
-                                <h6 className="text-uppercase text-light ls-1 mb-1">
-                                    Upload media
-                                </h6>
-                            </CardHeader>
-                            <CardBody>
-                                <Dashboard
-                                    uppy={uppy}
-                                    width="100%"
-                                    height={250}
-                                    fileManagerSelectionType="files"
-                                    theme="dark"
-                                    plugins={["ImageEditor"]}
-                                />
-                            </CardBody>
-                        </Card>
-                    </Col>
-                </Row>
+                <MediaManager
+                    currentPageSlug={slug}
+                    media={data.media}
+                    deletedMedia={data.deletedMedia}
+                    onMediaSelect={(m) => console.log(m)}
+                    onMediaUpdate={(updatedMedia) => {
+                        setData((previousData) => {
+                            const tmpData = {
+                                ...previousData,
+                                media: {
+                                    ...previousData.media,
+                                },
+                            };
+                            tmpData.media[updatedMedia.uuid] = updatedMedia;
+                            return tmpData;
+                        });
+                    }}
+                    onMediaUpload={(newMedia) =>
+                        setData((previousData) => ({
+                            ...previousData,
+                            media: {
+                                ...previousData.media,
+                                [newMedia.uuid]: newMedia,
+                            },
+                        }))
+                    }
+                    onMediaDelete={(uuid) =>
+                        setData((previousData) => ({
+                            ...previousData,
+                            deletedMedia: [...previousData.deletedMedia, uuid],
+                        }))
+                    }
+                />
             </Container>
         </Form>
     );

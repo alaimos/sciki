@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Editor\MediaController;
 use App\Http\Controllers\Editor\PageController;
 use App\Http\Controllers\WikiController;
 use Illuminate\Support\Facades\Route;
@@ -28,7 +29,11 @@ Route::group(
         'middleware' => 'auth',
     ],
     static function () {
-        Route::post('/page/{page}/upload', [PageController::class, 'upload'])->name('page.upload');
+        /// Media Routes
+        Route::get('/media/{media}', [MediaController::class, 'showMedia'])->name('page.showMedia');
+        Route::put('/page/{page}/media/{media}', [MediaController::class, 'updateMedia'])->name('page.updateMedia');
+        Route::post('/page/{page}/upload', [MediaController::class, 'upload'])->name('page.upload');
+        /// Page Routes
         Route::resource('page', PageController::class)->only(['store', 'edit', 'update', 'destroy']);
     }
 );

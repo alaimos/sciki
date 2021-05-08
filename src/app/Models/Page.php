@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use Spatie\Tags\HasTags;
@@ -97,5 +98,43 @@ class Page extends Model implements HasMedia
     public function getFormattedTagsAttribute(): Collection
     {
         return $this->tags()->get()->map(fn(Tag $tag) => $tag->type . ': ' . $tag->name);
+    }
+
+    public function formatMedia(Media $media): array
+    {
+        return [
+            'id'     => $media->id,
+            'uuid'   => $media->uuid,
+            'title'  => $media->getCustomProperty('title', $media->name),
+            'legend' => $media->getCustomProperty('legend', $media->name),
+            'url'    => $media->getUrl(),
+            'thumbs' => [
+                'small' => $media->getUrl('thumb-small'),
+                'large' => $media->getUrl('thumb-large'),
+            ],
+            'srcset' => $media->getSrcset(),
+        ];
+    }
+
+    public function getFormattedMediaAttribute(): Collection
+    {
+        return $this->media->map([$this, 'formatMedia'])->keyBy('uuid');
+    }
+
+    /**
+     * @param  \Spatie\MediaLibrary\MediaCollections\Models\Media|null  $media
+     *
+     * @throws \Spatie\Image\Exceptions\InvalidManipulation
+     */
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->addMediaConversion('thumb-small')
+             ->width(64)
+             ->height(64)
+             ->sharpen(10);
+        $this->addMediaConversion('thumb-large')
+             ->width(256)
+             ->height(256)
+             ->sharpen(10);
     }
 }

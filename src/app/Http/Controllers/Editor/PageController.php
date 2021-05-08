@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Editor;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Editor\EditMediaPropertiesRequest;
 use App\Http\Requests\Editor\StorePageRequest;
+use App\Http\Requests\Editor\UploadMediaRequest;
 use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PageController extends Controller
 {
@@ -67,18 +70,7 @@ CONTENT;
                 'page'           => $page,
                 'formatted_tags' => $page->formatted_tags,
                 'simulation'     => $page->simulation,
-                'media'          => $page->media,
-            ]
-        );
-    }
-
-    public function upload(Request $request, Page $page): JsonResponse
-    {
-        dd($request);
-
-        return response()->json(
-            [
-                'ok' => true,
+                'media'          => $page->formatted_media,
             ]
         );
     }

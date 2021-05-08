@@ -86,9 +86,12 @@ const scikiExtendedMarkdownPlugin: PluginInfo = {
     parser: {
         image(node, { entering }) {
             if (entering) {
-                const { destination } = node;
+                const { destination } = node as { destination: string };
                 if (destination.startsWith("#") && destination.endsWith("#")) {
-                    node.destination = destination; //@todo replace with real image
+                    node.destination = route(
+                        "page.showMedia",
+                        destination.substr(1, destination.length - 2)
+                    );
                     node.orgDestination = destination;
                 }
             }
