@@ -3,6 +3,7 @@
 
 namespace App\Services;
 
+use App\CommonMark\SciKiExtension\SciKiExtension;
 use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,6 +12,14 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use League\CommonMark\CommonMarkConverter;
+use League\CommonMark\Environment;
+use League\CommonMark\Extension\Autolink\AutolinkExtension;
+use League\CommonMark\Extension\Footnote\FootnoteExtension;
+use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
+use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkExtension;
+use League\CommonMark\Extension\SmartPunct\SmartPunctExtension;
+use League\CommonMark\Extension\TableOfContents\TableOfContentsExtension;
+use League\CommonMark\MarkdownConverter;
 use Symfony\Component\HttpFoundation\Response as SymfonyHttpResponse;
 
 class PageService
@@ -34,7 +43,7 @@ class PageService
 
     private function findRequestedPage(): void
     {
-        $this->model = Page::whereSlug($this->slug)->with('user')->first();
+        $this->model = Page::whereSlug($this->slug)->with(['user', 'media', 'tags'])->first();
         $this->pageNotFound = $this->model === null;
         $this->pageIsDraft = !$this->pageNotFound && $this->model->draft;
     }
@@ -72,11 +81,41 @@ class PageService
         );
     }
 
+    private function makeMarkdownParser(): MarkdownConverter
+    {
+        $environment = Environment::createCommonMarkEnvironment();
+        $environment->addExtension(new GithubFlavoredMarkdownExtension());
+        $environment->addExtension(new AutolinkExtension());
+        $environment->addExtension(new FootnoteExtension());
+        $environment->addExtension(new HeadingPermalinkExtension());
+        $environment->addExtension(new TableOfContentsExtension());
+        $environment->addExtension(new SmartPunctExtension());
+        $environment->addExtension(new SciKiExtension());
+        $environment->mergeConfig(
+            [
+                'sciki'             => [
+                    'current_page' => $this->model,
+                ],
+                'heading_permalink' => [
+                    'insert' => 'after',
+                ],
+                'table_of_contents' => [
+                    'position'    => 'placeholder',
+                    'style'       => 'ordered',
+                    'placeholder' => '[TOC]',
+                ],
+            ]
+        );
+
+        $converter = new MarkdownConverter($environment);
+
+        return $converter;
+    }
+
     private function parsePageContent(): array
     {
         $originalContent = $this->model->content;
-        //@todo
-        $converter = new CommonMarkConverter();
+        $converter = $this->makeMarkdownParser();
 
         return [
             [

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Editor;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Editor\EditMediaPropertiesRequest;
+use App\Http\Requests\Editor\EditPageRequest;
 use App\Http\Requests\Editor\StorePageRequest;
 use App\Http\Requests\Editor\UploadMediaRequest;
 use App\Models\Page;
@@ -78,14 +79,29 @@ CONTENT;
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\Editor\EditPageRequest  $request
      * @param  \App\Models\Page  $page
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function update(Request $request, Page $page)
+    public function update(EditPageRequest $request, Page $page): RedirectResponse
     {
-        //
+        $this->authorize('update', $page);
+
+        $data = $request->validated();
+
+        $page->update(
+            [
+                'title'   => $data['title'],
+                'content' => $data['content'],
+            ]
+        );
+
+        $page->syncFormattedTags($data['tags'])
+             ->deleteMediaByUuid($data['deletedMedia']);
+
+        return redirect()->route('wiki.show', $page)->with('success', 'Page updated!');
     }
 
     /**

@@ -1,0 +1,45 @@
+
+div.figure {
+    margin-bottom: 0.5em;
+    width: auto;
+    background-color: transparent;
+
+    div.fig_container {
+        border: 1px solid $gray-600;
+        padding: 3px;
+        background-color: $gray-400;
+        font-size: $font-size-xs;
+        text-align: center;
+        overflow: hidden;
+        min-width: 100px;
+
+        img {
+            background-color: $white;
+            border: 1px solid $gray-600;
+            max-width: 256px;
+            max-height: 256px;
+            vertical-align: middle;
+        }
+
+        div.fig_caption {
+            border: 0;
+            line-height: 1.4em;
+            padding: 3px;
+            font-size: $font-size-xs;
+            text-align: left;
+        }
+
+    }
+}
+
+div.fig_right {
+    margin: 0.5em 0 1em 1em;
+    clear: right;
+    float: right;
+}
+
+div.fig_left {
+    margin: 0.5em 1em 1em 0;
+    float: left;
+    clear: left;
+}

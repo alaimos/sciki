@@ -8,6 +8,7 @@ import {
     Col,
     Container,
     Form,
+    FormFeedback,
     FormGroup,
     Input,
     InputGroup,
@@ -27,6 +28,10 @@ import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
 import "@uppy/image-editor/dist/style.min.css";
 import MediaManager, { Media } from "../../Components/Wiki/MediaManager";
+import EditorRefProvider, {
+    useEditorRefContext,
+} from "../../Contexts/EditorRefProvider";
+import route from "ziggy-js";
 
 interface Props {
     page: {
@@ -47,8 +52,8 @@ const Index: React.FC<Props> = ({
     media,
 }: Props) => {
     const newTagRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-    //put, processing
-    const { data, setData, errors } = useForm({
+    const editorRef = useEditorRefContext();
+    const { data, setData, errors, put, processing } = useForm({
         title,
         content,
         tags,
@@ -57,7 +62,11 @@ const Index: React.FC<Props> = ({
     });
     console.log([simulation, data.media]);
 
-    const handleAddTag = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const handleAddTag = (
+        e:
+            | React.MouseEvent<HTMLAnchorElement>
+            | React.KeyboardEvent<HTMLInputElement>
+    ) => {
         e.preventDefault();
         if (newTagRef.current && newTagRef.current.value) {
             const newTagParts = newTagRef.current.value.split(/:\s*/, 2);
@@ -84,12 +93,21 @@ const Index: React.FC<Props> = ({
             tags: previousData.tags.filter((t) => t !== tag),
         }));
 
+    const submitForm = async (
+        e:
+            | React.MouseEvent<HTMLAnchorElement>
+            | React.FormEvent<HTMLFormElement>
+    ) => {
+        e.preventDefault();
+        await put(route("page.update", slug));
+    };
+
     return (
-        <Form>
+        <Form onSubmit={submitForm}>
             <Header
                 title={
                     <FormGroup
-                        className={classNames("align-items-center", {
+                        className={classNames("align-items-start", {
                             "has-danger": !!errors.title,
                         })}
                         row
@@ -97,7 +115,8 @@ const Index: React.FC<Props> = ({
                         <Label
                             for="page-title"
                             sm="auto"
-                            className="text-light"
+                            className="text-light p-0 m-0"
+                            style={{ fontSize: "0.7em" }}
                         >
                             Title:
                         </Label>
@@ -111,6 +130,9 @@ const Index: React.FC<Props> = ({
                                     setData("title", e.target.value)
                                 }
                             />
+                            <FormFeedback className="invalid-feedback text-sm">
+                                <strong>{errors.title}</strong>
+                            </FormFeedback>
                         </Col>
                     </FormGroup>
                 }
@@ -127,6 +149,7 @@ const Index: React.FC<Props> = ({
                                     <NavLink
                                         className="mb-sm-3 mb-md-0 text-green"
                                         onClick={(e) => e.preventDefault()}
+                                        disabled={processing}
                                         href="#"
                                     >
                                         <i className="fas fa-upload mr-2" />
@@ -139,6 +162,7 @@ const Index: React.FC<Props> = ({
                                     <NavLink
                                         className="mb-sm-3 mb-md-0 text-orange"
                                         onClick={(e) => e.preventDefault()}
+                                        disabled={processing}
                                         href="#"
                                     >
                                         <i className="fas fa-pencil-alt mr-2" />
@@ -149,7 +173,8 @@ const Index: React.FC<Props> = ({
                             <NavItem className="flex-grow-0">
                                 <NavLink
                                     className="mb-sm-3 mb-md-0"
-                                    onClick={(e) => e.preventDefault()}
+                                    onClick={submitForm}
+                                    disabled={processing}
                                     href="#"
                                 >
                                     <i className="fas fa-save mr-2" />
@@ -174,6 +199,11 @@ const Index: React.FC<Props> = ({
                                         setData("content", newContent)
                                     }
                                 />
+                                {!!errors.content && (
+                                    <div className="invalid-feedback d-block">
+                                        <strong>{errors.content}</strong>
+                                    </div>
+                                )}
                             </CardBody>
                         </Card>
                     </Col>
@@ -206,6 +236,15 @@ const Index: React.FC<Props> = ({
                                         ))}
                                     </Col>
                                 </Row>
+                                <Row>
+                                    <Col>
+                                        {!!errors.tags && (
+                                            <div className="invalid-feedback d-block">
+                                                <strong>{errors.tags}</strong>
+                                            </div>
+                                        )}
+                                    </Col>
+                                </Row>
                                 <Row className="mt-2">
                                     <Col>
                                         <InputGroup>
@@ -214,6 +253,11 @@ const Index: React.FC<Props> = ({
                                                 placeholder="Add new tag (category: tag)"
                                                 autoComplete="edit-page-new-tag"
                                                 innerRef={newTagRef}
+                                                onKeyPress={(e) => {
+                                                    if (e.key === "Enter") {
+                                                        handleAddTag(e);
+                                                    }
+                                                }}
                                             />
                                             <InputGroupAddon addonType="append">
                                                 <InputGroupText>
@@ -237,7 +281,20 @@ const Index: React.FC<Props> = ({
                     currentPageSlug={slug}
                     media={data.media}
                     deletedMedia={data.deletedMedia}
-                    onMediaSelect={(m) => console.log(m)}
+                    onMediaSelect={(m) => {
+                        if (editorRef.current) {
+                            const mediaText = `\n\`\`\`SciKiMedia
+{
+    "media": "${m.uuid}",
+    "position": "left",
+    "caption": "${m.title}"
+}
+\`\`\`\n`;
+                            editorRef.current
+                                .getInstance()
+                                .insertText(mediaText);
+                        }
+                    }}
                     onMediaUpdate={(updatedMedia) => {
                         setData((previousData) => {
                             const tmpData = {
@@ -266,9 +323,24 @@ const Index: React.FC<Props> = ({
                         }))
                     }
                 />
+                <Row>
+                    <Col>
+                        {!!errors.deletedMedia && (
+                            <div className="invalid-feedback d-block">
+                                <strong>{errors.deletedMedia}</strong>
+                            </div>
+                        )}
+                    </Col>
+                </Row>
             </Container>
         </Form>
     );
 };
 
-export default Index;
+const IndexWithContext: React.FC<Props> = (props) => (
+    <EditorRefProvider>
+        <Index {...props} />
+    </EditorRefProvider>
+);
+
+export default IndexWithContext;

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useRef } from "react";
+import React from "react";
 import mermaid from "mermaid";
 import katex from "katex";
 import TUIEditorObject from "@toast-ui/editor";
@@ -17,6 +17,8 @@ import "katex/dist/katex.min.css";
 import PluginInfo = toastui.PluginInfo;
 import route from "ziggy-js";
 import AutoLinksParser from "./AutoLinksParser";
+import { useEditorRefContext } from "../../Contexts/EditorRefProvider";
+import TextToken = toastui.TextToken;
 
 interface Props {
     value: string;
@@ -82,14 +84,76 @@ const scikiExtendedMarkdownPlugin: PluginInfo = {
     pluginFn() {
         return;
     },
-    renderer: {},
+    renderer: {
+        codeBlock(node, { origin }) {
+            const parsed = origin();
+            if (node.info !== "SciKiMedia") {
+                return parsed;
+            }
+            if (parsed.length === 5) {
+                const textNode = parsed[2] as TextToken;
+                try {
+                    const jsonData = JSON.parse(textNode.content);
+                    return [
+                        {
+                            type: "openTag",
+                            tagName: "div",
+                            classNames: [
+                                "figure",
+                                jsonData.position === "right"
+                                    ? "fig_right"
+                                    : "fig_left",
+                            ],
+                            attributes: parsed[0].attributes,
+                        },
+                        {
+                            type: "html",
+                            content: `<div class="fig_container"><a href="${route(
+                                "page.media.show",
+                                jsonData.media
+                            )}" class="fig"><img src="${route(
+                                "page.media.image",
+                                jsonData.media
+                            )}" alt="${
+                                jsonData.caption
+                            }"></a><div class="fig_caption">${
+                                jsonData.caption
+                            }</div></div>`,
+                        },
+                        {
+                            type: "closeTag",
+                            tagName: "div",
+                        },
+                    ];
+                } catch (e) {
+                    return [
+                        {
+                            type: "openTag",
+                            tagName: "div",
+                            classNames: ["text-danger"],
+                            attributes: parsed[0].attributes,
+                        },
+                        {
+                            type: "text",
+                            content: `Error: ${e.message}`,
+                        },
+                        {
+                            type: "closeTag",
+                            tagName: "div",
+                        },
+                    ];
+                }
+            }
+            return parsed;
+        },
+    },
     parser: {
         image(node, { entering }) {
             if (entering) {
                 const { destination } = node as { destination: string };
                 if (destination.startsWith("#") && destination.endsWith("#")) {
                     node.destination = route(
-                        "page.showMedia",
+                        "page.media.image",
                         destination.substr(1, destination.length - 2)
                     );
                     node.orgDestination = destination;
@@ -112,7 +176,7 @@ const scikiExtendedMarkdownPlugin: PluginInfo = {
 };
 
 const Editor: React.FC<Props> = ({ value, onChange }: Props) => {
-    const editorRef = useRef<TUIEditor>(null);
+    const editorRef = useEditorRefContext();
 
     return (
         <>

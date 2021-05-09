@@ -100,6 +100,33 @@ class Page extends Model implements HasMedia
         return $this->tags()->get()->map(fn(Tag $tag) => $tag->type . ': ' . $tag->name);
     }
 
+    public function syncFormattedTags(array $formattedTags): self
+    {
+        $tagsByCategory = [];
+        foreach ($formattedTags as $tag) {
+            $tagAndCategory = preg_split('/:\s*/', $tag, 2);
+            if (count($tagAndCategory) === 2) {
+                [$category, $realTag] = $tagAndCategory;
+                if (!isset($tagsByCategory[$category])) {
+                    $tagsByCategory[$category] = [];
+                }
+                $tagsByCategory[$category][] = $realTag;
+            }
+        }
+        foreach ($tagsByCategory as $category => $tags) {
+            $this->syncTagsWithType($tags, $category);
+        }
+
+        return $this;
+    }
+
+    public function deleteMediaByUuid(array $deletedMedia): self
+    {
+        $this->media()->whereIn('uuid', $deletedMedia)->delete();
+
+        return $this;
+    }
+
     public function formatMedia(Media $media): array
     {
         return [

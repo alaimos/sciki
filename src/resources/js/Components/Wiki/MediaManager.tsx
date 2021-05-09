@@ -79,7 +79,7 @@ const MediaManager: React.FC<Props> = ({
         });
         instance.use(Xhr, {
             fieldName: "file",
-            endpoint: route("page.upload", currentPageSlug),
+            endpoint: route("page.media.upload", currentPageSlug),
             headers: {
                 "X-XSRF-TOKEN": Cookies.get("XSRF-TOKEN"),
                 accept: "application/json",
@@ -135,7 +135,7 @@ const MediaManager: React.FC<Props> = ({
         try {
             setEditState({ open: false });
             const result = await axios.put(
-                route("page.updateMedia", [
+                route("page.media.update", [
                     currentPageSlug,
                     editState.media?.uuid || "",
                 ]),

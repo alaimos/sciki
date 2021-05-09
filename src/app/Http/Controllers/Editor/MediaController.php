@@ -54,7 +54,7 @@ class MediaController extends Controller
      * @return \Symfony\Component\HttpFoundation\Response|\Symfony\Component\HttpFoundation\StreamedResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function showMedia(
+    public function image(
         Request $request,
         string $media
     ): SymfonyResponse|StreamedResponse {
@@ -75,7 +75,7 @@ class MediaController extends Controller
      * @return \Illuminate\Http\JsonResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function updateMedia(EditMediaPropertiesRequest $request, Page $page, string $media): JsonResponse
+    public function update(EditMediaPropertiesRequest $request, Page $page, string $media): JsonResponse
     {
         $this->authorize('update', $page);
 

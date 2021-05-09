@@ -42,6 +42,7 @@ div.MediaManagerList > div > div.TitleContainer > div:first-child {
     flex-grow: 1;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-align: center;
     white-space: nowrap;
 }
 

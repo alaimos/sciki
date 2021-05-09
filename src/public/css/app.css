@@ -22358,3 +22358,44 @@ button:focus, :focus {
 .table .badge i {
   margin-right: 10px;
 }
+
+div.figure {
+  margin-bottom: 0.5em;
+  width: auto;
+  background-color: transparent;
+}
+div.figure div.fig_container {
+  border: 1px solid #8898aa;
+  padding: 3px;
+  background-color: #ced4da;
+  font-size: 0.75rem;
+  text-align: center;
+  overflow: hidden;
+  min-width: 100px;
+}
+div.figure div.fig_container img {
+  background-color: #fff;
+  border: 1px solid #8898aa;
+  max-width: 256px;
+  max-height: 256px;
+  vertical-align: middle;
+}
+div.figure div.fig_container div.fig_caption {
+  border: 0;
+  line-height: 1.4em;
+  padding: 3px;
+  font-size: 0.75rem;
+  text-align: left;
+}
+
+div.fig_right {
+  margin: 0.5em 0 1em 1em;
+  clear: right;
+  float: right;
+}
+
+div.fig_left {
+  margin: 0.5em 1em 1em 0;
+  float: left;
+  clear: left;
+}

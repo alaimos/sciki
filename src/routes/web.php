@@ -30,9 +30,10 @@ Route::group(
     ],
     static function () {
         /// Media Routes
-        Route::get('/media/{media}', [MediaController::class, 'showMedia'])->name('page.showMedia');
-        Route::put('/page/{page}/media/{media}', [MediaController::class, 'updateMedia'])->name('page.updateMedia');
-        Route::post('/page/{page}/upload', [MediaController::class, 'upload'])->name('page.upload');
+        Route::get('/media/{media}', [MediaController::class, 'show'])->name('page.media.show');
+        Route::get('/media/{media}/image', [MediaController::class, 'image'])->name('page.media.image');
+        Route::post('/page/{page}/media/upload', [MediaController::class, 'upload'])->name('page.media.upload');
+        Route::put('/page/{page}/media/{media}', [MediaController::class, 'update'])->name('page.media.update');
         /// Page Routes
         Route::resource('page', PageController::class)->only(['store', 'edit', 'update', 'destroy']);
     }
