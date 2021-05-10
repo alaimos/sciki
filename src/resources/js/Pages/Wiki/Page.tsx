@@ -96,41 +96,63 @@ const Page: React.FC<Props> = ({
             </Helmet>
             <Header title={title} />
             <Container className="mt--7" fluid>
-                {userIsLoggedIn && userCanUpdateOrDelete && (
-                    <Row className="mb-2">
-                        <Col lg={12} className="text-right">
-                            <Nav
-                                className="nav-fill flex-column-reverse flex-sm-row-reverse"
-                                pills
-                            >
-                                {userCanDelete && (
-                                    <NavItem className="ml-2 flex-grow-0">
-                                        <NavLink
-                                            className="mb-sm-3 mb-md-0 text-danger"
-                                            onClick={handleDelete}
-                                            href="#"
-                                        >
-                                            <i className="fas fa-trash mr-2" />
-                                            Delete
-                                        </NavLink>
-                                    </NavItem>
-                                )}
-                                {userCanUpdate && (
-                                    <NavItem className="flex-grow-0">
-                                        <NavLink
-                                            className="mb-sm-3 mb-md-0"
-                                            onClick={handleEdit}
-                                            href="#"
-                                        >
-                                            <i className="fas fa-pencil-alt mr-2" />
-                                            Edit
-                                        </NavLink>
-                                    </NavItem>
-                                )}
-                            </Nav>
-                        </Col>
-                    </Row>
-                )}
+                <Row className="mb-2">
+                    <Col lg={12} className="text-right">
+                        <Nav
+                            className="nav-fill flex-column-reverse flex-sm-row-reverse"
+                            pills
+                        >
+                            {userIsLoggedIn && userCanUpdateOrDelete && (
+                                <>
+                                    {userCanDelete && (
+                                        <NavItem className="ml-2 flex-grow-0">
+                                            <NavLink
+                                                className="mb-sm-3 mb-md-0 text-danger"
+                                                onClick={handleDelete}
+                                                href="#"
+                                            >
+                                                <i className="fas fa-trash mr-2" />
+                                                Delete
+                                            </NavLink>
+                                        </NavItem>
+                                    )}
+                                    {userCanUpdate && (
+                                        <NavItem className="ml-2 flex-grow-0">
+                                            <NavLink
+                                                className="mb-sm-3 mb-md-0"
+                                                onClick={handleEdit}
+                                                href="#"
+                                            >
+                                                <i className="fas fa-pencil-alt mr-2" />
+                                                Edit
+                                            </NavLink>
+                                        </NavItem>
+                                    )}
+                                </>
+                            )}
+                            <NavItem className="ml-2 flex-grow-0">
+                                <NavLink
+                                    className="mb-sm-3 mb-md-0"
+                                    onClick={(e) => e.preventDefault()}
+                                    href="#"
+                                >
+                                    <i className="fas fa-comments mr-2" />
+                                    Comments
+                                </NavLink>
+                            </NavItem>
+                            <NavItem className="ml-2 flex-grow-0">
+                                <NavLink
+                                    className="mb-sm-3 mb-md-0"
+                                    onClick={(e) => e.preventDefault()}
+                                    href="#"
+                                >
+                                    <i className="fas fa-history mr-2" />
+                                    History
+                                </NavLink>
+                            </NavItem>
+                        </Nav>
+                    </Col>
+                </Row>
                 <Card className="shadow">
                     <CardBody>{processedContent}</CardBody>
                 </Card>

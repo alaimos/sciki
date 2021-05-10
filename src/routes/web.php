@@ -35,6 +35,8 @@ Route::group(
         Route::post('/page/{page}/media/upload', [MediaController::class, 'upload'])->name('page.media.upload');
         Route::put('/page/{page}/media/{media}', [MediaController::class, 'update'])->name('page.media.update');
         /// Page Routes
+        Route::put('/page/{page}/publish', [PageController::class, 'publish'])->name('page.publish');
+        Route::put('/page/{page}/draft', [PageController::class, 'draft'])->name('page.draft');
         Route::resource('page', PageController::class)->only(['store', 'edit', 'update', 'destroy']);
     }
 );

@@ -32,6 +32,7 @@ import EditorRefProvider, {
     useEditorRefContext,
 } from "../../Contexts/EditorRefProvider";
 import route from "ziggy-js";
+import { Inertia } from "@inertiajs/inertia";
 
 interface Props {
     page: {
@@ -148,7 +149,12 @@ const Index: React.FC<Props> = ({
                                 <NavItem className="ml-2 flex-grow-0">
                                     <NavLink
                                         className="mb-sm-3 mb-md-0 text-green"
-                                        onClick={(e) => e.preventDefault()}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            return Inertia.put(
+                                                route("page.publish", slug)
+                                            );
+                                        }}
                                         disabled={processing}
                                         href="#"
                                     >
@@ -161,7 +167,12 @@ const Index: React.FC<Props> = ({
                                 <NavItem className="ml-2 flex-grow-0">
                                     <NavLink
                                         className="mb-sm-3 mb-md-0 text-orange"
-                                        onClick={(e) => e.preventDefault()}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            return Inertia.put(
+                                                route("page.draft", slug)
+                                            );
+                                        }}
                                         disabled={processing}
                                         href="#"
                                     >

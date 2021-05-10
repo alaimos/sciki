@@ -22399,3 +22399,20 @@ div.fig_left {
   float: left;
   clear: left;
 }
+
+.table-of-contents {
+  display: table;
+  padding: 1em 1em 1em 2em;
+  border: 1px solid #5e72e4;
+  background-color: #ced4da;
+  font-size: 0.75rem !important;
+}
+.table-of-contents li::marker {
+  text-indent: 1rem;
+}
+.table-of-contents li > p {
+  margin-bottom: 0.1rem;
+}
+.table-of-contents li > p a {
+  font-weight: 600;
+}

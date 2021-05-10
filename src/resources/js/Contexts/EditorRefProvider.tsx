@@ -8,7 +8,11 @@ export function useEditorRefContext(): React.RefObject<TUIEditor> {
     return useContext<React.RefObject<TUIEditor>>(EditorRefContext);
 }
 
-const EditorRefProvider: React.FC = ({ children }: { children?: ReactNode }) => {
+const EditorRefProvider: React.FC = ({
+    children,
+}: {
+    children?: ReactNode;
+}) => {
     const ref = useRef<TUIEditor>(null);
 
     return (

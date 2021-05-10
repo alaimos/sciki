@@ -78,7 +78,6 @@ final class SciKiUrlProcessor implements ConfigurationAwareInterface
         $pageSlug = ltrim($url, '@');
         $page = Page::whereSlug($pageSlug)->first();
         $pageNotExists = $page === null;
-        $title = $pageNotExists ? self::getTitleFromSlug($pageSlug) : $page->title;
 
         $link->setUrl(route('wiki.show', $pageSlug));
         if ($pageNotExists) {

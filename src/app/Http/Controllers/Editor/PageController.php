@@ -22,13 +22,7 @@ class PageController extends Controller
 # %s
 CONTENT;
 
-
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\Editor\StorePageRequest  $request
-     *
-     * @return \Illuminate\Http\RedirectResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function store(StorePageRequest $request): RedirectResponse
@@ -53,11 +47,6 @@ CONTENT;
 
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Page  $page
-     *
-     * @return \Inertia\Response
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function edit(Page $page): Response
@@ -77,12 +66,6 @@ CONTENT;
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\Editor\EditPageRequest  $request
-     * @param  \App\Models\Page  $page
-     *
-     * @return \Illuminate\Http\RedirectResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function update(EditPageRequest $request, Page $page): RedirectResponse
@@ -105,6 +88,28 @@ CONTENT;
     }
 
     /**
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function publish(Page $page): RedirectResponse
+    {
+        $this->authorize('update', $page);
+        $page->update(['draft' => false]);
+
+        return redirect()->route('wiki.show', $page)->with('success', 'Page is now public!');
+    }
+
+    /**
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function draft(Page $page): RedirectResponse
+    {
+        $this->authorize('update', $page);
+        $page->update(['draft' => true]);
+
+        return redirect()->route('page.edit', $page)->with('success', 'Page has been set as a draft!');
+    }
+
+    /**
      * Remove the specified resource from storage.
      *
      * @param  \App\Models\Page  $page
@@ -122,4 +127,5 @@ CONTENT;
             ->route('wiki.index')
             ->with('success', sprintf('The page %s has been deleted', $page->title));
     }
+
 }

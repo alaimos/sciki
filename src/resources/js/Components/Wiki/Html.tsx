@@ -1,4 +1,5 @@
 import React from "react";
+import "highlight.js/styles/github.css";
 
 interface Props {
     content: string;
