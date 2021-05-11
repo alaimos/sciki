@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Editor\MediaController;
 use App\Http\Controllers\Editor\PageController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\WikiController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,20 +16,22 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
+/// Wiki Routes
 Route::get('/', [WikiController::class, 'index'])->name('wiki.index');
-
-Auth::routes();
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
 Route::get('/wiki/{page}', [WikiController::class, 'show'])->name('wiki.show');
+Route::post('/typeahead', [PageController::class, 'typeahead'])->name('wiki.typeahead');
+/// Auth Routes
+Auth::routes();
+/// Tags Routes
+Route::post('/tags/typeahead', [TagController::class, 'typeahead'])->name('tag.typeahead');
 
+/// Auth Users routes
 Route::group(
     [
         'middleware' => 'auth',
     ],
     static function () {
+        Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
         /// Media Routes
         Route::get('/media/{media}', [MediaController::class, 'show'])->name('page.media.show');
         Route::get('/media/{media}/image', [MediaController::class, 'image'])->name('page.media.image');

@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use App\Traits\HasFormattedTags;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 use Spatie\Tags\HasTags;
 
 class Simulation extends Model
 {
     use SoftDeletes;
+    use HasFormattedTags;
     use HasTags;
+    use Searchable;
 
     public const READY                 = 0;
     public const QUEUED                = 1;
@@ -40,6 +44,11 @@ class Simulation extends Model
         'nodes_output_file',
     ];
 
+    public function organism(): BelongsTo
+    {
+        return $this->belongsTo(Organism::class);
+    }
+
     public function nodes(): BelongsToMany
     {
         return $this->belongsToMany(Node::class)->withPivot(['type']);
@@ -49,4 +58,24 @@ class Simulation extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function searchableAs(): string
+    {
+        return 'simulations_index';
+    }
+
+    public function toSearchableArray(): array
+    {
+        if ($this->status !== self::COMPLETED) {
+            return [];
+        }
+
+        return [
+            'id'             => $this->id,
+            'organism'       => $this->organism->name,
+            'name'           => $this->name,
+            'formatted_tags' => $this->formatted_tags,
+        ];
+    }
+
 }

@@ -9,6 +9,7 @@ import {
 } from "reactstrap";
 import { Inertia } from "@inertiajs/inertia";
 import route from "ziggy-js";
+import { AsyncTypeahead } from "react-bootstrap-typeahead";
 
 interface Props {
     sidebar?: boolean;
@@ -50,11 +51,18 @@ const Search: React.FC<Props> = ({ sidebar }: Props) => {
                                     <i className="fas fa-search" />
                                 </InputGroupText>
                             </InputGroupAddon>
-                            <Input
-                                placeholder="Search"
-                                type="text"
-                                innerRef={textRef}
+                            <AsyncTypeahead
+                                isLoading={false}
+                                onSearch={() => {
+                                    return;
+                                }}
+                                options={[]}
                             />
+                            {/*<Input*/}
+                            {/*    placeholder="Search"*/}
+                            {/*    type="text"*/}
+                            {/*    innerRef={textRef}*/}
+                            {/*/>*/}
                         </InputGroup>
                     </FormGroup>
                 </Form>

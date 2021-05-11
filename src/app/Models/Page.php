@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use App\Traits\Commentable;
+use App\Traits\HasFormattedTags;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Laravel\Scout\Searchable;
@@ -15,13 +15,13 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 use Spatie\Tags\HasTags;
-use Spatie\Tags\Tag;
 use Venturecraft\Revisionable\RevisionableTrait;
 
 class Page extends Model implements HasMedia
 {
 
     use Commentable;
+    use HasFormattedTags;
     use HasSlug;
     use HasTags;
     use InteractsWithMedia;
@@ -72,18 +72,30 @@ class Page extends Model implements HasMedia
         return 'pages_index';
     }
 
-//    /**
-//     * Get the indexable data array for the model.
-//     *
-//     * @return array
-//     */
-//    public function toSearchableArray(): array
-//    {
-//        $array = $this->toArray();
-//
-//
-//        return $array;
-//    }
+    public function toSearchableArray(): array
+    {
+//        todo: ENABLE IN PRODUCTION
+//        if ($this->draft) {
+//            return [];
+//        }
+
+        return [
+            'id'             => $this->id,
+            'slug'           => $this->slug,
+            'title'          => $this->title,
+            'content'        => $this->content,
+            'formatted_tags' => $this->formatted_tags,
+            'media'          => $this->media()->get()->map(
+                fn(Media $m) => [
+                    'uuid'   => $m->uuid,
+                    'title'  => $m->getCustomProperty('title', $m->name),
+                    'legend' => $m->getCustomProperty('legend', $m->name),
+                ]
+            ),
+            'updated_at'     => $this->updated_at,
+            'created_at'     => $this->created_at,
+        ];
+    }
 
     public function simulation(): BelongsTo
     {
@@ -95,30 +107,6 @@ class Page extends Model implements HasMedia
         return $this->belongsTo(User::class);
     }
 
-    public function getFormattedTagsAttribute(): Collection
-    {
-        return $this->tags()->get()->map(fn(Tag $tag) => $tag->type . ': ' . $tag->name);
-    }
-
-    public function syncFormattedTags(array $formattedTags): self
-    {
-        $tagsByCategory = [];
-        foreach ($formattedTags as $tag) {
-            $tagAndCategory = preg_split('/:\s*/', $tag, 2);
-            if (count($tagAndCategory) === 2) {
-                [$category, $realTag] = $tagAndCategory;
-                if (!isset($tagsByCategory[$category])) {
-                    $tagsByCategory[$category] = [];
-                }
-                $tagsByCategory[$category][] = $realTag;
-            }
-        }
-        foreach ($tagsByCategory as $category => $tags) {
-            $this->syncTagsWithType($tags, $category);
-        }
-
-        return $this;
-    }
 
     public function deleteMediaByUuid(array $deletedMedia): self
     {

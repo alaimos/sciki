@@ -1,7 +1,6 @@
-import React, { useRef } from "react";
+import React from "react";
 import Header from "../../Components/Layout/Headers/DefaultHeader";
 import {
-    Badge,
     Card,
     CardBody,
     CardHeader,
@@ -11,9 +10,6 @@ import {
     FormFeedback,
     FormGroup,
     Input,
-    InputGroup,
-    InputGroupAddon,
-    InputGroupText,
     Label,
     Nav,
     NavItem,
@@ -24,15 +20,18 @@ import { Nullable } from "../../Types/common";
 import { useForm } from "@inertiajs/inertia-react";
 import classNames from "classnames";
 import Editor from "../../Components/Wiki/Editor";
-import "@uppy/core/dist/style.min.css";
-import "@uppy/dashboard/dist/style.min.css";
-import "@uppy/image-editor/dist/style.min.css";
 import MediaManager, { Media } from "../../Components/Wiki/MediaManager";
 import EditorRefProvider, {
     useEditorRefContext,
 } from "../../Contexts/EditorRefProvider";
 import route from "ziggy-js";
 import { Inertia } from "@inertiajs/inertia";
+
+import "@uppy/core/dist/style.min.css";
+import "@uppy/dashboard/dist/style.min.css";
+import "@uppy/image-editor/dist/style.min.css";
+import "react-bootstrap-typeahead/css/Typeahead.css";
+import TagsManagerCard from "../../Components/TagsManagerCard";
 
 interface Props {
     page: {
@@ -52,7 +51,6 @@ const Index: React.FC<Props> = ({
     simulation,
     media,
 }: Props) => {
-    const newTagRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const editorRef = useEditorRefContext();
     const { data, setData, errors, put, processing } = useForm({
         title,
@@ -62,37 +60,6 @@ const Index: React.FC<Props> = ({
         deletedMedia: [] as string[],
     });
     console.log([simulation, data.media]);
-
-    const handleAddTag = (
-        e:
-            | React.MouseEvent<HTMLAnchorElement>
-            | React.KeyboardEvent<HTMLInputElement>
-    ) => {
-        e.preventDefault();
-        if (newTagRef.current && newTagRef.current.value) {
-            const newTagParts = newTagRef.current.value.split(/:\s*/, 2);
-            const finalTagWithCategory =
-                newTagParts.length === 1
-                    ? `unknown: ${newTagParts[0]}`
-                    : newTagParts.join(": ");
-            setData((previousData) => ({
-                ...previousData,
-                tags: [
-                    ...previousData.tags.filter(
-                        (t) => t !== finalTagWithCategory
-                    ),
-                    finalTagWithCategory,
-                ],
-            }));
-            newTagRef.current.value = "";
-        }
-    };
-
-    const handleRemoveTag = (tag: string) =>
-        setData((previousData) => ({
-            ...previousData,
-            tags: previousData.tags.filter((t) => t !== tag),
-        }));
 
     const submitForm = async (
         e:
@@ -219,73 +186,28 @@ const Index: React.FC<Props> = ({
                         </Card>
                     </Col>
                     <Col className="mb-5 mb-xl-2" xl="4">
-                        <Card className="bg-gradient-dark shadow">
-                            <CardHeader className="bg-transparent">
-                                <h6 className="text-uppercase text-light ls-1 mb-1">
-                                    Tags
-                                </h6>
-                            </CardHeader>
-                            <CardBody>
-                                <Row>
-                                    <Col
-                                        style={{ height: "100px" }}
-                                        className="overflow-auto"
-                                    >
-                                        {data.tags.map((tag) => (
-                                            <Badge
-                                                key={tag}
-                                                className="badge-default mx-1 text-light"
-                                                href="#"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    handleRemoveTag(tag);
-                                                }}
-                                                title="Click to delete"
-                                            >
-                                                {tag}
-                                            </Badge>
-                                        ))}
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col>
-                                        {!!errors.tags && (
-                                            <div className="invalid-feedback d-block">
-                                                <strong>{errors.tags}</strong>
-                                            </div>
-                                        )}
-                                    </Col>
-                                </Row>
-                                <Row className="mt-2">
-                                    <Col>
-                                        <InputGroup>
-                                            <Input
-                                                className="text-dark"
-                                                placeholder="Add new tag (category: tag)"
-                                                autoComplete="edit-page-new-tag"
-                                                innerRef={newTagRef}
-                                                onKeyPress={(e) => {
-                                                    if (e.key === "Enter") {
-                                                        handleAddTag(e);
-                                                    }
-                                                }}
-                                            />
-                                            <InputGroupAddon addonType="append">
-                                                <InputGroupText>
-                                                    <a
-                                                        className="text-primary"
-                                                        href="#"
-                                                        onClick={handleAddTag}
-                                                    >
-                                                        <i className="fas fa-plus" />
-                                                    </a>
-                                                </InputGroupText>
-                                            </InputGroupAddon>
-                                        </InputGroup>
-                                    </Col>
-                                </Row>
-                            </CardBody>
-                        </Card>
+                        <TagsManagerCard
+                            tags={data.tags}
+                            onAddTag={(newTag) =>
+                                setData((previousData) => ({
+                                    ...previousData,
+                                    tags: [
+                                        ...previousData.tags.filter(
+                                            (t) => t !== newTag
+                                        ),
+                                        newTag,
+                                    ],
+                                }))
+                            }
+                            onDeleteTag={(deletedTag) =>
+                                setData((previousData) => ({
+                                    ...previousData,
+                                    tags: previousData.tags.filter(
+                                        (t) => t !== deletedTag
+                                    ),
+                                }))
+                            }
+                        />
                     </Col>
                 </Row>
                 <MediaManager
