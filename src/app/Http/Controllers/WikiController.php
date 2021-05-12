@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Page;
-use App\Models\Tag;
 use App\Services\PageService;
+use App\Services\SearchService;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -32,15 +32,32 @@ class WikiController extends Controller
 
         $searchResults = [];
         if (!empty($searchQuery)) {
-            $searchResults = Page::search($searchQuery)->take(10)->get()->map(
-                fn(Page $p) => [
-                    'id'    => $p->slug,
-                    'label' => $p->title,
-                ]
-            );
+            $searchResults = Page::where('title', 'like', '%' . $searchQuery . '%')
+                                 ->take(10)
+                                 ->get()
+                                 ->map(
+                                     fn(Page $p) => [
+                                         'id'    => $p->slug,
+                                         'label' => $p->title,
+                                         'page'  => true,
+                                     ]
+                                 );
         }
+        $searchResults[] = [
+            'id'    => $searchQuery,
+            'label' => sprintf('Search for: %s', $searchQuery),
+            'page'  => false,
+        ];
 
         return response()->json($searchResults);
+    }
+
+    public function search(Request $request): InertiaResponse
+    {
+        return Inertia::render(
+            'Wiki/Search',
+            (new SearchService($request->get('query')))->search()
+        );
     }
 
 }

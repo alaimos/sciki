@@ -12,6 +12,7 @@ import {
     Row,
     Col,
     FormFeedback,
+    Label,
 } from "reactstrap";
 import Auth from "../../Components/Layout/Auth";
 import { useNavbarContext } from "../../Contexts/NavbarProvider";
@@ -29,7 +30,7 @@ const Login: React.FC = () => {
 
     useEffect(() => {
         setPageTitle("Log In");
-    });
+    }, []);
 
     const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -112,14 +113,14 @@ const Login: React.FC = () => {
                                         setData("remember", e.target.value)
                                     }
                                 />
-                                <label
+                                <Label
                                     className="custom-control-label"
                                     htmlFor="customCheckLogin"
                                 >
                                     <span className="text-muted">
                                         Remember me
                                     </span>
-                                </label>
+                                </Label>
                             </div>
                             <div className="text-center">
                                 <Button

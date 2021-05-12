@@ -19,7 +19,9 @@ use Illuminate\Support\Facades\Route;
 /// Wiki Routes
 Route::get('/', [WikiController::class, 'index'])->name('wiki.index');
 Route::get('/wiki/{page}', [WikiController::class, 'show'])->name('wiki.show');
-Route::post('/typeahead', [PageController::class, 'typeahead'])->name('wiki.typeahead');
+Route::post('/search', [WikiController::class, 'search'])->name('wiki.search');
+Route::get('/search', fn() => redirect()->route('wiki.index'));
+Route::post('/typeahead', [WikiController::class, 'typeahead'])->name('wiki.typeahead');
 /// Auth Routes
 Auth::routes();
 /// Tags Routes
