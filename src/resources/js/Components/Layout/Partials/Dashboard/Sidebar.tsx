@@ -10,12 +10,17 @@ import {
     NavItem,
     NavLink,
 } from "reactstrap";
-import { InertiaLink } from "@inertiajs/inertia-react";
+import { InertiaLink, usePage } from "@inertiajs/inertia-react";
 import route from "ziggy-js";
 import UserDropdown from "./UserDropdown";
 import Search from "./Search";
+import { CommonPageProps } from "../../../../Types/page";
+import { Page } from "@inertiajs/inertia";
 
 const Sidebar: React.FC = () => {
+    const {
+        auth: { check: isUserLoggedIn },
+    } = usePage<Page<CommonPageProps>>().props;
     const [collapseOpen, setCollapseOpen] = useState(true);
     // verifies if routeName is the one active (in browser input)
     // const activeRoute = (routeName) => {
@@ -65,21 +70,6 @@ const Sidebar: React.FC = () => {
                 </NavbarBrand>
                 {/* User */}
                 <Nav className="align-items-center d-md-none">
-                    {/*<UncontrolledDropdown nav>*/}
-                    {/*    <DropdownToggle nav className="nav-link-icon">*/}
-                    {/*        <i className="ni ni-bell-55" />*/}
-                    {/*    </DropdownToggle>*/}
-                    {/*    <DropdownMenu*/}
-                    {/*        aria-labelledby="navbar-default_dropdown_1"*/}
-                    {/*        className="dropdown-menu-arrow"*/}
-                    {/*        right*/}
-                    {/*    >*/}
-                    {/*        <DropdownItem>Action</DropdownItem>*/}
-                    {/*        <DropdownItem>Another action</DropdownItem>*/}
-                    {/*        <DropdownItem divider />*/}
-                    {/*        <DropdownItem>Something else here</DropdownItem>*/}
-                    {/*    </DropdownMenu>*/}
-                    {/*</UncontrolledDropdown>*/}
                     <UserDropdown />
                 </Nav>
                 {/* Collapse */}
@@ -135,6 +125,13 @@ const Sidebar: React.FC = () => {
                             </NavLink>
                         </NavItem>
                     </Nav>
+                    {isUserLoggedIn && (
+                        <>
+                            {/* Tools */}
+                            <hr className="my-3" />
+                            <h6 className="navbar-heading text-muted">Tools</h6>
+                        </>
+                    )}
                 </Collapse>
             </Container>
         </Navbar>

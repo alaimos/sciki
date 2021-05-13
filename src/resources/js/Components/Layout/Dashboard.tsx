@@ -5,6 +5,7 @@ import Navbar from "./Partials/Dashboard/Navbar";
 import { Container } from "reactstrap";
 import Footer from "./Partials/Dashboard/Footer";
 import NavbarProvider from "../../Contexts/NavbarProvider";
+import FlashMessages from "./Partials/Dashboard/FlashMessages";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 const Dashboard: React.FC = ({ children }: React.PropsWithChildren<{}>) => (
@@ -13,6 +14,7 @@ const Dashboard: React.FC = ({ children }: React.PropsWithChildren<{}>) => (
         <div className="main-content">
             <Navbar />
             {children}
+            <FlashMessages />
             <Container fluid>
                 <Footer />
             </Container>
