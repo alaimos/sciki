@@ -4,12 +4,9 @@ namespace App\Providers;
 
 use App\Models\Comment;
 use App\Models\Page;
-use App\Models\Simulation;
 use App\Policies\CommentPolicy;
 use App\Policies\PagePolicy;
-use App\Policies\SimulationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -19,11 +16,20 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
-        Page::class       => PagePolicy::class,
-        Simulation::class => SimulationPolicy::class,
-        Comment::class    => CommentPolicy::class,
+        Page::class    => PagePolicy::class,
+        Comment::class => CommentPolicy::class,
     ];
+
+    public function policies(): array
+    {
+        $policies = [$this->policies];
+        foreach (config('sciki.resource_providers') as $resourceProviderClass) {
+            $policies[] = app($resourceProviderClass)->policies();
+        }
+
+        return array_merge(...$policies);
+    }
+
 
     /**
      * Register any authentication / authorization services.
@@ -33,7 +39,6 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-
         //
     }
 }

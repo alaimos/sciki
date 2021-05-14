@@ -34,7 +34,11 @@ class PagePolicy
      */
     public function view(User $user, Page $page): bool
     {
-        return true;
+        return (
+            !$page->draft ||
+            $user->id === $page->user_id ||
+            $user->role_id === Role::ADMIN
+        );
     }
 
     /**

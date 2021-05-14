@@ -1,5 +1,7 @@
 <?php
 
+use App\Resources\Simulations\SimulationResourceProvider;
+
 return [
 
     'phensim_api_url'    => env('PHENSIM_API_URL'),
@@ -7,4 +9,9 @@ return [
     'phensim_executable' => env('PHENSIM_EXECUTABLE'),
     'java_executable'    => env('JAVA_EXECUTABLE'),
     'rscript_executable' => env('RSCRIPT_EXECUTABLE'),
+
+
+    'resource_providers' => [
+        SimulationResourceProvider::class,
+    ],
 ];

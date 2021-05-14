@@ -2,12 +2,15 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\AccessControlService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use Thomaswelton\LaravelGravatar\Facades\Gravatar;
 
 class HandleInertiaRequests extends Middleware
 {
+
+    private AccessControlService $accessControlService;
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -15,6 +18,12 @@ class HandleInertiaRequests extends Middleware
      * @var string
      */
     protected $rootView = 'layouts.inertia';
+
+    public function __construct(AccessControlService $accessControlService)
+    {
+        $this->accessControlService = $accessControlService;
+    }
+
 
     /**
      * Determines the current asset version.
@@ -56,6 +65,7 @@ class HandleInertiaRequests extends Middleware
                         'avatar',
                     ]
                 ) : null,
+                'capabilities'  => fn() => $this->accessControlService->getCommonCapabilities(),
                 'flash.success' => fn() => $request->session()->get('success'),
                 'flash.error'   => fn() => $request->session()->get('error'),
                 'flash.status'  => fn() => $request->session()->get('status'),

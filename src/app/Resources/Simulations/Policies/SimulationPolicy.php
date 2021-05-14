@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Policies;
+namespace App\Resources\Simulations\Policies;
 
 use App\Models\Role;
 use App\Models\Simulation;

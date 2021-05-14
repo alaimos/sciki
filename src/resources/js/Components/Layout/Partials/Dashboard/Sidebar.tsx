@@ -125,6 +125,11 @@ const Sidebar: React.FC = () => {
                             </NavLink>
                         </NavItem>
                     </Nav>
+                    <>
+                        {/* Tools */}
+                        <hr className="my-3" />
+                        <h6 className="navbar-heading text-muted">Resources</h6>
+                    </>
                     {isUserLoggedIn && (
                         <>
                             {/* Tools */}
