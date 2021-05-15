@@ -10,6 +10,11 @@ class Role extends Model
     public const USER   = 1;
     public const EDITOR = 2;
     public const ADMIN  = 3;
+    public const ROLES  = [
+        'admin'  => self::ADMIN,
+        'editor' => self::EDITOR,
+        'user'   => self::USER,
+    ];
 
     protected $fillable = [
         'id',

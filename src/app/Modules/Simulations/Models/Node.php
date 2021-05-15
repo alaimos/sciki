@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Simulations\Models;
 
 use App\Casts\ToArray;
 use Illuminate\Database\Eloquent\Model;

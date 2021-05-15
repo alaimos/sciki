@@ -51,8 +51,7 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $userIsLoggedIn = auth()->check();
-
-        return array_merge(
+        $shared = [
             parent::share($request),
             [
                 'auth.check'    => $userIsLoggedIn,
@@ -69,7 +68,15 @@ class HandleInertiaRequests extends Middleware
                 'flash.success' => fn() => $request->session()->get('success'),
                 'flash.error'   => fn() => $request->session()->get('error'),
                 'flash.status'  => fn() => $request->session()->get('status'),
-            ]
-        );
+            ],
+        ];
+        foreach (config('sciki.resource_providers') as $provider) {
+            $moduleShare = app($provider)->inertiaShare();
+            if ($moduleShare) {
+                $shared[] = $moduleShare;
+            }
+        }
+
+        return array_merge(...$shared);
     }
 }

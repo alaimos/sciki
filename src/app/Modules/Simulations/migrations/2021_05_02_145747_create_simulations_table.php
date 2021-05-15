@@ -1,4 +1,5 @@
 <?php
+/** @noinspection PhpIllegalPsrClassPathInspection */
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -26,6 +27,7 @@ class CreateSimulationsTable extends Migration
                 $table->string('pathway_output_file')->nullable();
                 $table->string('nodes_output_file')->nullable();
                 $table->foreignId('user_id')->constrained();
+                $table->boolean('public')->default(false);
                 $table->timestamps();
                 $table->softDeletes();
             }

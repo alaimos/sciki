@@ -1,6 +1,6 @@
 <?php
 
-use App\Resources\Simulations\SimulationResourceProvider;
+use App\Modules\Simulations\SimulationModuleProvider;
 
 return [
 
@@ -12,6 +12,6 @@ return [
 
 
     'resource_providers' => [
-        SimulationResourceProvider::class,
+        SimulationModuleProvider::class,
     ],
 ];

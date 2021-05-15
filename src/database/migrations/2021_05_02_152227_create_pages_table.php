@@ -20,7 +20,6 @@ class CreatePagesTable extends Migration
                 $table->string('title');
                 $table->string('slug')->unique();
                 $table->longText('content');
-                $table->foreignId('simulation_id')->nullable()->constrained()->nullOnDelete();
                 $table->boolean('draft');
                 $table->foreignId('user_id')->constrained();
                 $table->timestamps();

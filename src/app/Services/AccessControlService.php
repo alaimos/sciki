@@ -5,6 +5,7 @@ namespace App\Services;
 
 use App\Models\Page;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use JetBrains\PhpStorm\ArrayShape;
 
 class AccessControlService
@@ -12,9 +13,20 @@ class AccessControlService
 
     private Authenticatable|null $currentUser;
 
+    /**
+     * @var \App\Modules\Abstract\Services\AccessControlService[]
+     */
+    private array $modules;
+
     public function __construct()
     {
         $this->currentUser = auth()->user();
+        foreach (config('sciki.resource_providers') as $provider) {
+            $service = app($provider)->accessControlService();
+            if ($service) {
+                $this->modules[] = $service;
+            }
+        }
     }
 
     #[ArrayShape([
@@ -49,11 +61,30 @@ class AccessControlService
         ];
     }
 
+    public function getCapabilities(Model|string|null $model = null): ?array
+    {
+        foreach ($this->modules as $moduleACS) {
+            $capabilities = $moduleACS->getCapabilities($model);
+            if ($capabilities !== null) {
+                return $capabilities;
+            }
+        }
+
+        return null;
+    }
+
     #[ArrayShape(['pages' => "bool[]"])] public function getCommonCapabilities(): array
     {
-        return [
-            'pages' => $this->getPagesCapabilities(),
+        $capabilities = [
+            [
+                'pages' => $this->getPagesCapabilities(),
+            ],
         ];
+        foreach ($this->modules as $moduleACS) {
+            $capabilities[] = $moduleACS->getCommonCapabilities();
+        }
+
+        return array_merge(...$capabilities);
     }
 
 }

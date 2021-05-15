@@ -36,7 +36,6 @@ CONTENT;
             [
                 'title'         => $pageTitle,
                 'content'       => sprintf(self::DEFAULT_CONTENT, $pageTitle),
-                'simulation_id' => null,
                 'user_id'       => auth()->id(),
                 'draft'         => true,
             ]

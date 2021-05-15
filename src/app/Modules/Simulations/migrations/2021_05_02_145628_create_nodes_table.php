@@ -1,10 +1,10 @@
-<?php
+<?php /** @noinspection PhpIllegalPsrClassPathInspection */
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateOrganismsTable extends Migration
+class CreateNodesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,11 +14,14 @@ class CreateOrganismsTable extends Migration
     public function up(): void
     {
         Schema::create(
-            'organisms',
+            'nodes',
             function (Blueprint $table) {
                 $table->id();
-                $table->string('accession')->unique();
-                $table->string('name');
+                $table->string('accession')->index();
+                $table->string('name')->index();
+                $table->text('aliases');
+                $table->foreignId('organism_id')->constrained()->cascadeOnDelete();
+                $table->unique(['accession', 'organism_id']);
             }
         );
     }
@@ -30,6 +33,6 @@ class CreateOrganismsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('organisms');
+        Schema::dropIfExists('nodes');
     }
 }

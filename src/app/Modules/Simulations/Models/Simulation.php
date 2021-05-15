@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace App\Modules\Simulations\Models;
 
+use App\Models\User;
 use App\Traits\HasFormattedTags;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -8,7 +8,7 @@ use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
 
-    public $bindings = [
+    public $singletons = [
         AccessControlService::class => AccessControlService::class,
     ];
 
@@ -34,6 +34,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        foreach (config('sciki.resource_providers') as $provider) {
+            $migrationsPath = app($provider)->migrationsPath();
+            if ($migrationsPath) {
+                $this->loadMigrationsFrom($migrationsPath);
+            }
+        }
     }
 }

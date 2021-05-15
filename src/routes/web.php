@@ -45,3 +45,8 @@ Route::group(
         Route::resource('page', PageController::class)->only(['store', 'edit', 'update', 'destroy']);
     }
 );
+
+foreach (config('sciki.resource_providers') as $resourceProviderClass) {
+    app($resourceProviderClass)->routes();
+}
+

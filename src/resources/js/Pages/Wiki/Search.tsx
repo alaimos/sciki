@@ -109,40 +109,42 @@ const Search: React.FC<Props> = ({ query, pages, tags, can }: Props) => {
                                 )}
                             </Col>
                         </Row>
-                        <Row>
-                            <Col className="text-sm text-muted" xs="6">
-                                Showing results from {pages.meta.from} to{" "}
-                                {pages.meta.to} of {pages.meta.total}
-                            </Col>
-                            <Col xs="6">
-                                <Pagination
-                                    className="pagination justify-content-end"
-                                    listClassName="justify-content-end"
-                                >
-                                    {pages.meta.links.map(
-                                        ({ active, label, url }, index) => (
-                                            <PaginationItem
-                                                key={index}
-                                                className={classNames({
-                                                    disabled: !active,
-                                                })}
-                                            >
-                                                <PaginationLink
-                                                    tag={InertiaLink}
-                                                    href={url ?? "#"}
-                                                    as="button"
-                                                    method="post"
-                                                    data={{ query }}
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: label,
-                                                    }}
-                                                />
-                                            </PaginationItem>
-                                        )
-                                    )}
-                                </Pagination>
-                            </Col>
-                        </Row>
+                        {pages.data.length > 0 && (
+                            <Row>
+                                <Col className="text-sm text-muted" xs="6">
+                                    Showing results from {pages.meta.from} to{" "}
+                                    {pages.meta.to} of {pages.meta.total}
+                                </Col>
+                                <Col xs="6">
+                                    <Pagination
+                                        className="pagination justify-content-end"
+                                        listClassName="justify-content-end"
+                                    >
+                                        {pages.meta.links.map(
+                                            ({ active, label, url }, index) => (
+                                                <PaginationItem
+                                                    key={index}
+                                                    className={classNames({
+                                                        disabled: !active,
+                                                    })}
+                                                >
+                                                    <PaginationLink
+                                                        tag={InertiaLink}
+                                                        href={url ?? "#"}
+                                                        as="button"
+                                                        method="post"
+                                                        data={{ query }}
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: label,
+                                                        }}
+                                                    />
+                                                </PaginationItem>
+                                            )
+                                        )}
+                                    </Pagination>
+                                </Col>
+                            </Row>
+                        )}
                     </CardBody>
                 </Card>
                 <Card className="shadow">
@@ -180,40 +182,42 @@ const Search: React.FC<Props> = ({ query, pages, tags, can }: Props) => {
                                 )}
                             </Col>
                         </Row>
-                        <Row>
-                            <Col className="text-sm text-muted" xs="6">
-                                Showing results from {tags.meta.from} to{" "}
-                                {tags.meta.to} of {tags.meta.total}
-                            </Col>
-                            <Col xs="6">
-                                <Pagination
-                                    className="pagination justify-content-end"
-                                    listClassName="justify-content-end"
-                                >
-                                    {tags.meta.links.map(
-                                        ({ active, label, url }, index) => (
-                                            <PaginationItem
-                                                key={index}
-                                                className={classNames({
-                                                    disabled: !active,
-                                                })}
-                                            >
-                                                <PaginationLink
-                                                    tag={InertiaLink}
-                                                    href={url ?? "#"}
-                                                    as="button"
-                                                    method="post"
-                                                    data={{ query }}
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: label,
-                                                    }}
-                                                />
-                                            </PaginationItem>
-                                        )
-                                    )}
-                                </Pagination>
-                            </Col>
-                        </Row>
+                        {tags.data.length > 0 && (
+                            <Row>
+                                <Col className="text-sm text-muted" xs="6">
+                                    Showing results from {tags.meta.from} to{" "}
+                                    {tags.meta.to} of {tags.meta.total}
+                                </Col>
+                                <Col xs="6">
+                                    <Pagination
+                                        className="pagination justify-content-end"
+                                        listClassName="justify-content-end"
+                                    >
+                                        {tags.meta.links.map(
+                                            ({ active, label, url }, index) => (
+                                                <PaginationItem
+                                                    key={index}
+                                                    className={classNames({
+                                                        disabled: !active,
+                                                    })}
+                                                >
+                                                    <PaginationLink
+                                                        tag={InertiaLink}
+                                                        href={url ?? "#"}
+                                                        as="button"
+                                                        method="post"
+                                                        data={{ query }}
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: label,
+                                                        }}
+                                                    />
+                                                </PaginationItem>
+                                            )
+                                        )}
+                                    </Pagination>
+                                </Col>
+                            </Row>
+                        )}
                     </CardBody>
                 </Card>
             </Container>
