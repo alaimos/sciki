@@ -130,8 +130,12 @@ const TagsManagerCard: React.FC<Props> = ({
                                     setTagInputValue(selected)
                                 }
                                 onKeyDown={(e) => {
-                                    const re = (e as unknown) as React.KeyboardEvent<HTMLInputElement>;
-                                    if (re.code === "Enter") {
+                                    const re =
+                                        e as unknown as React.KeyboardEvent<HTMLInputElement>;
+                                    if (
+                                        re.code === "Enter" ||
+                                        re.code === "NumpadEnter"
+                                    ) {
                                         // @ts-ignore
                                         doAddTag(re.target.value);
                                         // @ts-ignore

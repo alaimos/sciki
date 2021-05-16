@@ -4,12 +4,15 @@ namespace App\Modules\Simulations;
 
 
 use App\Modules\Abstract\ModuleProvider;
+use App\Modules\Abstract\ScikiSidebarLink;
 use App\Modules\Abstract\Services\AccessControlService;
+use App\Modules\Simulations\Controllers\SimulationController;
 use App\Modules\Simulations\Models\Organism;
 use App\Modules\Simulations\Models\Simulation;
 use App\Modules\Simulations\Policies\SimulationPolicy;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
+use Route;
 
 class SimulationModuleProvider extends ModuleProvider
 {
@@ -51,6 +54,38 @@ class SimulationModuleProvider extends ModuleProvider
     #[Pure] public function accessControlService(): ?AccessControlService
     {
         return new Services\AccessControlService();
+    }
+
+    public function publicRoutes(): void
+    {
+        Route::resource('simulations', SimulationController::class)->only('index');
+    }
+
+    public function editorRoutes(): void
+    {
+        Route::resource('simulations', SimulationController::class)->except(['index']);
+    }
+
+    public function exposesGuiResources(): array
+    {
+        return [
+            new ScikiSidebarLink(
+                'Simulations', 'simulations.index',
+                'fa-server text-primary', 'simulations',
+                'list'
+            ),
+        ];
+    }
+
+    public function exposesGuiTools(): array
+    {
+        return [
+            new ScikiSidebarLink(
+                'New simulation', 'simulations.create',
+                'fa-server text-green', 'simulations',
+                'create'
+            ),
+        ];
     }
 
 }

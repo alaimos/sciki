@@ -34,10 +34,10 @@ CONTENT;
 
         $newPage = Page::create(
             [
-                'title'         => $pageTitle,
-                'content'       => sprintf(self::DEFAULT_CONTENT, $pageTitle),
-                'user_id'       => auth()->id(),
-                'draft'         => true,
+                'title'   => $pageTitle,
+                'content' => sprintf(self::DEFAULT_CONTENT, $pageTitle),
+                'user_id' => auth()->id(),
+                'draft'   => true,
             ]
         );
 
@@ -51,14 +51,13 @@ CONTENT;
     public function edit(Page $page): Response
     {
         $this->authorize('update', $page);
-        $page->load(['simulation', 'media']);
+        $page->load(['media']);
 
         return Inertia::render(
             'Pages/Edit',
             [
                 'page'           => $page,
                 'formatted_tags' => $page->formatted_tags,
-                'simulation'     => $page->simulation,
                 'media'          => $page->formatted_media,
             ]
         );

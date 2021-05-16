@@ -136,7 +136,8 @@ const Register: React.FC = () => {
                             </FormGroup>
                             <FormGroup
                                 className={classNames({
-                                    "has-danger": !!errors.password_confirmation,
+                                    "has-danger":
+                                        !!errors.password_confirmation,
                                 })}
                             >
                                 <InputGroup className="input-group-alternative">

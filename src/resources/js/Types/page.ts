@@ -23,7 +23,21 @@ export interface FlashMessages {
     status?: Nullable<string>;
 }
 
+export interface GuiLink {
+    key: string;
+    title: string;
+    route: string;
+    icon?: string;
+    resourceName?: string;
+    resourcePermission?: string;
+}
+
 export interface CommonPageProps {
     auth: AuthContent;
+    capabilities: Record<string, Record<string, boolean>>;
     flash: FlashMessages;
+    gui: {
+        resources: GuiLink[];
+        tools: GuiLink[];
+    };
 }

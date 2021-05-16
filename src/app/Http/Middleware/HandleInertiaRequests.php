@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Abstract\ScikiSidebarLink;
 use App\Services\AccessControlService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -70,12 +71,28 @@ class HandleInertiaRequests extends Middleware
                 'flash.status'  => fn() => $request->session()->get('status'),
             ],
         ];
+        $sidebarGuiResources = [];
+        $sidebarGuiTools = [];
         foreach (config('sciki.resource_providers') as $provider) {
-            $moduleShare = app($provider)->inertiaShare();
+            /** @var \App\Modules\Abstract\ModuleProvider $provider */
+            $provider = app($provider);
+            $moduleShare = $provider->inertiaShare();
             if ($moduleShare) {
                 $shared[] = $moduleShare;
             }
+            $resources = $provider->exposesGuiResources();
+            if ($resources) {
+                $sidebarGuiResources[] = array_map(static fn(ScikiSidebarLink $res) => $res->toArray(), $resources);
+            }
+            $tools = $provider->exposesGuiTools();
+            if ($tools) {
+                $sidebarGuiTools[] = array_map(static fn(ScikiSidebarLink $res) => $res->toArray(), $tools);
+            }
         }
+        $shared[] = [
+            'gui.resources' => array_merge(...$sidebarGuiResources),
+            'gui.tools'     => array_merge(...$sidebarGuiTools),
+        ];
 
         return array_merge(...$shared);
     }

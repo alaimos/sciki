@@ -26,27 +26,56 @@ Route::post('/typeahead', [WikiController::class, 'typeahead'])->name('wiki.type
 Auth::routes();
 /// Tags Routes
 Route::post('/tags/typeahead', [TagController::class, 'typeahead'])->name('tag.typeahead');
+/// Plugins public routes
+foreach (config('sciki.resource_providers') as $resourceProviderClass) {
+    app($resourceProviderClass)->publicRoutes();
+}
 
 /// Auth Users routes
 Route::group(
     [
-        'middleware' => 'auth',
+        'middleware' => [
+            'auth',
+            'role:user',
+        ],
     ],
     static function () {
         Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-        /// Media Routes
-        Route::get('/media/{media}', [MediaController::class, 'show'])->name('page.media.show');
-        Route::get('/media/{media}/image', [MediaController::class, 'image'])->name('page.media.image');
-        Route::post('/page/{page}/media/upload', [MediaController::class, 'upload'])->name('page.media.upload');
-        Route::put('/page/{page}/media/{media}', [MediaController::class, 'update'])->name('page.media.update');
-        /// Page Routes
-        Route::put('/page/{page}/publish', [PageController::class, 'publish'])->name('page.publish');
-        Route::put('/page/{page}/draft', [PageController::class, 'draft'])->name('page.draft');
-        Route::resource('page', PageController::class)->only(['store', 'edit', 'update', 'destroy']);
+        /// Plugins user routes
+        foreach (config('sciki.resource_providers') as $resourceProviderClass) {
+            app($resourceProviderClass)->userRoutes();
+        }
+        Route::group(
+            [
+                'middleware' => 'role:editor',
+            ],
+            static function () {
+                /// Media Routes
+                Route::get('/media/{media}', [MediaController::class, 'show'])->name('page.media.show');
+                Route::get('/media/{media}/image', [MediaController::class, 'image'])->name('page.media.image');
+                Route::post('/page/{page}/media/upload', [MediaController::class, 'upload'])->name('page.media.upload');
+                Route::put('/page/{page}/media/{media}', [MediaController::class, 'update'])->name('page.media.update');
+                /// Page Routes
+                Route::put('/page/{page}/publish', [PageController::class, 'publish'])->name('page.publish');
+                Route::put('/page/{page}/draft', [PageController::class, 'draft'])->name('page.draft');
+                Route::resource('page', PageController::class)->only(['store', 'edit', 'update', 'destroy']);
+                /// Plugins editor routes
+                foreach (config('sciki.resource_providers') as $resourceProviderClass) {
+                    app($resourceProviderClass)->editorRoutes();
+                }
+            }
+        );
+        Route::group(
+            [
+                'middleware' => 'role:admin',
+            ],
+            static function () {
+                /// Plugins admin routes
+                foreach (config('sciki.resource_providers') as $resourceProviderClass) {
+                    app($resourceProviderClass)->adminRoutes();
+                }
+            }
+        );
     }
 );
-
-foreach (config('sciki.resource_providers') as $resourceProviderClass) {
-    app($resourceProviderClass)->routes();
-}
 

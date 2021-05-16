@@ -126,7 +126,8 @@ const Search: React.FC<Props> = ({ sidebar }: Props) => {
                                     setSearchValue(selected)
                                 }
                                 onKeyDown={(e) => {
-                                    const re = (e as unknown) as React.KeyboardEvent<HTMLInputElement>;
+                                    const re =
+                                        e as unknown as React.KeyboardEvent<HTMLInputElement>;
                                     if (re.code === "Enter") {
                                         // @ts-ignore
                                         const query = re.target.value;
@@ -170,7 +171,8 @@ const Search: React.FC<Props> = ({ sidebar }: Props) => {
                                 setSearchValue(selected)
                             }
                             onKeyDown={(e) => {
-                                const re = (e as unknown) as React.KeyboardEvent<HTMLInputElement>;
+                                const re =
+                                    e as unknown as React.KeyboardEvent<HTMLInputElement>;
                                 if (re.code === "Enter") {
                                     // @ts-ignore
                                     const query = re.target.value;

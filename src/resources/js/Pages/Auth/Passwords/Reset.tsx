@@ -117,7 +117,8 @@ const Login: React.FC<Props> = ({ token, email }: Props) => {
                             </FormGroup>
                             <FormGroup
                                 className={classNames({
-                                    "has-danger": !!errors.password_confirmation,
+                                    "has-danger":
+                                        !!errors.password_confirmation,
                                 })}
                             >
                                 <InputGroup className="input-group-alternative">

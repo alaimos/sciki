@@ -16,7 +16,6 @@ import {
     NavLink,
     Row,
 } from "reactstrap";
-import { Nullable } from "../../Types/common";
 import { useForm } from "@inertiajs/inertia-react";
 import classNames from "classnames";
 import Editor from "../../Components/Wiki/Editor";
@@ -41,14 +40,12 @@ interface Props {
         draft: boolean;
     };
     formatted_tags: string[];
-    simulation: Nullable<unknown>;
     media: Record<string, Media>;
 }
 
 const Index: React.FC<Props> = ({
     page: { slug, title, content, draft },
     formatted_tags: tags,
-    simulation,
     media,
 }: Props) => {
     const editorRef = useEditorRefContext();
@@ -59,7 +56,6 @@ const Index: React.FC<Props> = ({
         media,
         deletedMedia: [] as string[],
     });
-    console.log([simulation, data.media]);
 
     const submitForm = async (
         e:

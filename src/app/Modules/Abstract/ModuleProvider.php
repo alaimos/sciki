@@ -57,10 +57,41 @@ abstract class ModuleProvider
 
     /**
      * Add routes to the laravel RouteServiceProvider.
+     * These routes will be PUBLIC.
      * This function is called within the routes/web.php
      * therefore the same syntax can be used to provide new routes.
      */
-    public function routes(): void
+    public function publicRoutes(): void
+    {
+    }
+
+    /**
+     * Add routes to the laravel RouteServiceProvider.
+     * These routes will be visible only to AUTHENTICATED users.
+     * This function is called within the routes/web.php
+     * therefore the same syntax can be used to provide new routes.
+     */
+    public function userRoutes(): void
+    {
+    }
+
+    /**
+     * Add routes to the laravel RouteServiceProvider.
+     * These routes will be visible only to EDITORS.
+     * This function is called within the routes/web.php
+     * therefore the same syntax can be used to provide new routes.
+     */
+    public function editorRoutes(): void
+    {
+    }
+
+    /**
+     * Add routes to the laravel RouteServiceProvider.
+     * These routes will be visible only to ADMINS.
+     * This function is called within the routes/web.php
+     * therefore the same syntax can be used to provide new routes.
+     */
+    public function adminRoutes(): void
     {
     }
 
@@ -91,6 +122,26 @@ abstract class ModuleProvider
     public function accessControlService(): ?AccessControlService
     {
         return null;
+    }
+
+    /**
+     * Returns an array of ScikiSidebarLink that will be added to the sidebar in the "Resources" section
+     *
+     * @return \App\Modules\Abstract\ScikiSidebarLink[]
+     */
+    public function exposesGuiResources(): array
+    {
+        return [];
+    }
+
+    /**
+     * Returns an array of ScikiSidebarLink that will be added to the sidebar in the "Tools" section
+     *
+     * @return \App\Modules\Abstract\ScikiSidebarLink[]
+     */
+    public function exposesGuiTools(): array
+    {
+        return [];
     }
 
 }

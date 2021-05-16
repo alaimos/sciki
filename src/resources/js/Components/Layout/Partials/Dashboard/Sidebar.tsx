@@ -14,14 +14,40 @@ import { InertiaLink, usePage } from "@inertiajs/inertia-react";
 import route from "ziggy-js";
 import UserDropdown from "./UserDropdown";
 import Search from "./Search";
-import { CommonPageProps } from "../../../../Types/page";
+import { CommonPageProps, GuiLink } from "../../../../Types/page";
 import { Page } from "@inertiajs/inertia";
 
 const Sidebar: React.FC = () => {
     const {
         auth: { check: isUserLoggedIn },
+        capabilities: userCapabilities,
+        gui: { resources: resourceLinks, tools: toolLinks },
     } = usePage<Page<CommonPageProps>>().props;
     const [collapseOpen, setCollapseOpen] = useState(true);
+
+    const renderLink = (link: GuiLink) => {
+        if (link.resourceName && link.resourcePermission) {
+            if (!userCapabilities[link.resourceName][link.resourcePermission]) {
+                return null;
+            }
+        }
+        return (
+            <NavItem key={link.key}>
+                <NavLink
+                    href={route(link.route)}
+                    tag={InertiaLink}
+                    onClick={closeCollapse}
+                >
+                    <i
+                        className={`fas ${
+                            link.icon ?? "fa-toolbox text-primary"
+                        }`}
+                    />
+                    {link.title}
+                </NavLink>
+            </NavItem>
+        );
+    };
     // verifies if routeName is the one active (in browser input)
     // const activeRoute = (routeName) => {
     //     return props.location.pathname.indexOf(routeName) > -1 ? "active" : "";
@@ -107,6 +133,8 @@ const Sidebar: React.FC = () => {
                                 <i className="fas fa-home text-primary" />
                                 Main Page
                             </NavLink>
+                        </NavItem>
+                        <NavItem>
                             <NavLink
                                 href={route("wiki.index")}
                                 tag={InertiaLink}
@@ -115,6 +143,8 @@ const Sidebar: React.FC = () => {
                                 <i className="fas fa-info text-green" />
                                 About SciKi
                             </NavLink>
+                        </NavItem>
+                        <NavItem>
                             <NavLink
                                 href={route("wiki.index")}
                                 tag={InertiaLink}
@@ -129,12 +159,14 @@ const Sidebar: React.FC = () => {
                         {/* Tools */}
                         <hr className="my-3" />
                         <h6 className="navbar-heading text-muted">Resources</h6>
+                        <Nav navbar>{resourceLinks.map(renderLink)}</Nav>
                     </>
                     {isUserLoggedIn && (
                         <>
                             {/* Tools */}
                             <hr className="my-3" />
                             <h6 className="navbar-heading text-muted">Tools</h6>
+                            <Nav navbar>{toolLinks.map(renderLink)}</Nav>
                         </>
                     )}
                 </Collapse>

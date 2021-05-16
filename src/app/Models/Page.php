@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use JetBrains\PhpStorm\ArrayShape;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -97,11 +98,6 @@ class Page extends Model implements HasMedia
         ];
     }
 
-    public function simulation(): BelongsTo
-    {
-        return $this->belongsTo(Simulation::class);
-    }
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -115,7 +111,14 @@ class Page extends Model implements HasMedia
         return $this;
     }
 
-    public function formatMedia(Media $media): array
+    #[ArrayShape(['id'     => "int|mixed",
+                  'uuid'   => "mixed|null|string",
+                  'title'  => "mixed",
+                  'legend' => "mixed",
+                  'url'    => "string",
+                  'thumbs' => "array",
+                  'srcset' => "string"
+    ])] public function formatMedia(Media $media): array
     {
         return [
             'id'     => $media->id,
