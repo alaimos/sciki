@@ -1,4 +1,5 @@
 import React from "react";
+import { get, has, set, unset } from "lodash";
 import Header from "../../../Components/Layout/Headers/DefaultHeader";
 import {
     Card,
@@ -21,52 +22,9 @@ import { useForm } from "@inertiajs/inertia-react";
 import TagsManagerCard from "../../../Components/TagsManagerCard";
 import route from "ziggy-js";
 import classNames from "classnames";
-import BootstrapTable, {
-    SizePerPageRendererOptions,
-} from "react-bootstrap-table-next";
-import paginationFactory from "react-bootstrap-table2-paginator";
-import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
-
-import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
-import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css";
-import "react-bootstrap-table2-toolkit/dist/react-bootstrap-table2-toolkit.min.css";
-import "react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css";
-
-import ToolkitProvider, { Search } from "react-bootstrap-table2-toolkit";
-
-const { SearchBar } = Search;
-
-const pagination = paginationFactory({
-    page: 1,
-    alwaysShowAllBtns: true,
-    showTotal: true,
-    withFirstAndLast: false,
-    sizePerPageRenderer: ({
-        onSizePerPageChange,
-    }: SizePerPageRendererOptions) => (
-        <div className="dataTables_length" id="datatable-basic_length">
-            <label>
-                Show{" "}
-                {
-                    <select
-                        name="datatable-basic_length"
-                        aria-controls="datatable-basic"
-                        className="form-control form-control-sm"
-                        onChange={(e) =>
-                            onSizePerPageChange(1, +e.target.value)
-                        }
-                    >
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                    </select>
-                }{" "}
-                entries.
-            </label>
-        </div>
-    ),
-});
+import NodesTable, {
+    NodeType,
+} from "../../../Components/Modules/Simulations/NodesTable";
 
 interface Organism {
     id: number;
@@ -75,28 +33,15 @@ interface Organism {
 
 interface Props extends CommonPageProps {
     organisms: Organism[];
-    nodes: {
-        data: {
-            id: number;
-            accession: string;
-            name: string;
-            aliases: string[];
-        }[];
-    };
-}
-
-enum Type {
-    NON_EXPRESSED = 0,
-    OVER_EXPRESSED = 1,
-    UNDER_EXPRESSED = 2,
 }
 
 interface FormType {
     name: string;
     remote_id?: number;
-    nodes?: Record<number, Type>;
+    nodes?: Record<number, NodeType>;
     organism?: number;
     tags: string[];
+    existing: boolean;
 }
 
 const Create: React.FC<Props> = ({
@@ -104,22 +49,31 @@ const Create: React.FC<Props> = ({
         simulations: { create: canCreateSimulation },
     },
     organisms,
-    nodes,
 }: Props) => {
     if (!canCreateSimulation) return null;
     const { data, setData, errors, post, processing } = useForm<FormType>({
         name: "",
         nodes: {},
         tags: [],
+        existing: false,
     });
-
-    console.log(organisms, nodes);
     const submitForm = async (
         e:
             | React.MouseEvent<HTMLAnchorElement>
             | React.FormEvent<HTMLFormElement>
     ) => {
         e.preventDefault();
+        if (
+            !data.existing &&
+            !Object.values(data.nodes ?? {}).some((v) =>
+                [NodeType.OVER_EXPRESSED, NodeType.UNDER_EXPRESSED].includes(v)
+            )
+        ) {
+            alert(
+                "You must select at least one over- or under-expressed node for the simulation."
+            );
+            return;
+        }
         if (
             data.tags.length === 0 &&
             !confirm(
@@ -189,124 +143,146 @@ const Create: React.FC<Props> = ({
                                         <strong>{errors.name}</strong>
                                     </FormFeedback>
                                 </FormGroup>
-                                <FormGroup
-                                    className={classNames({
-                                        "has-danger": !!errors.organism,
-                                    })}
-                                >
-                                    <Label for="create-simulation-organism-field">
-                                        Organism:
-                                    </Label>
-                                    <Input
-                                        id="create-simulation-organism-field"
-                                        placeholder="Give a name to your simulation"
-                                        type="select"
-                                        value={data.organism}
-                                        onChange={(e) =>
-                                            setData("organism", +e.target.value)
-                                        }
-                                        invalid={!!errors.organism}
+                                <Row>
+                                    <Col xs={1}>
+                                        <label className="custom-toggle">
+                                            <input
+                                                type="checkbox"
+                                                checked={data.existing}
+                                                onChange={() =>
+                                                    setData((previousData) => ({
+                                                        ...previousData,
+                                                        existing:
+                                                            !previousData.existing,
+                                                    }))
+                                                }
+                                            />
+                                            <span className="custom-toggle-slider rounded-circle" />
+                                        </label>
+                                    </Col>
+                                    <Col xs="11">
+                                        Import an existing simulation?
+                                    </Col>
+                                </Row>
+                                {data.existing && (
+                                    <FormGroup
+                                        className={classNames({
+                                            "has-danger": !!errors.remote_id,
+                                        })}
                                     >
-                                        <option value="">
-                                            -- Select an organism --
-                                        </option>
-                                        {organisms.map((o) => (
-                                            <option value={o.id} key={o.id}>
-                                                {o.name}
-                                            </option>
-                                        ))}
-                                    </Input>
-                                    <FormFeedback
-                                        tag="span"
-                                        className="invalid-feedback"
-                                    >
-                                        <strong>{errors.organism}</strong>
-                                    </FormFeedback>
-                                </FormGroup>
-                                <FormGroup
-                                    className={classNames({
-                                        "has-danger": !!errors.nodes,
-                                    })}
-                                >
-                                    <Label for="create-simulation-nodes-table">
-                                        Nodes:
-                                    </Label>
-                                    <div>
-                                        <ToolkitProvider
-                                            keyField="id"
-                                            data={nodes.data}
-                                            columns={[
-                                                {
-                                                    dataField: "accession",
-                                                    text: "Accession",
-                                                    sort: true,
-                                                    filter: textFilter(),
-                                                },
-                                                {
-                                                    dataField: "name",
-                                                    text: "Name",
-                                                    sort: true,
-                                                    filter: textFilter(),
-                                                },
-                                            ]}
-                                            search
+                                        <Label for="create-simulation-name-field">
+                                            Simulation Id:
+                                        </Label>
+                                        <Input
+                                            id="create-simulation-id-field"
+                                            placeholder="Insert here the ID of an existing simulation"
+                                            type="text"
+                                            value={data.remote_id}
+                                            onChange={(e) =>
+                                                setData(
+                                                    "remote_id",
+                                                    +e.target.value
+                                                )
+                                            }
+                                            invalid={!!errors.remote_id}
+                                        />
+                                        <FormFeedback
+                                            tag="span"
+                                            className="invalid-feedback"
                                         >
-                                            {(props) => (
-                                                <div className="py-4">
-                                                    <Container fluid>
-                                                        <Row>
-                                                            <Col
-                                                                xs={12}
-                                                                sm={{
-                                                                    size: 6,
-                                                                    offset: 6,
-                                                                }}
-                                                            >
-                                                                <div
-                                                                    id="datatable-basic_filter"
-                                                                    className="dataTables_filter px-4 pb-1 float-right"
-                                                                >
-                                                                    <label>
-                                                                        Search:
-                                                                        <SearchBar
-                                                                            className="form-control-sm"
-                                                                            placeholder=""
-                                                                            {...props.searchProps}
-                                                                        />
-                                                                    </label>
-                                                                </div>
-                                                            </Col>
-                                                        </Row>
-                                                    </Container>
-                                                    <BootstrapTable
-                                                        {...props.baseProps}
-                                                        remote
-                                                        bootstrap4
-                                                        pagination={pagination}
-                                                        filter={filterFactory()}
-                                                        bordered={false}
-                                                        onTableChange={(
-                                                            type,
-                                                            newState
-                                                        ) => {
-                                                            console.log(
-                                                                type,
-                                                                newState
+                                            <strong>{errors.remote_id}</strong>
+                                        </FormFeedback>
+                                    </FormGroup>
+                                )}
+                                {!data.existing && (
+                                    <>
+                                        <FormGroup
+                                            className={classNames({
+                                                "has-danger": !!errors.organism,
+                                            })}
+                                        >
+                                            <Label for="create-simulation-organism-field">
+                                                Organism:
+                                            </Label>
+                                            <Input
+                                                id="create-simulation-organism-field"
+                                                placeholder="Give a name to your simulation"
+                                                type="select"
+                                                value={data.organism}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        "organism",
+                                                        +e.target.value
+                                                    )
+                                                }
+                                                invalid={!!errors.organism}
+                                            >
+                                                <option value="">
+                                                    -- Select an organism --
+                                                </option>
+                                                {organisms.map((o) => (
+                                                    <option
+                                                        value={o.id}
+                                                        key={o.id}
+                                                    >
+                                                        {o.name}
+                                                    </option>
+                                                ))}
+                                            </Input>
+                                            <FormFeedback
+                                                tag="span"
+                                                className="invalid-feedback"
+                                            >
+                                                <strong>
+                                                    {errors.organism}
+                                                </strong>
+                                            </FormFeedback>
+                                        </FormGroup>
+                                        <FormGroup
+                                            className={classNames({
+                                                "has-danger": !!errors.nodes,
+                                            })}
+                                        >
+                                            <Label for="create-simulation-nodes-table">
+                                                Nodes:
+                                            </Label>
+                                            <NodesTable
+                                                organism={data.organism}
+                                                selectedNodes={data.nodes ?? {}}
+                                                onNodeClick={(node, type) => {
+                                                    setData((previousData) => {
+                                                        let nodes = {
+                                                            ...previousData.nodes,
+                                                        };
+                                                        if (
+                                                            has(nodes, node) &&
+                                                            get(nodes, node) ===
+                                                                type
+                                                        ) {
+                                                            unset(nodes, node);
+                                                        } else {
+                                                            nodes = set(
+                                                                nodes,
+                                                                node,
+                                                                type
                                                             );
-                                                            // 'filter' | 'pagination' | 'sort'
-                                                        }}
-                                                    />
-                                                </div>
-                                            )}
-                                        </ToolkitProvider>
-                                    </div>
-                                    <FormFeedback
-                                        tag="span"
-                                        className="invalid-feedback"
-                                    >
-                                        <strong>{errors.nodes}</strong>
-                                    </FormFeedback>
-                                </FormGroup>
+                                                        }
+                                                        return {
+                                                            ...previousData,
+                                                            nodes,
+                                                        };
+                                                    });
+                                                }}
+                                            />
+                                            <FormFeedback
+                                                tag="span"
+                                                className="invalid-feedback"
+                                            >
+                                                <strong>{errors.nodes}</strong>
+                                            </FormFeedback>
+                                        </FormGroup>
+                                    </>
+                                )}
                             </CardBody>
                         </Card>
                     </Col>

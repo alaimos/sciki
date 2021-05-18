@@ -22485,3 +22485,7 @@ div.fig_left {
 .table-of-contents li > p a {
   font-weight: 600;
 }
+
+.text-alpha {
+  opacity: 0.6;
+}

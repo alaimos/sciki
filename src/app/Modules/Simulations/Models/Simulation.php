@@ -31,9 +31,16 @@ class Simulation extends Model
         self::COMPLETED  => 'Completed',
         self::FAILED     => 'Failed',
     ];
-    public const OVER_EXPRESSED        = 1;
-    public const UNDER_EXPRESSED       = 2;
+    public const OVER_EXPRESSED        = 2;
+    public const UNDER_EXPRESSED       = 1;
     public const NON_EXPRESSED         = 0;
+    public const KNOCKOUT              = -1;
+    public const VALID_NODE_STATES     = [
+        self::OVER_EXPRESSED,
+        self::UNDER_EXPRESSED,
+        self::NON_EXPRESSED,
+        self::KNOCKOUT,
+    ];
 
     protected $fillable = [
         'name',

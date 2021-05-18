@@ -63,6 +63,7 @@ class SimulationModuleProvider extends ModuleProvider
 
     public function editorRoutes(): void
     {
+        Route::post('simulations/create/nodes/{organism}', [SimulationController::class, 'nodesTable'])->name('simulations.nodes.table');
         Route::resource('simulations', SimulationController::class)->except(['index']);
     }
 
