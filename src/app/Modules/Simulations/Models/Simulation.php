@@ -50,6 +50,7 @@ class Simulation extends Model
         'output_file',
         'pathway_output_file',
         'nodes_output_file',
+        'user_id',
     ];
 
     public function organism(): BelongsTo
@@ -84,6 +85,21 @@ class Simulation extends Model
             'name'           => $this->name,
             'formatted_tags' => $this->formatted_tags,
         ];
+    }
+
+    public function outputDirectoryAbsolutePath(): string
+    {
+        $directory = storage_path('app/public/simulations/' . $this->id);
+        if (!file_exists($directory) && !mkdir($directory, 0777, true) && !is_dir($directory)) {
+            throw new \RuntimeException(sprintf('Directory "%s" was not created', $directory));
+        }
+
+        return $directory;
+    }
+
+    public function fileAbsolutePath($name): string
+    {
+        return $this->outputDirectoryAbsolutePath() . '/' . $name;
     }
 
 }

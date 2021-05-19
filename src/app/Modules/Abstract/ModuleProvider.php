@@ -144,4 +144,20 @@ abstract class ModuleProvider
         return [];
     }
 
+    /**
+     * Returns the path of the CLI commands directory. This function returns NULL if no command directory
+     * is present within the module directory.
+     *
+     * @return string|null
+     */
+    #[Pure] public function commandsDirectory(): ?string
+    {
+        $directory = $this->modulePath . '/Commands';
+        if (!file_exists($directory)) {
+            return null;
+        }
+
+        return $directory;
+    }
+
 }

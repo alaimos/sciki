@@ -3,6 +3,7 @@
 namespace App\Modules\Simulations\Requests;
 
 use App\Modules\Simulations\Models\Simulation;
+use App\Modules\Simulations\Rules\IsArrayOfNodes;
 use App\Modules\Simulations\Rules\ValidSimulation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -30,10 +31,10 @@ class SaveSimulationRequest extends FormRequest
             'name'      => ['required', 'string'],
             'existing'  => ['required', 'boolean'],
             'remote_id' => ['required_if:existing,true', 'integer', new ValidSimulation()],
-            'organism'  => ['required_unless:existing,true', 'integer'],
+            'organism'  => ['required_unless:existing,true', 'integer', Rule::exists('organisms', 'id')],
             'tags'      => ['array'],
             'tags.*'    => ['string'],
-            'nodes'     => ['array'],
+            'nodes'     => ['required_unless:existing,true', 'array', new IsArrayOfNodes()],
             'nodes.*'   => [Rule::in(Simulation::VALID_NODE_STATES)],
         ];
     }

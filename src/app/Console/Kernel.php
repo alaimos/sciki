@@ -20,6 +20,7 @@ class Kernel extends ConsoleKernel
      * Define the application's command schedule.
      *
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     *
      * @return void
      */
     protected function schedule(Schedule $schedule)
@@ -32,9 +33,18 @@ class Kernel extends ConsoleKernel
      *
      * @return void
      */
-    protected function commands()
+    protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $commandsDirectories = [
+            __DIR__ . '/Commands',
+        ];
+        foreach (config('sciki.resource_providers') as $provider) {
+            $commandsDirectory = app($provider)->commandsDirectory();
+            if ($commandsDirectory) {
+                $commandsDirectories[] = $commandsDirectory;
+            }
+        }
+        $this->load($commandsDirectories);
 
         require base_path('routes/console.php');
     }

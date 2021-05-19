@@ -22,7 +22,7 @@ class CreateSimulationsTable extends Migration
                 $table->unsignedBigInteger('remote_id')->nullable();
                 $table->tinyInteger('status');
                 $table->string('name');
-                $table->foreignId('organism_id')->constrained()->restrictOnDelete();
+                $table->foreignId('organism_id')->nullable()->constrained()->restrictOnDelete();
                 $table->string('output_file')->nullable();
                 $table->string('pathway_output_file')->nullable();
                 $table->string('nodes_output_file')->nullable();

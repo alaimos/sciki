@@ -276,7 +276,10 @@ const Create: React.FC<Props> = ({
                                             />
                                             <FormFeedback
                                                 tag="span"
-                                                className="invalid-feedback"
+                                                className={classNames({
+                                                    "invalid-feedback": true,
+                                                    "d-block": !!errors.nodes,
+                                                })}
                                             >
                                                 <strong>{errors.nodes}</strong>
                                             </FormFeedback>

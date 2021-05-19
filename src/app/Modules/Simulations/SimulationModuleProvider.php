@@ -7,21 +7,15 @@ use App\Modules\Abstract\ModuleProvider;
 use App\Modules\Abstract\ScikiSidebarLink;
 use App\Modules\Abstract\Services\AccessControlService;
 use App\Modules\Simulations\Controllers\SimulationController;
-use App\Modules\Simulations\Models\Organism;
 use App\Modules\Simulations\Models\Simulation;
 use App\Modules\Simulations\Policies\SimulationPolicy;
+use Illuminate\Support\Facades\Artisan;
 use JetBrains\PhpStorm\ArrayShape;
 use JetBrains\PhpStorm\Pure;
 use Route;
 
 class SimulationModuleProvider extends ModuleProvider
 {
-
-    private const TEST_ORGANISMS = [
-        'hsa' => 'Homo Sapiens',
-    ];
-
-    private const MAX_NODES = 100;
 
     #[ArrayShape([Simulation::class => "string"])] public function policies(): array
     {
@@ -32,23 +26,7 @@ class SimulationModuleProvider extends ModuleProvider
 
     public function seeder(): void
     {
-        foreach (self::TEST_ORGANISMS as $accession => $name) {
-            $organism = Organism::create(
-                [
-                    'accession' => $accession,
-                    'name'      => $name,
-                ]
-            );
-            for ($i = 1; $i <= self::MAX_NODES; $i++) {
-                $organism->nodes()->create(
-                    [
-                        'accession' => 'G' . $i,
-                        'name'      => 'GENE' . $i,
-                        'aliases'   => [],
-                    ]
-                );
-            }
-        }
+        Artisan::call('import:database');
     }
 
     #[Pure] public function accessControlService(): ?AccessControlService
@@ -59,6 +37,9 @@ class SimulationModuleProvider extends ModuleProvider
     public function publicRoutes(): void
     {
         Route::resource('simulations', SimulationController::class)->only('index');
+        Route::post('simulations/{simulation}/callback', [SimulationController::class, 'phensimCallback'])->middleware(
+            'signed:relative'
+        )->name('simulations.callback');
     }
 
     public function editorRoutes(): void
