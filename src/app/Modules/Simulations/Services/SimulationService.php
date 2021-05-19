@@ -3,6 +3,7 @@
 namespace App\Modules\Simulations\Services;
 
 
+use App\Modules\Simulations\Jobs\SubmitSimulationJob;
 use App\Modules\Simulations\Jobs\SyncSimulationJob;
 use App\Modules\Simulations\Models\Node;
 use App\Modules\Simulations\Models\Organism;
@@ -299,7 +300,7 @@ class SimulationService
      *
      * @param  \App\Modules\Simulations\Models\Simulation  $simulation
      */
-    private function submitRemotePhensimSimulation(Simulation $simulation): void
+    public function submitRemotePhensimSimulation(Simulation $simulation): void
     {
         $nodes = [];
         $overExpressedNodes = $this->getNodesAccessionByType($simulation, Simulation::OVER_EXPRESSED);
@@ -338,10 +339,11 @@ class SimulationService
         ];
         $response = $this->getPhensimHttpRequest()->post($this->getPhensimEndpointUrl('simulations'), $simulationData);
         if (!$response->successful()) {
-            throw new \RuntimeException($response->json('message') ?? 'An error occurred');
+            $simulation->status = Simulation::FAILED;
+        } else {
+            $simulation->remote_id = (int)$response->json('data.id');
         }
-//        $simulation->remote_id = (int)$response->json('data.id');
-//        $simulation->save();
+        $simulation->save();
     }
 
     /**
@@ -350,42 +352,34 @@ class SimulationService
      * @param  array  $validatedData
      *
      * @return \App\Modules\Simulations\Models\Simulation
-     * @throws \Throwable
      */
     public function saveAndSubmitSimulation(array $validatedData): Simulation
     {
-        DB::beginTransaction();
-        try {
-            $existing = $validatedData['existing'];
-            $newSimulation = Simulation::create(
-                [
-                    'name'        => $validatedData['name'],
-                    'organism_id' => $validatedData['organism'] ?? null,
-                    'remote_id'   => $existing ? $validatedData['remote_id'] : null,
-                    'status'      => Simulation::READY,
-                    'user_id'     => auth()->id(),
-                ]
+        $existing = $validatedData['existing'];
+        $newSimulation = Simulation::create(
+            [
+                'name'        => $validatedData['name'],
+                'organism_id' => $validatedData['organism'] ?? null,
+                'remote_id'   => $existing ? $validatedData['remote_id'] : null,
+                'status'      => Simulation::READY,
+                'user_id'     => auth()->id(),
+            ]
+        );
+        $newSimulation->syncFormattedTags($validatedData['tags']);
+        $newSimulation->save();
+        if ($existing) {
+            SyncSimulationJob::dispatch($newSimulation, true);
+        } else {
+            $newSimulation->nodes()->sync(
+                array_map(
+                    static fn($value) => [
+                        'type' => $value,
+                    ],
+                    $validatedData['nodes']
+                )
             );
-            $newSimulation->syncFormattedTags($validatedData['tags']);
             $newSimulation->save();
-            if ($existing) {
-                SyncSimulationJob::dispatch($newSimulation, true);
-            } else {
-                $newSimulation->nodes()->sync(
-                    array_map(
-                        static fn($value) => [
-                            'type' => $value,
-                        ],
-                        $validatedData['nodes']
-                    )
-                );
-                $newSimulation->save();
-                $this->submitRemotePhensimSimulation($newSimulation);
-            }
-            DB::commit();
-        } catch (Exception $e) {
-            DB::rollBack();
-            throw $e;
+            SubmitSimulationJob::dispatch($newSimulation);
         }
 
         return $newSimulation;

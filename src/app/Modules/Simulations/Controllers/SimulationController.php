@@ -45,15 +45,12 @@ class SimulationController extends Controller
     {
         $data = $request->validated();
 
-        $redirectResponse = redirect()->route('wiki.index');
-        try {
-            (new SimulationService())->saveAndSubmitSimulation($data);
-            $redirectResponse->with('success', 'The simulation has been created and submitted to PHENSIM');
-        } catch (Throwable $e) {
-            $redirectResponse->with('error', $e->getMessage());
-        }
+        (new SimulationService())->saveAndSubmitSimulation($data);
 
-        return $redirectResponse;
+        return
+            redirect()
+                ->route('wiki.index')
+                ->with('success', 'The simulation has been created and submitted to PHENSIM');
     }
 
     public function phensimCallback(Request $request, Simulation $simulation): JsonResponse
