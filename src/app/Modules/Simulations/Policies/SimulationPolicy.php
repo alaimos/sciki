@@ -3,7 +3,7 @@
 namespace App\Modules\Simulations\Policies;
 
 use App\Models\Role;
-use App\Models\Simulation;
+use App\Modules\Simulations\Models\Simulation;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 

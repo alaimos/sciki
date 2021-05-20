@@ -10,11 +10,9 @@ use App\Modules\Simulations\Models\Organism;
 use App\Modules\Simulations\Models\Simulation;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
 use JetBrains\PhpStorm\ArrayShape;
-use Mockery\Exception;
 
 class SimulationService
 {
@@ -23,6 +21,60 @@ class SimulationService
         'OVEREXPRESSION'  => Simulation::OVER_EXPRESSED,
         'UNDEREXPRESSION' => Simulation::UNDER_EXPRESSED,
     ];
+
+    #[ArrayShape([
+        'data'        => "\App\Modules\Simulations\Models\Simulation[]|array",
+        'sizePerPage' => "int",
+        'page'        => "int",
+        'totalSize'   => "int",
+    ])] public function handleSimulationsTableRequest(
+        Request $request
+    ): array {
+        $simulationsQuery = Simulation::visibleByUser()->with(['organism', 'tags', 'user']);
+        $filters = $request->get("filters");
+        if (!empty($filters) && is_array($filters)) {
+            foreach ($filters as $field => $description) {
+                $filterType = strtolower($description['filterType'] ?? '');
+                $value = $description['filterVal'] ?? '';
+                if (!empty($field) && $value !== '') {
+                    if ($filterType === 'text') {
+                        $simulationsQuery->where($field, 'like', '%' . $value . '%');
+                    } elseif ($filterType === 'select') {
+                        $simulationsQuery->where($field, $value);
+                    }
+                }
+            }
+        }
+        $sortField = $request->get("sortField");
+        if (!empty($sortField)) {
+            $sortOrder = $request->get("sortOrder", "desc");
+            $simulationsQuery->orderBy($sortField, $sortOrder);
+        }
+
+        $paginatedResults = $simulationsQuery->paginate(
+            $request->get('sizePerPage', 10),
+            page: $request->get('page', 1)
+        );
+        $data = $paginatedResults->map(
+            static function (Simulation $simulation) {
+                return $simulation->append(
+                    [
+                        'readable_status',
+                        'can',
+                        'formatted_tags',
+                        'readable_created_at',
+                    ]
+                );
+            }
+        )->all();
+
+        return [
+            'data'        => $data,
+            'sizePerPage' => $paginatedResults->perPage(),
+            'page'        => $paginatedResults->currentPage(),
+            'totalSize'   => $paginatedResults->total(),
+        ];
+    }
 
     #[ArrayShape([
         'data'        => "\App\Modules\Simulations\Models\Node[]|array",

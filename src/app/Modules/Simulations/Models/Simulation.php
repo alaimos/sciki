@@ -2,8 +2,12 @@
 
 namespace App\Modules\Simulations\Models;
 
+use App\Models\Role;
 use App\Models\User;
+use App\Modules\Simulations\Services\AccessControlService;
+use App\Services\Utils;
 use App\Traits\HasFormattedTags;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -13,7 +17,9 @@ use Spatie\Tags\HasTags;
 
 class Simulation extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes {
+        forceDelete as originalForceDelete;
+    }
     use HasFormattedTags;
     use HasTags;
     use Searchable;
@@ -25,11 +31,26 @@ class Simulation extends Model
     public const FAILED                = 4;
     public const VALID_STATES          = [self::READY, self::QUEUED, self::PROCESSING, self::COMPLETED, self::FAILED];
     public const HUMAN_READABLE_STATES = [
-        self::READY      => 'Ready',
-        self::QUEUED     => 'Queued',
-        self::PROCESSING => 'Processing',
-        self::COMPLETED  => 'Completed',
-        self::FAILED     => 'Failed',
+        self::READY      => [
+            'value' => self::READY,
+            'label' => 'Ready',
+        ],
+        self::QUEUED     => [
+            'value' => self::QUEUED,
+            'label' => 'Queued',
+        ],
+        self::PROCESSING => [
+            'value' => self::PROCESSING,
+            'label' => 'Processing',
+        ],
+        self::COMPLETED  => [
+            'value' => self::COMPLETED,
+            'label' => 'Completed',
+        ],
+        self::FAILED     => [
+            'value' => self::FAILED,
+            'label' => 'Failed',
+        ],
     ];
     public const OVER_EXPRESSED        = 2;
     public const UNDER_EXPRESSED       = 1;
@@ -46,12 +67,82 @@ class Simulation extends Model
         'name',
         'remote_id',
         'status',
+        'public',
         'organism_id',
         'output_file',
         'pathway_output_file',
         'nodes_output_file',
         'user_id',
     ];
+
+    protected $casts = [
+        'public' => 'bool',
+    ];
+
+    /**
+     * Shows all simulations that are visible by the current user.
+     * A simulation is visible by the current user if:
+     *  - The user has a "USER" role and the simulation is public
+     *  - The user has a "EDITOR" role and owns the simulation or the simulation is public
+     *  - The user has an "ADMIN" role and owns the simulation or the simulation is public
+     *
+     * An admin can also view all simulations (without any check) by setting the $showAll parameter
+     *
+     * An anonymous user can view only public simulations.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  bool  $showAll
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeVisibleByUser(Builder $query, bool $showAll = false): Builder
+    {
+        $currentUser = auth()->user();
+        $isLoggedIn = auth()->check() && $currentUser !== null;
+        if (!$isLoggedIn || $currentUser->role_id === Role::USER) {
+            return $query->where('public', 1);
+        }
+        if ($currentUser->role_id === Role::ADMIN && $showAll) {
+            return $query;
+        }
+
+        return $query->where(
+            function (Builder $query) use ($currentUser) {
+                return $query->where('public', 1)
+                             ->orWhere('user_id', $currentUser->id);
+            }
+        );
+    }
+
+    /**
+     * Returns the human readable status of this job
+     *
+     * @return string
+     */
+    public function getReadableStatusAttribute(): string
+    {
+        return self::HUMAN_READABLE_STATES[$this->status]['label'] ?? '';
+    }
+
+    /**
+     * Returns the human readable version of the created_at attribute
+     *
+     * @return string
+     */
+    public function getReadableCreatedAtAttribute(): string
+    {
+        return $this->created_at->diffForHumans();
+    }
+
+    /**
+     * Returns an array of capabilities for the current user
+     *
+     * @return array
+     */
+    public function getCanAttribute(): array
+    {
+        return (new AccessControlService())->getCapabilities($this);
+    }
 
     public function organism(): BelongsTo
     {
@@ -100,6 +191,15 @@ class Simulation extends Model
     public function fileAbsolutePath($name): string
     {
         return $this->outputDirectoryAbsolutePath() . '/' . $name;
+    }
+
+    public function forceDelete(): ?bool
+    {
+        if (file_exists($this->outputDirectoryAbsolutePath())) {
+            Utils::delete($this->outputDirectoryAbsolutePath());
+        }
+
+        return $this->originalForceDelete();
     }
 
 }

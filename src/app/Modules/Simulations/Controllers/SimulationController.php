@@ -4,23 +4,35 @@ namespace App\Modules\Simulations\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Simulations\Jobs\SyncSimulationJob;
-use App\Modules\Simulations\Models\Node;
 use App\Modules\Simulations\Models\Organism;
 use App\Modules\Simulations\Models\Simulation;
 use App\Modules\Simulations\Requests\SaveSimulationRequest;
-use App\Modules\Simulations\Resources\NodeResource;
 use App\Modules\Simulations\Services\SimulationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Mockery\Exception;
-use Throwable;
 
 
 class SimulationController extends Controller
 {
+
+    public function index(): Response
+    {
+        return Inertia::render(
+            'Modules/Simulations/Index',
+            [
+                'organisms' => Organism::select(['id', 'name'])->get(),
+                'states'    => Simulation::HUMAN_READABLE_STATES,
+            ]
+        );
+    }
+
+    public function table(Request $request): JsonResponse
+    {
+        return response()->json((new SimulationService())->handleSimulationsTableRequest($request));
+    }
 
     public function create(): Response
     {
@@ -43,6 +55,8 @@ class SimulationController extends Controller
 
     public function store(SaveSimulationRequest $request): RedirectResponse
     {
+        $this->authorize('create', Simulation::class);
+
         $data = $request->validated();
 
         (new SimulationService())->saveAndSubmitSimulation($data);
@@ -61,7 +75,7 @@ class SimulationController extends Controller
         }
         $remoteId = (int)$request->get('id');
         $status = (int)$request->get('status');
-        if (!$remoteId || !array_key_exists($status, Simulation::HUMAN_READABLE_STATES)) {
+        if (!$remoteId || !in_array($status, Simulation::VALID_STATES, true)) {
             abort(422, 'Invalid parameters');
         }
         if ($simulation->remote_id && $remoteId !== $simulation->remote_id) {
@@ -78,6 +92,28 @@ class SimulationController extends Controller
         }
 
         return response()->json(['ok' => true]);
+    }
+
+    public function togglePublic(Simulation $simulation): RedirectResponse
+    {
+        $this->authorize('update', $simulation);
+
+        $simulation->update(
+            [
+                'public' => !$simulation->public,
+            ]
+        );
+
+        return redirect()->route('simulations.index');
+    }
+
+    public function destroy(Simulation $simulation): RedirectResponse
+    {
+        $this->authorize('delete', $simulation);
+
+        $simulation->delete();
+
+        return redirect()->route('simulations.index');
     }
 
 }

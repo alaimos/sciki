@@ -36,15 +36,17 @@ class SimulationModuleProvider extends ModuleProvider
 
     public function publicRoutes(): void
     {
-        Route::resource('simulations', SimulationController::class)->only('index');
         Route::post('simulations/{simulation}/callback', [SimulationController::class, 'phensimCallback'])->middleware(
-            'signed:relative'
+            'signed:relative' //TODO: remove relative in production
         )->name('simulations.callback');
+        Route::post('simulations/table', [SimulationController::class, 'table'])->name('simulations.table');
+        Route::resource('simulations', SimulationController::class)->only('index');
     }
 
     public function editorRoutes(): void
     {
         Route::post('simulations/create/nodes/{organism}', [SimulationController::class, 'nodesTable'])->name('simulations.nodes.table');
+        Route::get('simulations/{simulation}/publish', [SimulationController::class, 'togglePublic'])->name('simulations.publish');
         Route::resource('simulations', SimulationController::class)->except(['index']);
     }
 
