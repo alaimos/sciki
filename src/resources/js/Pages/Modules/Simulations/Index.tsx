@@ -172,6 +172,9 @@ const Index: React.FC<Props> = ({
             isDummyField: true,
             text: "",
             sort: false,
+            headerStyle: {
+                width: "120px",
+            },
             formatter: (_, row) => {
                 return (
                     <>
@@ -243,6 +246,35 @@ const Index: React.FC<Props> = ({
             },
         });
     }
+    columns.push({
+        dataField: "view",
+        isDummyField: true,
+        text: "",
+        sort: false,
+        headerStyle: {
+            width: "60px",
+        },
+        formatter: (_, row) => {
+            if (!row.can.view) return <></>;
+            return (
+                <>
+                    <InertiaLink
+                        id={`show-link-${row.id}`}
+                        href={route("simulations.show", row.id)}
+                        className="btn btn-sm btn-link"
+                    >
+                        <i className="fas fa-eye text-primary" />
+                    </InertiaLink>
+                    <UncontrolledTooltip
+                        placement="auto"
+                        target={`show-link-${row.id}`}
+                    >
+                        Show simulation
+                    </UncontrolledTooltip>
+                </>
+            );
+        },
+    });
 
     const expandRow: ExpandRowProps<any, number> = {
         renderer: (row) => (
@@ -266,6 +298,7 @@ const Index: React.FC<Props> = ({
         ),
         showExpandColumn: true,
         expandColumnPosition: "left",
+        expandByColumnOnly: true,
     };
 
     return (

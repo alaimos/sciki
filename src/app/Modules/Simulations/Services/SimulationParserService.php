@@ -4,11 +4,15 @@
 namespace App\Modules\Simulations\Services;
 
 
+use App\Exceptions\FileSystemException;
 use App\Modules\Simulations\Exceptions\SimulationParserException;
+use App\Modules\Simulations\Models\Simulation;
 use App\Services\Utils;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use JsonException;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Throwable;
 
 class SimulationParserService
 {
@@ -87,12 +91,15 @@ class SimulationParserService
     /**
      * Reader Constructor
      *
-     * @param string $phensimFile
+     * @param string|Simulation $phensimFile
      *
-     * @throws \App\Exceptions\FileSystemException|\JsonException
+     * @throws FileSystemException|JsonException
      */
-    public function __construct(string $phensimFile)
+    public function __construct(string|Simulation $phensimFile)
     {
+        if ($phensimFile instanceof Simulation) {
+            $phensimFile = $phensimFile->fileAbsolutePath($phensimFile->output_file);
+        }
         if (!file_exists($phensimFile)) {
             throw new SimulationParserException('Phensim file does not exist');
         }
@@ -106,13 +113,23 @@ class SimulationParserService
      * Initialize the cache by reading all pathways and nodes inside PHENSIM output file
      * and write them to json files
      *
-     * @throws \JsonException
+     * @throws JsonException
      */
     private function initialize(): void
     {
         if (!file_exists($this->workingDirectory . DIRECTORY_SEPARATOR . 'pathways.json')) {
             $pathways = [];
             $nodesByPathway = [];
+            $pathwaysToNames = [];
+            $nodesToNames = [];
+            $pathwaysVectors = [
+                'activity'     => [],
+                'perturbation' => [],
+            ];
+            $nodesVectors = [
+                'activity'     => [],
+                'perturbation' => [],
+            ];
             $fp = @fopen($this->phensimFile, 'rb');
             if (!$fp) {
                 throw new SimulationParserException('Unable to open phensim output file');
@@ -134,6 +151,9 @@ class SimulationParserService
                                 'pathwayFDR'                 => $fields['pathwayFDR'],
                                 'averagePathwayPerturbation' => $fields['averagePathwayPerturbation'],
                             ];
+                            $pathwaysToNames[$pId] = $fields['pathwayName'];
+                            $pathwaysVectors['activity'][$pId] = $fields['pathwayActivityScore'];
+                            $pathwaysVectors['perturbation'][$pId] = $fields['averagePathwayPerturbation'];
                             $nodesByPathway[$pId] = [];
                         }
                         $nodesByPathway[$pId][] = [
@@ -145,19 +165,45 @@ class SimulationParserService
                             'FDR'                 => $fields['FDR'],
                             'averagePerturbation' => $fields['averagePerturbation'],
                         ];
+                        $nodesToNames[$fields['nodeId']] = $fields['nodeName'];
+                        $nodesVectors['activity'][$fields['nodeId']] = $fields['activityScore'];
+                        $nodesVectors['perturbation'][$fields['nodeId']] = $fields['averagePerturbation'];
                     }
                 }
             }
             @fclose($fp);
-            file_put_contents(
-                $this->workingDirectory . DIRECTORY_SEPARATOR . 'pathways.json',
-                json_encode(['data' => $pathways], JSON_THROW_ON_ERROR)
-            );
+            ksort($pathwaysVectors['activity']);
+            ksort($pathwaysVectors['perturbation']);
+            ksort($nodesVectors['activity']);
+            ksort($nodesVectors['perturbation']);
+            $this->saveDataToCache('pathways.json', $pathways)
+                 ->saveDataToCache('pathways_to_names.json', $pathwaysToNames)
+                 ->saveDataToCache('pathways_activity_vector.json', $pathwaysVectors['activity'])
+                 ->saveDataToCache('pathways_perturbation_vector.json', $pathwaysVectors['perturbation'])
+                 ->saveDataToCache('nodes_to_names.json', $nodesToNames)
+                 ->saveDataToCache('nodes_activity_vector.json', $nodesVectors['activity'])
+                 ->saveDataToCache('nodes_perturbation_vector.json', $nodesVectors['perturbation']);
             foreach ($nodesByPathway as $pId => $data) {
-                $filename = $this->workingDirectory . DIRECTORY_SEPARATOR . 'pathway_' . Str::slug($pId) . '.json';
-                file_put_contents($filename, json_encode(['data' => $data], JSON_THROW_ON_ERROR));
+                $this->saveDataToCache('pathway_' . Str::slug($pId) . '.json', $data);
             }
         }
+    }
+
+    /**
+     * Sava a data array to the cache in json format
+     *
+     * @param string $filename
+     * @param array $data
+     * @return $this
+     * @throws JsonException
+     */
+    private function saveDataToCache(string $filename, array $data): self
+    {
+        file_put_contents(
+            $this->workingDirectory . DIRECTORY_SEPARATOR . $filename,
+            json_encode(['data' => $data], JSON_THROW_ON_ERROR)
+        );
+        return $this;
     }
 
     /**
@@ -204,16 +250,17 @@ class SimulationParserService
     }
 
     /**
-     * Read list of pathways contained in the simulation
+     * Read a file from the cache
      *
-     * @return \Illuminate\Support\Collection
-     * @throws \JsonException
+     * @param string $filename
+     * @return Collection
+     * @throws JsonException
      */
-    public function readPathwaysList(): Collection
+    public function readCachedFile(string $filename): Collection
     {
-        $file = $this->workingDirectory . DIRECTORY_SEPARATOR . 'pathways.json';
+        $file = $this->workingDirectory . DIRECTORY_SEPARATOR . $filename;
         if (!file_exists($file)) {
-            throw new SimulationParserException('Unable to find pathway list');
+            throw new SimulationParserException(sprintf('File "%s" not found', $filename));
         }
         $data = json_decode(
             file_get_contents($file),
@@ -223,6 +270,17 @@ class SimulationParserService
         );
 
         return collect($data['data']);
+    }
+
+    /**
+     * Read list of pathways contained in the simulation
+     *
+     * @return Collection
+     * @throws JsonException
+     */
+    public function readPathwaysList(): Collection
+    {
+        return $this->readCachedFile('pathways.json');
     }
 
     /**
@@ -242,23 +300,30 @@ class SimulationParserService
      *
      * @param string $pathway
      *
-     * @return \Illuminate\Support\Collection
-     * @throws \JsonException
+     * @return Collection
+     * @throws JsonException
      */
     public function readPathway(string $pathway): Collection
     {
-        $file = $this->workingDirectory . DIRECTORY_SEPARATOR . 'pathway_' . Str::slug($pathway) . '.json';
-        if (!file_exists($file)) {
-            throw new SimulationParserException(sprintf('Pathway "%s" not found', $pathway));
-        }
-        $data = json_decode(
-            file_get_contents($file),
-            true,
-            512,
-            JSON_THROW_ON_ERROR
-        );
+        return $this->readCachedFile('pathway_' . Str::slug($pathway) . '.json');
+    }
 
-        return collect($data['data']);
+    /**
+     * @return Collection
+     * @throws JsonException
+     */
+    public function readPathwaysToNames(): Collection
+    {
+        return $this->readCachedFile('pathways_to_names.json');
+    }
+
+    /**
+     * @return Collection
+     * @throws JsonException
+     */
+    public function readNodesToNames(): Collection
+    {
+        return $this->readCachedFile('nodes_to_names.json');
     }
 
     /**
@@ -268,7 +333,7 @@ class SimulationParserService
      * @param string $organism
      *
      * @return string
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function makePathwayImage(string $pathway, string $organism): string
     {

@@ -7,6 +7,7 @@ use App\Modules\Simulations\Jobs\SyncSimulationJob;
 use App\Modules\Simulations\Models\Organism;
 use App\Modules\Simulations\Models\Simulation;
 use App\Modules\Simulations\Requests\SaveSimulationRequest;
+use App\Modules\Simulations\Services\SimulationParserService;
 use App\Modules\Simulations\Services\SimulationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -32,6 +33,27 @@ class SimulationController extends Controller
     public function table(Request $request): JsonResponse
     {
         return response()->json((new SimulationService())->handleSimulationsTableRequest($request));
+    }
+
+    /**
+     * @throws \App\Exceptions\FileSystemException
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \JsonException
+     */
+    public function show(Simulation $simulation): Response
+    {
+        $this->authorize('view', $simulation);
+
+        $simulationService = new SimulationParserService($simulation);
+
+        return Inertia::render(
+            'Modules/Simulations/Show',
+            [
+                'simulation'      => $simulation,
+                'pathwaysToNames' => $simulationService->readPathwaysToNames(),
+                'nodesToNames'    => $simulationService->readNodesToNames(),
+            ]
+        );
     }
 
     public function create(): Response
@@ -63,7 +85,7 @@ class SimulationController extends Controller
 
         return
             redirect()
-                ->route('wiki.index')
+                ->route('simulations.index')
                 ->with('success', 'The simulation has been created and submitted to PHENSIM');
     }
 

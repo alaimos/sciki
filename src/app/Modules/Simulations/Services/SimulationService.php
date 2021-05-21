@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
 use JetBrains\PhpStorm\ArrayShape;
+use RuntimeException;
 
 class SimulationService
 {
@@ -129,7 +130,7 @@ class SimulationService
     /**
      * Returns an Http PendingRequest for the PHENSIM API
      *
-     * @return \Illuminate\Http\Client\PendingRequest
+     * @return PendingRequest
      */
     private function getPhensimHttpRequest(): PendingRequest
     {
@@ -145,7 +146,7 @@ class SimulationService
      * Checks if a remote simulation is completed.
      * Only completed simulations are considered valid.
      *
-     * @param  int  $remoteId
+     * @param int $remoteId
      *
      * @return bool
      */
@@ -166,14 +167,14 @@ class SimulationService
     /**
      * Download a file from a remote phensim simulation
      *
-     * @param  string  $url
-     * @param  string  $destination
+     * @param string $url
+     * @param string $destination
      */
     private function downloadRemotePhensimFile(string $url, string $destination): void
     {
         $response = $this->getPhensimHttpRequest()->get($url);
         if (!$response->successful()) {
-            throw new \RuntimeException('Unable to download "' . $url . '"');
+            throw new RuntimeException('Unable to download "' . $url . '"');
         }
         file_put_contents($destination, $response->body());
     }
@@ -182,8 +183,8 @@ class SimulationService
      * Pulls the output file from a remote phensim simulation
      * TODO: remove this function as soon as PHENSIM API bug is solved
      *
-     * @param  \App\Modules\Simulations\Models\Simulation  $simulation
-     * @param  array  $simulationRemoteLinks
+     * @param Simulation $simulation
+     * @param array $simulationRemoteLinks
      *
      * @return string
      */
@@ -192,7 +193,7 @@ class SimulationService
         // @todo everything after ?? is a fix for a PHENSIM API bug. Remove as soon as new version with bugfix is online.
         $outputLink = $simulationRemoteLinks['output'] ?? sprintf(
                 'https://phensim.tech/api/v1/simulations/%d/download/output',
-                $simulation->id
+                $simulation->remote_id
             );
         $outputFileName = 'output.tsv';
         $this->downloadRemotePhensimFile($outputLink, $simulation->fileAbsolutePath($outputFileName));
@@ -203,9 +204,9 @@ class SimulationService
     /**
      * Pulls a file from a remote phensim simulation
      *
-     * @param  \App\Modules\Simulations\Models\Simulation  $simulation
-     * @param  string  $type
-     * @param  array  $simulationRemoteLinks
+     * @param Simulation $simulation
+     * @param string $type
+     * @param array $simulationRemoteLinks
      *
      * @return string|null
      */
@@ -224,8 +225,8 @@ class SimulationService
     /**
      * Sync all input nodes from a remote phensim simulation with the local database
      *
-     * @param  \App\Modules\Simulations\Models\Simulation  $simulation
-     * @param  array  $simulationRemoteLinks
+     * @param Simulation $simulation
+     * @param array $simulationRemoteLinks
      */
     private function syncInputNodes(Simulation $simulation, array $simulationRemoteLinks): void
     {
@@ -254,8 +255,8 @@ class SimulationService
     /**
      * Sync all non-expressed nodes from a remote phensim simulation with the local database
      *
-     * @param  \App\Modules\Simulations\Models\Simulation  $simulation
-     * @param  array  $simulationRemoteLinks
+     * @param Simulation $simulation
+     * @param array $simulationRemoteLinks
      */
     private function syncNonExpressedNodes(Simulation $simulation, array $simulationRemoteLinks): void
     {
@@ -277,8 +278,8 @@ class SimulationService
     /**
      * Sync all knocked-out nodes from a remote phensim simulation with the local database
      *
-     * @param  \App\Modules\Simulations\Models\Simulation  $simulation
-     * @param  array  $simulationRemoteLinks
+     * @param Simulation $simulation
+     * @param array $simulationRemoteLinks
      */
     private function syncKnockedOutNodes(Simulation $simulation, array $simulationRemoteLinks): void
     {
@@ -300,20 +301,20 @@ class SimulationService
     /**
      * Pulls output files and parameters from a remote phensim simulation
      *
-     * @param  \App\Modules\Simulations\Models\Simulation  $simulation
-     * @param  bool  $syncParameters
+     * @param Simulation $simulation
+     * @param bool $syncParameters
      */
     public function pullRemotePhensimSimulation(Simulation $simulation, bool $syncParameters = false): void
     {
         if (!$this->checkValidRemoteSimulation($simulation->remote_id)) {
-            throw new \RuntimeException('The input simulation does not exist on the remote server');
+            throw new RuntimeException('The input simulation does not exist on the remote server');
         }
         $remoteSimulationResponse = $this->getPhensimHttpRequest()
                                          ->get(
                                              $this->getPhensimEndpointUrl('simulations/' . $simulation->remote_id)
                                          );
         if (!$remoteSimulationResponse->successful()) {
-            throw new \RuntimeException('Unable to get simulation data from the PHENSIM server');
+            throw new RuntimeException('Unable to get simulation data from the PHENSIM server');
         }
         $simulationRemoteLinks = $remoteSimulationResponse->json('data.links');
         $updatedSimulationData = [
@@ -337,8 +338,8 @@ class SimulationService
     /**
      * Get accession numbers of a set of nodes
      *
-     * @param  \App\Modules\Simulations\Models\Simulation  $simulation
-     * @param  int  $type
+     * @param Simulation $simulation
+     * @param int $type
      *
      * @return array
      */
@@ -350,7 +351,7 @@ class SimulationService
     /**
      * Submit a simulation to the phensim remote server
      *
-     * @param  \App\Modules\Simulations\Models\Simulation  $simulation
+     * @param Simulation $simulation
      */
     public function submitRemotePhensimSimulation(Simulation $simulation): void
     {
@@ -401,9 +402,9 @@ class SimulationService
     /**
      * Save a local copy of the simulation and submit the details to the phensim remote server
      *
-     * @param  array  $validatedData
+     * @param array $validatedData
      *
-     * @return \App\Modules\Simulations\Models\Simulation
+     * @return Simulation
      */
     public function saveAndSubmitSimulation(array $validatedData): Simulation
     {

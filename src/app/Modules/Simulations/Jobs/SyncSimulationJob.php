@@ -3,13 +3,14 @@
 namespace App\Modules\Simulations\Jobs;
 
 use App\Modules\Simulations\Models\Simulation;
+use App\Modules\Simulations\Services\SimulationParserService;
 use App\Modules\Simulations\Services\SimulationService;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class SyncSimulationJob implements ShouldQueue
 {
@@ -39,6 +40,13 @@ class SyncSimulationJob implements ShouldQueue
      */
     public function handle(): void
     {
-        (new SimulationService())->pullRemotePhensimSimulation($this->simulation, $this->syncNodes);
+        try {
+            (new SimulationService())->pullRemotePhensimSimulation($this->simulation, $this->syncNodes);
+            (new SimulationParserService($this->simulation));
+        } catch (\Throwable $e) {
+            Log::error($e->getMessage());
+            Log::debug($e->getTraceAsString());
+            $this->simulation->update(['status' => Simulation::FAILED]);
+        }
     }
 }
