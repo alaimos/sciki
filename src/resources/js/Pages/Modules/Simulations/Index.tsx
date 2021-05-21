@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo, useState } from "react";
 import Header from "../../../Components/Layout/Headers/DefaultHeader";
 import {
+    Badge,
     Card,
     CardBody,
     Col,
@@ -14,6 +16,7 @@ import {
 import type { CommonPageProps } from "../../../Types/page";
 import BootstrapTable, {
     ColumnDescription,
+    ExpandRowProps,
     SizePerPageRendererOptions,
 } from "react-bootstrap-table-next";
 import paginationFactory from "react-bootstrap-table2-paginator";
@@ -147,11 +150,6 @@ const Index: React.FC<Props> = ({
             }),
         },
         {
-            dataField: "user.name",
-            text: "Submitted by",
-            sort: false,
-        },
-        {
             dataField: "created_at",
             text: "Created at",
             sort: true,
@@ -246,7 +244,30 @@ const Index: React.FC<Props> = ({
         });
     }
 
-    console.log(canCreateSimulation);
+    const expandRow: ExpandRowProps<any, number> = {
+        renderer: (row) => (
+            <Row>
+                <Col sm="2">Submitted by:</Col>
+                <Col sm="10">
+                    <strong>{row.user.name}</strong>
+                </Col>
+                <Col sm="2">Tags:</Col>
+                <Col sm="10">
+                    {row.formatted_tags.map((tag: string) => (
+                        <Badge
+                            key={tag}
+                            className="badge-default mx-1 text-darker"
+                        >
+                            {tag}
+                        </Badge>
+                    ))}
+                </Col>
+            </Row>
+        ),
+        showExpandColumn: true,
+        expandColumnPosition: "left",
+    };
+
     return (
         <>
             <Header title="Simulations" />
@@ -314,6 +335,7 @@ const Index: React.FC<Props> = ({
                                         });
                                 }}
                                 overlay={overlayFactory({ spinner: true })}
+                                expandRow={expandRow}
                             />
                         </div>
                     </CardBody>

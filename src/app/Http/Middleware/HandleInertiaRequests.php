@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Abstract\ModuleProvider;
 use App\Modules\Abstract\ScikiSidebarLink;
 use App\Services\AccessControlService;
 use Illuminate\Http\Request;
@@ -10,8 +11,6 @@ use Inertia\Middleware;
 class HandleInertiaRequests extends Middleware
 {
 
-    private AccessControlService $accessControlService;
-
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -19,6 +18,7 @@ class HandleInertiaRequests extends Middleware
      * @var string
      */
     protected $rootView = 'layouts.inertia';
+    private AccessControlService $accessControlService;
 
     public function __construct(AccessControlService $accessControlService)
     {
@@ -31,7 +31,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @see https://inertiajs.com/asset-versioning
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      *
      * @return string|null
      */
@@ -45,7 +45,7 @@ class HandleInertiaRequests extends Middleware
      *
      * @see https://inertiajs.com/shared-data
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      *
      * @return array
      */
@@ -74,7 +74,7 @@ class HandleInertiaRequests extends Middleware
         $sidebarGuiResources = [];
         $sidebarGuiTools = [];
         foreach (config('sciki.resource_providers') as $provider) {
-            /** @var \App\Modules\Abstract\ModuleProvider $provider */
+            /** @var ModuleProvider $provider */
             $provider = app($provider);
             $moduleShare = $provider->inertiaShare();
             if ($moduleShare) {

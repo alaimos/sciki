@@ -3,17 +3,13 @@
 namespace App\Http\Controllers\Editor;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Editor\EditMediaPropertiesRequest;
 use App\Http\Requests\Editor\EditPageRequest;
 use App\Http\Requests\Editor\StorePageRequest;
-use App\Http\Requests\Editor\UploadMediaRequest;
 use App\Models\Page;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PageController extends Controller
 {
@@ -23,7 +19,7 @@ class PageController extends Controller
 CONTENT;
 
     /**
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
      */
     public function store(StorePageRequest $request): RedirectResponse
     {
@@ -46,7 +42,7 @@ CONTENT;
 
 
     /**
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
      */
     public function edit(Page $page): Response
     {
@@ -64,7 +60,7 @@ CONTENT;
     }
 
     /**
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
      */
     public function update(EditPageRequest $request, Page $page): RedirectResponse
     {
@@ -86,7 +82,7 @@ CONTENT;
     }
 
     /**
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
      */
     public function publish(Page $page): RedirectResponse
     {
@@ -97,7 +93,7 @@ CONTENT;
     }
 
     /**
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
      */
     public function draft(Page $page): RedirectResponse
     {
@@ -110,10 +106,10 @@ CONTENT;
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Page  $page
+     * @param Page $page
      *
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @return RedirectResponse
+     * @throws AuthorizationException
      */
     public function destroy(Page $page): RedirectResponse
     {

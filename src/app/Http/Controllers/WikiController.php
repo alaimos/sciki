@@ -6,10 +6,10 @@ use App\Models\Page;
 use App\Services\PageService;
 use App\Services\SearchService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response as BaseResponse;
-use Illuminate\Http\Request;
 
 class WikiController extends Controller
 {

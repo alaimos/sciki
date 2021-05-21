@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Role;
-use App\Providers\RouteServiceProvider;
 use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
@@ -44,10 +43,15 @@ class RegisterController extends Controller
         $this->middleware('guest');
     }
 
+    public function showRegistrationForm(): Response
+    {
+        return Inertia::render('Auth/Register');
+    }
+
     /**
      * Get a validator for an incoming registration request.
      *
-     * @param  array  $data
+     * @param array $data
      *
      * @return \Illuminate\Contracts\Validation\Validator
      */
@@ -66,9 +70,9 @@ class RegisterController extends Controller
     /**
      * Create a new user instance after a valid registration.
      *
-     * @param  array  $data
+     * @param array $data
      *
-     * @return \App\Models\User
+     * @return User
      */
     protected function create(array $data): User
     {
@@ -80,10 +84,5 @@ class RegisterController extends Controller
                 'role_id'  => Role::USER,
             ]
         );
-    }
-
-    public function showRegistrationForm(): Response
-    {
-        return Inertia::render('Auth/Register');
     }
 }

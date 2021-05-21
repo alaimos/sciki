@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Editor\EditMediaPropertiesRequest;
 use App\Http\Requests\Editor\UploadMediaRequest;
 use App\Models\Page;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Spatie\MediaLibrary\MediaCollections\Exceptions\FileDoesNotExist;
+use Spatie\MediaLibrary\MediaCollections\Exceptions\FileIsTooBig;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -18,13 +21,13 @@ class MediaController extends Controller
     /**
      * Upload a new media
      *
-     * @param  \App\Http\Requests\Editor\UploadMediaRequest  $request
-     * @param  \App\Models\Page  $page
+     * @param UploadMediaRequest $request
+     * @param Page $page
      *
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \Spatie\MediaLibrary\MediaCollections\Exceptions\FileDoesNotExist
-     * @throws \Spatie\MediaLibrary\MediaCollections\Exceptions\FileIsTooBig
+     * @return JsonResponse
+     * @throws AuthorizationException
+     * @throws FileDoesNotExist
+     * @throws FileIsTooBig
      */
     public function upload(UploadMediaRequest $request, Page $page): JsonResponse
     {
@@ -48,11 +51,11 @@ class MediaController extends Controller
     /**
      * Returns a media as a stream
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $media
+     * @param Request $request
+     * @param string $media
      *
-     * @return \Symfony\Component\HttpFoundation\Response|\Symfony\Component\HttpFoundation\StreamedResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @return SymfonyResponse|StreamedResponse
+     * @throws AuthorizationException
      */
     public function image(
         Request $request,
@@ -68,12 +71,12 @@ class MediaController extends Controller
     /**
      * Update the title and legend of a media
      *
-     * @param  \App\Http\Requests\Editor\EditMediaPropertiesRequest  $request
-     * @param  \App\Models\Page  $page
-     * @param  string  $media
+     * @param EditMediaPropertiesRequest $request
+     * @param Page $page
+     * @param string $media
      *
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @return JsonResponse
+     * @throws AuthorizationException
      */
     public function update(EditMediaPropertiesRequest $request, Page $page, string $media): JsonResponse
     {
