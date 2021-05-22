@@ -22449,6 +22449,13 @@ div.figure div.fig_container img {
   max-height: 256px;
   vertical-align: middle;
 }
+div.figure div.fig_container img.centered {
+  background-color: #fff;
+  border: 1px solid #8898aa;
+  max-width: 100%;
+  max-height: 100%;
+  vertical-align: middle;
+}
 div.figure div.fig_container div.fig_caption {
   border: 0;
   line-height: 1.4em;

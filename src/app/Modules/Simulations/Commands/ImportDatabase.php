@@ -93,7 +93,7 @@ class ImportDatabase extends Command
         $cmd = [
             config('sciki.java_executable'),
             '-jar',
-            config('sciki.phensim_executable'),
+            config('modules.simulations.phensim_executable'),
             'exportgraph',
             '-enrichment-evidence-type',
             'WEAK',

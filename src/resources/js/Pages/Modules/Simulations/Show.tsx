@@ -16,6 +16,7 @@ import type { CommonPageProps } from "../../../Types/page";
 import PathwaysTableEditor from "../../../Components/Modules/Simulations/PathwaysTableEditor";
 import classNames from "classnames";
 import NodesTableEditor from "../../../Components/Modules/Simulations/NodesTableEditor";
+import PathwayImageEditor from "../../../Components/Modules/Simulations/PathwayImageEditor";
 
 interface Props extends CommonPageProps {
     simulation: {
@@ -66,19 +67,24 @@ const Index: React.FC<Props> = ({
                                     Pathways Table
                                 </NavLink>
                             </NavItem>
-                            <NavItem>
-                                <NavLink
-                                    aria-selected={selectedNav === 2}
-                                    className={classNames("mb-sm-3 mb-md-0", {
-                                        active: selectedNav === 2,
-                                    })}
-                                    onClick={changeSelectedNav(2)}
-                                    href="#"
-                                    role="tab"
-                                >
-                                    Nodes Table
-                                </NavLink>
-                            </NavItem>
+                            {currentPathway && (
+                                <NavItem>
+                                    <NavLink
+                                        aria-selected={selectedNav === 2}
+                                        className={classNames(
+                                            "mb-sm-3 mb-md-0",
+                                            {
+                                                active: selectedNav === 2,
+                                            }
+                                        )}
+                                        onClick={changeSelectedNav(2)}
+                                        href="#"
+                                        role="tab"
+                                    >
+                                        Nodes Table
+                                    </NavLink>
+                                </NavItem>
+                            )}
                             <NavItem>
                                 <NavLink
                                     aria-selected={selectedNav === 3}
@@ -95,30 +101,54 @@ const Index: React.FC<Props> = ({
                         </Nav>
                     </Col>
                 </Row>
-                {selectedNav !== 3 && (
+                {selectedNav === 1 && (
                     <Card className="shadow">
                         <CardBody>
-                            {selectedNav === 1 && (
-                                <PathwaysTableEditor
+                            <PathwaysTableEditor
+                                simulation={simulation.id}
+                                canEditPages={canEditPages}
+                                pathwaysToNames={pathwaysToNames}
+                                onView={(pathway) => {
+                                    setCurrentPathway(pathway);
+                                    setSelectedNav(2);
+                                }}
+                            />
+                        </CardBody>
+                    </Card>
+                )}
+                {selectedNav === 2 && (
+                    <>
+                        <Card className="shadow mb-2">
+                            <CardHeader className="bg-transparent">
+                                <h6 className="text-uppercase ls-1 mb-1">
+                                    Pathway Image
+                                </h6>
+                            </CardHeader>
+                            <CardBody>
+                                <PathwayImageEditor
                                     simulation={simulation.id}
+                                    pathway={currentPathway}
                                     canEditPages={canEditPages}
                                     pathwaysToNames={pathwaysToNames}
-                                    onView={(pathway) => {
-                                        setCurrentPathway(pathway);
-                                        setSelectedNav(2);
-                                    }}
                                 />
-                            )}
-                            {selectedNav === 2 && (
+                            </CardBody>
+                        </Card>
+                        <Card className="shadow">
+                            <CardHeader className="bg-transparent">
+                                <h6 className="text-uppercase ls-1 mb-1">
+                                    Details
+                                </h6>
+                            </CardHeader>
+                            <CardBody>
                                 <NodesTableEditor
                                     simulation={simulation.id}
                                     pathway={currentPathway}
                                     canEditPages={canEditPages}
                                     nodesToNames={nodesToNames}
                                 />
-                            )}
-                        </CardBody>
-                    </Card>
+                            </CardBody>
+                        </Card>
+                    </>
                 )}
                 {selectedNav === 3 && (
                     <Card className="shadow">

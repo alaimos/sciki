@@ -124,7 +124,7 @@ class SimulationService
      */
     private function getPhensimEndpointUrl($endpoint): string
     {
-        return config('sciki.phensim_api_url') . '/' . $endpoint;
+        return config('modules.simulations.phensim_api_url') . '/' . $endpoint;
     }
 
     /**
@@ -137,7 +137,7 @@ class SimulationService
         return Http::withHeaders(
             [
                 'Accept'        => 'application/json',
-                'Authorization' => sprintf('Bearer %s', config('sciki.phensim_key')),
+                'Authorization' => sprintf('Bearer %s', config('modules.simulations.phensim_key')),
             ]
         );
     }

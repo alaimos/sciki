@@ -48,9 +48,13 @@ class SimulationModuleProvider extends ModuleProvider
             'simulations/{simulation}/plugins/nodesTable',
             [SimulationPluginsController::class, 'nodesTable']
         )->name('simulations.plugins.nodesTable');
+        Route::post(
+            'simulations/{simulation}/plugins/pathwayImage',
+            [SimulationPluginsController::class, 'pathwayImage']
+        )->name('simulations.plugins.pathwayImage');
 
         Route::post('simulations/table', [SimulationController::class, 'table'])->name('simulations.table');
-        Route::resource('simulations', SimulationController::class)->only('index');
+        Route::resource('simulations', SimulationController::class)->only(['index', 'show']);
     }
 
     public function editorRoutes(): void
@@ -61,7 +65,7 @@ class SimulationModuleProvider extends ModuleProvider
         Route::get('simulations/{simulation}/publish', [SimulationController::class, 'togglePublic'])->name(
             'simulations.publish'
         );
-        Route::resource('simulations', SimulationController::class)->except(['index']);
+        Route::resource('simulations', SimulationController::class)->except(['index', 'show']);
     }
 
     public function exposesGuiResources(): array

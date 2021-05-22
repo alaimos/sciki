@@ -347,7 +347,7 @@ class SimulationParserService
                 Utils::runCommand(
                     [
                         config('sciki.rscript_executable'),
-                        config('phensim.build_graph'),
+                        config('modules.simulations.build_graph'),
                         '-i',
                         $inputFile,
                         '-p',

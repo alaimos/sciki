@@ -160,4 +160,29 @@ abstract class ModuleProvider
         return $directory;
     }
 
+    /**
+     * Returns the path of the config file to load. This function returns NULL if no config file exists
+     *
+     * @return string|null
+     */
+    #[Pure] public function configFile(): ?string
+    {
+        $configFile = $this->modulePath . '/config.php';
+        if (!file_exists($configFile)) {
+            return null;
+        }
+
+        return $configFile;
+    }
+
+    /**
+     * Return the prefix used by the config file
+     *
+     * @return string
+     */
+    #[Pure] public function configPrefix(): string
+    {
+        return 'modules.' . strtolower(basename($this->modulePath));
+    }
+
 }

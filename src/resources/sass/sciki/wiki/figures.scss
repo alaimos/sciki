@@ -21,6 +21,14 @@ div.figure {
             vertical-align: middle;
         }
 
+        img.centered {
+            background-color: $white;
+            border: 1px solid $gray-600;
+            max-width: 100%;
+            max-height: 100%;
+            vertical-align: middle;
+        }
+
         div.fig_caption {
             border: 0;
             line-height: 1.4em;

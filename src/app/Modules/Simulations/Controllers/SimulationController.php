@@ -2,6 +2,7 @@
 
 namespace App\Modules\Simulations\Controllers;
 
+use App\Exceptions\FileSystemException;
 use App\Http\Controllers\Controller;
 use App\Modules\Simulations\Jobs\SyncSimulationJob;
 use App\Modules\Simulations\Models\Organism;
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use JsonException;
 
 
 class SimulationController extends Controller
@@ -36,13 +38,17 @@ class SimulationController extends Controller
     }
 
     /**
-     * @throws \App\Exceptions\FileSystemException
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \JsonException
+     * @throws FileSystemException
+     * @throws JsonException
      */
     public function show(Simulation $simulation): Response
     {
-        $this->authorize('view', $simulation);
+        if (!$simulation->canBeViewed()) {
+            abort(404);
+        }
+        if ($simulation->status !== Simulation::COMPLETED) {
+            abort(404);
+        }
 
         $simulationService = new SimulationParserService($simulation);
 

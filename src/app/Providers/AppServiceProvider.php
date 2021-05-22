@@ -23,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
         foreach (config('sciki.resource_providers') as $provider) {
             if (class_exists($provider)) {
                 $this->app->singleton($provider);
+                $provider = app($provider);
+                $configPath = $provider->configFile();
+                if ($configPath) {
+                    $this->mergeConfigFrom($configPath, $provider->configPrefix());
+                }
             }
         }
     }
