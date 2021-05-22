@@ -92,6 +92,8 @@
         "react-datetime": "^3.0.4",
         "react-dom": "^17.0.2",
         "react-helmet": "^6.1.0",
+        "react-select2-wrapper": "*",
+        "react-tagsinput": "^3.19.0",
         "reactstrap": "^8.9.0",
         "reflect-metadata": "^0.1.13",
         "uniqid": "^5.3.0",

@@ -30,7 +30,7 @@ class SimulationPluginsController extends Controller
         $pathwaysCollection = (new SimulationParserService($simulation))->readPathwaysList();
         $pathways = (array)$request->get('pathways');
         if (!empty($pathways)) {
-            $pathwaysCollection->whereIn('pathwayId', $pathways);
+            $pathwaysCollection = $pathwaysCollection->whereIn('pathwayId', $pathways);
         }
 
         return response()->json($pathwaysCollection);

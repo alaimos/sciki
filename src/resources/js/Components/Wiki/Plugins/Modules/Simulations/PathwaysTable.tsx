@@ -26,10 +26,10 @@ interface Props {
     sortable?: boolean;
     filterable?: boolean;
     defaultSorting?: { dataField: keyof Pathway; order: SortOrder };
-    onView?: () => void;
+    onView?: (pathway: string) => void;
 }
 
-interface Pathway {
+export interface Pathway {
     pathwayId: string;
     pathwayName: string;
     averagePathwayPerturbation: number;
@@ -138,7 +138,18 @@ const PathwaysTable: React.FC<Props> = ({
             headerStyle: {
                 width: "60px",
             },
-            formatter: () => "h",
+            formatter: (_, row) => (
+                <a
+                    className="btn btn-sm btn-link"
+                    href="#"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        onView(row.pathwayId);
+                    }}
+                >
+                    <i className="fas fa-eye fa-fw" />
+                </a>
+            ),
         });
     }
 
@@ -189,7 +200,7 @@ const PathwaysTable: React.FC<Props> = ({
             keyField="pathwayId"
             data={data ?? []}
             columns={columns}
-            search={filterable}
+            search
         >
             {(props: ToolkitContextType) => (
                 <div className="py-4">
@@ -209,7 +220,7 @@ const PathwaysTable: React.FC<Props> = ({
                         {...props.baseProps}
                         bootstrap4
                         pagination={pagination}
-                        filter={filterable ? filterFactory() : undefined}
+                        filter={filterFactory()}
                         bordered={false}
                         defaultSorted={[defaultSorting]}
                     />
