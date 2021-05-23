@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
+import { get } from "lodash";
 import Header from "../../../Components/Layout/Headers/DefaultHeader";
 import {
     Card,
@@ -27,22 +28,55 @@ interface Props extends CommonPageProps {
     nodesToNames: Record<string, string>;
 }
 
+type SelectedNodesType = Record<string, string[]>;
+
 const Index: React.FC<Props> = ({
     simulation,
     capabilities: {
         pages: { update: canEditPages },
     },
     pathwaysToNames,
-    nodesToNames,
 }: Props) => {
     const [selectedNav, setSelectedNav] = useState<number>(1);
     const [currentPathway, setCurrentPathway] = useState<string | undefined>();
+    const [selectedPathways, setSelectedPathways] = useState<string[]>([]);
+    const [selectedNodes, setSelectedNodes] = useState<SelectedNodesType>({});
     const changeSelectedNav =
         (selection: number) => (e: React.MouseEvent<HTMLAnchorElement>) => {
             e.preventDefault();
             setSelectedNav(selection);
         };
-    console.log(simulation, pathwaysToNames, nodesToNames, canEditPages);
+    const onSelectPathway = canEditPages
+        ? (pathway: string) => {
+              setSelectedPathways((prevState) => {
+                  if (prevState.includes(pathway)) {
+                      return prevState.filter((v) => v !== pathway);
+                  } else {
+                      return [...prevState, pathway];
+                  }
+              });
+          }
+        : undefined;
+    const onSelectNode = canEditPages
+        ? (node: string, pathway: string) => {
+              setSelectedNodes((prevState) => {
+                  const prevSelection: string[] = get(prevState, pathway, []);
+                  if (prevSelection.includes(node)) {
+                      return {
+                          ...prevState,
+                          [pathway]: prevSelection.filter((v) => v !== node),
+                      };
+                  } else {
+                      return {
+                          ...prevState,
+                          [pathway]: [...prevSelection, node],
+                      };
+                  }
+              });
+          }
+        : undefined;
+
+    console.log(selectedPathways, selectedNodes);
     return (
         <>
             <Header title={simulation.name} />
@@ -107,11 +141,11 @@ const Index: React.FC<Props> = ({
                             <PathwaysTableEditor
                                 simulation={simulation.id}
                                 canEditPages={canEditPages}
-                                pathwaysToNames={pathwaysToNames}
                                 onView={(pathway) => {
                                     setCurrentPathway(pathway);
                                     setSelectedNav(2);
                                 }}
+                                onSelect={onSelectPathway}
                             />
                         </CardBody>
                     </Card>
@@ -144,7 +178,7 @@ const Index: React.FC<Props> = ({
                                     simulation={simulation.id}
                                     pathway={currentPathway}
                                     canEditPages={canEditPages}
-                                    nodesToNames={nodesToNames}
+                                    onSelect={onSelectNode}
                                 />
                             </CardBody>
                         </Card>

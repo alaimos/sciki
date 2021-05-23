@@ -41,7 +41,7 @@ const PathwayImage: React.FC<Props> = ({
                 .catch((e) => {
                     setState({
                         error: true,
-                        message: e.message,
+                        message: e.response.data.message ?? e.message,
                     });
                 });
         }

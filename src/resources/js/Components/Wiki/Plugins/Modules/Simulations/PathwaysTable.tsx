@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-// import { has, get } from "lodash";
 import BootstrapTable, {
     ColumnDescription,
+    SelectRowProps,
     SizePerPageRendererOptions,
     SortOrder,
 } from "react-bootstrap-table-next";
@@ -12,10 +12,7 @@ import ToolkitProvider, {
     ToolkitContextType,
 } from "react-bootstrap-table2-toolkit";
 import axios from "axios";
-// @ts-ignore
-// import overlayFactory from "react-bootstrap-table2-overlay";
 import route from "ziggy-js";
-// import { Button, UncontrolledTooltip } from "reactstrap";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css";
 import "react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css";
@@ -25,7 +22,9 @@ interface Props {
     pathways?: string[];
     sortable?: boolean;
     filterable?: boolean;
+    enableId?: boolean;
     defaultSorting?: { dataField: keyof Pathway; order: SortOrder };
+    onSelect?: (pathway: string) => void;
     onView?: (pathway: string) => void;
 }
 
@@ -51,10 +50,12 @@ const PathwaysTable: React.FC<Props> = ({
     pathways,
     sortable = true,
     filterable = true,
+    enableId = false,
     defaultSorting = {
         dataField: "pathwayFDR",
         order: "asc",
     },
+    onSelect,
     onView,
 }: Props) => {
     const [state, setState] = useState<State>({
@@ -84,11 +85,6 @@ const PathwaysTable: React.FC<Props> = ({
     }, [simulation, pathways]);
 
     const columns: ColumnDescription[] = [
-        {
-            dataField: "pathwayId",
-            text: "Id",
-            sort: sortable,
-        },
         {
             dataField: "pathwayName",
             text: "Name",
@@ -130,6 +126,13 @@ const PathwaysTable: React.FC<Props> = ({
                     : row.pathwayFDR.toFixed(4),
         },
     ];
+    if (enableId) {
+        columns.unshift({
+            dataField: "pathwayId",
+            text: "Id",
+            sort: sortable,
+        });
+    }
     if (onView) {
         columns.push({
             dataField: "view",
@@ -144,6 +147,7 @@ const PathwaysTable: React.FC<Props> = ({
                     href="#"
                     onClick={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         onView(row.pathwayId);
                     }}
                 >
@@ -152,6 +156,14 @@ const PathwaysTable: React.FC<Props> = ({
             ),
         });
     }
+    const selectRow: SelectRowProps<Pathway> | undefined = onSelect
+        ? {
+              mode: "checkbox",
+              clickToSelect: true,
+              hideSelectAll: true,
+              onSelect: (row) => onSelect(row.pathwayId),
+          }
+        : undefined;
 
     const pagination = useMemo(
         () =>
@@ -223,6 +235,7 @@ const PathwaysTable: React.FC<Props> = ({
                         filter={filterFactory()}
                         bordered={false}
                         defaultSorted={[defaultSorting]}
+                        selectRow={selectRow}
                     />
                 </div>
             )}

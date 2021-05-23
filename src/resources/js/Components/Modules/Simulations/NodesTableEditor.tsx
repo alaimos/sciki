@@ -13,8 +13,6 @@ import {
     UncontrolledTooltip,
 } from "reactstrap";
 import { SortOrder } from "react-bootstrap-table-next";
-// // @ts-ignore
-// import Select2 from "react-select2-wrapper";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import "react-select2-wrapper/css/select2.css";
 import NodesTable, {
@@ -25,8 +23,7 @@ interface Props {
     simulation: number;
     pathway?: string;
     canEditPages: boolean;
-    nodesToNames: Record<string, string>;
-    onView?: (pathway: string) => void;
+    onSelect?: (node: string, pathway: string) => void;
 }
 
 interface State {
@@ -39,14 +36,15 @@ interface State {
     defaultSorting: { dataField: keyof Node; order: SortOrder };
 }
 
-const PathwaysTableEditor: React.FC<Props> = ({
+const NodesTableEditor: React.FC<Props> = ({
     simulation,
     pathway,
     canEditPages,
-    // nodesToNames,
-    onView,
+    onSelect,
 }: Props) => {
     const [pluginCode, setPluginCode] = useState("");
+    const [useNodesSelection, setUseNodesSelection] = useState(false);
+    const [nodesSelection, setNodesSelection] = useState<string[]>([]);
     const [state, setState] = useState<State>({
         plugin: "Modules/Simulations/NodesTable",
         simulation,
@@ -60,17 +58,41 @@ const PathwaysTableEditor: React.FC<Props> = ({
         },
     });
 
+    const internalOnSelect = canEditPages
+        ? (node: string) => {
+              setNodesSelection((prevState) => {
+                  if (prevState.includes(node)) {
+                      return prevState.filter((v) => v !== node);
+                  } else {
+                      return [...prevState, node];
+                  }
+              });
+              if (onSelect && pathway) onSelect(node, pathway);
+          }
+        : undefined;
+
     useEffect(() => {
+        const realState =
+            useNodesSelection && nodesSelection.length > 0
+                ? {
+                      ...state,
+                      nodes: nodesSelection,
+                  }
+                : state;
         setPluginCode(`\`\`\`SciKi
-${JSON.stringify(state, undefined, 2)}
+${JSON.stringify(realState, undefined, 2)}
 \`\`\``);
-    }, [setPluginCode, simulation, state]);
+    }, [setPluginCode, simulation, state, useNodesSelection, nodesSelection]);
 
     return (
         <>
             <Row>
                 <Col xs="12" xl={canEditPages ? 8 : 12}>
-                    <NodesTable {...state} onView={onView} />
+                    <NodesTable
+                        {...state}
+                        onSelect={internalOnSelect}
+                        enableId
+                    />
                 </Col>
                 {canEditPages && (
                     <Col xs="12" xl="4">
@@ -81,30 +103,27 @@ ${JSON.stringify(state, undefined, 2)}
                                 </h6>
                             </CardHeader>
                             <CardBody className="text-white-50">
-                                {/*<FormGroup>*/}
-                                {/*    <Label for="input-pathways">*/}
-                                {/*        Show only*/}
-                                {/*    </Label>*/}
-                                {/*    <Select2*/}
-                                {/*        className="form-control"*/}
-                                {/*        value={state.nodes}*/}
-                                {/*        multiple*/}
-                                {/*        data={Object.entries(nodesToNames).map(*/}
-                                {/*            ([id, text]) => ({*/}
-                                {/*                id,*/}
-                                {/*                text,*/}
-                                {/*            })*/}
-                                {/*        )}*/}
-                                {/*        onChange={(e: any) =>*/}
-                                {/*            setState((prevState) => ({*/}
-                                {/*                ...prevState,*/}
-                                {/*                pathways: [*/}
-                                {/*                    ...e.target.selectedOptions,*/}
-                                {/*                ].map((o) => o.value),*/}
-                                {/*            }))*/}
-                                {/*        }*/}
-                                {/*    />*/}
-                                {/*</FormGroup>*/}
+                                <div className="custom-control custom-checkbox mb-3">
+                                    <input
+                                        className="custom-control-input"
+                                        id="check-nodes"
+                                        checked={useNodesSelection}
+                                        disabled={nodesSelection.length === 0}
+                                        type="checkbox"
+                                        onChange={(e) =>
+                                            setUseNodesSelection(
+                                                e.target.checked
+                                            )
+                                        }
+                                    />
+                                    <label
+                                        className="custom-control-label"
+                                        htmlFor="check-nodes"
+                                    >
+                                        Show only selected nodes? (The editor
+                                        will not reflect this change)
+                                    </label>
+                                </div>
                                 <div className="custom-control custom-checkbox mb-3">
                                     <input
                                         className="custom-control-input"
@@ -282,4 +301,4 @@ ${JSON.stringify(state, undefined, 2)}
     );
 };
 
-export default PathwaysTableEditor;
+export default NodesTableEditor;

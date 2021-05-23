@@ -3,11 +3,13 @@
 namespace App\Modules\Simulations\Services;
 
 
+use App\Models\Tag;
 use App\Modules\Simulations\Jobs\SubmitSimulationJob;
 use App\Modules\Simulations\Jobs\SyncSimulationJob;
 use App\Modules\Simulations\Models\Node;
 use App\Modules\Simulations\Models\Organism;
 use App\Modules\Simulations\Models\Simulation;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -436,5 +438,30 @@ class SimulationService
         }
 
         return $newSimulation;
+    }
+
+    /**
+     * Find simulations by tags. Tags are in the format "category: name".
+     * The function supports two modes: "all" or "any"
+     *
+     * @param array $tags
+     * @param string $mode
+     * @return Simulation[]|Collection
+     */
+    public function findSimulationsByTags(array $tags, string $mode = "all"): array|Collection
+    {
+        $tagsCollection = collect($tags)->map(
+            static function ($tag) {
+                [$type, $name] = preg_split("/:\\s+/", $tag);
+                return Tag::findFromString($name, $type);
+            }
+        )->filter(fn($t) => $t !== null);
+        $query = Simulation::visibleByUser();
+        if ($mode === "all") {
+            $query = $query->withAllTags($tagsCollection);
+        } else {
+            $query = $query->withAnyTags($tagsCollection);
+        }
+        return $query->get();
     }
 }

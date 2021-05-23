@@ -16,22 +16,20 @@ import PathwaysTable, {
     Pathway,
 } from "../../../Components/Wiki/Plugins/Modules/Simulations/PathwaysTable";
 import { SortOrder } from "react-bootstrap-table-next";
-// @ts-ignore
-import Select2 from "react-select2-wrapper";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import "react-select2-wrapper/css/select2.css";
 
 interface Props {
     simulation: number;
     canEditPages: boolean;
-    pathwaysToNames: Record<string, string>;
+    onSelect?: (pathway: string) => void;
     onView?: (pathway: string) => void;
 }
 
 interface State {
     plugin: "Modules/Simulations/PathwaysTable";
     simulation: number;
-    pathways: (keyof Props["pathwaysToNames"])[];
+    pathways: string[];
     sortable: boolean;
     filterable: boolean;
     defaultSorting: { dataField: keyof Pathway; order: SortOrder };
@@ -40,10 +38,12 @@ interface State {
 const PathwaysTableEditor: React.FC<Props> = ({
     simulation,
     canEditPages,
-    pathwaysToNames,
+    onSelect,
     onView,
 }: Props) => {
     const [pluginCode, setPluginCode] = useState("");
+    const [usePathwaysSelection, setUsePathwaysSelection] = useState(false);
+    const [pathwaysSelection, setPathwaysSelection] = useState<string[]>([]);
     const [state, setState] = useState<State>({
         plugin: "Modules/Simulations/PathwaysTable",
         simulation: simulation,
@@ -56,17 +56,48 @@ const PathwaysTableEditor: React.FC<Props> = ({
         },
     });
 
+    const internalOnSelect = canEditPages
+        ? (pathway: string) => {
+              setPathwaysSelection((prevState) => {
+                  if (prevState.includes(pathway)) {
+                      return prevState.filter((v) => v !== pathway);
+                  } else {
+                      return [...prevState, pathway];
+                  }
+              });
+              if (onSelect && pathway) onSelect(pathway);
+          }
+        : undefined;
+
     useEffect(() => {
+        const realState =
+            usePathwaysSelection && pathwaysSelection.length > 0
+                ? {
+                      ...state,
+                      pathways: pathwaysSelection,
+                  }
+                : state;
         setPluginCode(`\`\`\`SciKi
-${JSON.stringify(state, undefined, 2)}
+${JSON.stringify(realState, undefined, 2)}
 \`\`\``);
-    }, [setPluginCode, simulation, state]);
+    }, [
+        setPluginCode,
+        simulation,
+        state,
+        usePathwaysSelection,
+        pathwaysSelection,
+    ]);
 
     return (
         <>
             <Row>
                 <Col xs="12" xl={canEditPages ? 8 : 12}>
-                    <PathwaysTable {...state} onView={onView} />
+                    <PathwaysTable
+                        {...state}
+                        onSelect={internalOnSelect}
+                        onView={onView}
+                        enableId
+                    />
                 </Col>
                 {canEditPages && (
                     <Col xs="12" xl="4">
@@ -77,30 +108,29 @@ ${JSON.stringify(state, undefined, 2)}
                                 </h6>
                             </CardHeader>
                             <CardBody className="text-white-50">
-                                <FormGroup>
-                                    <Label for="input-pathways">
-                                        Show only
-                                    </Label>
-                                    <Select2
-                                        className="form-control"
-                                        value={state.pathways}
-                                        multiple
-                                        data={Object.entries(
-                                            pathwaysToNames
-                                        ).map(([id, text]) => ({
-                                            id,
-                                            text,
-                                        }))}
-                                        onChange={(e: any) =>
-                                            setState((prevState) => ({
-                                                ...prevState,
-                                                pathways: [
-                                                    ...e.target.selectedOptions,
-                                                ].map((o) => o.value),
-                                            }))
+                                <div className="custom-control custom-checkbox mb-3">
+                                    <input
+                                        className="custom-control-input"
+                                        id="check-pathways"
+                                        checked={usePathwaysSelection}
+                                        disabled={
+                                            pathwaysSelection.length === 0
+                                        }
+                                        type="checkbox"
+                                        onChange={(e) =>
+                                            setUsePathwaysSelection(
+                                                e.target.checked
+                                            )
                                         }
                                     />
-                                </FormGroup>
+                                    <label
+                                        className="custom-control-label"
+                                        htmlFor="check-pathways"
+                                    >
+                                        Show only selected pathways? (The editor
+                                        will not reflect this change)
+                                    </label>
+                                </div>
                                 <div className="custom-control custom-checkbox mb-3">
                                     <input
                                         className="custom-control-input"

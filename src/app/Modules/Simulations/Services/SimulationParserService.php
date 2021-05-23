@@ -327,6 +327,207 @@ class SimulationParserService
     }
 
     /**
+     * @throws JsonException
+     */
+    private function topHandler(
+        string $file,
+        int $n,
+        bool $absolute,
+        ?string $limit,
+        ?string $nameFile = null
+    ): Collection {
+        $data = $this->readCachedFile($file)
+                     ->map(fn($value, $key) => ['id' => $key, 'value' => $value])
+                     ->when($limit === "positive", fn(Collection $p) => $p->filter(fn($v) => $v['value'] > 0))
+                     ->when($limit === "negative", fn(Collection $p) => $p->filter(fn($v) => $v['value'] < 0))
+                     ->when(
+                         $absolute,
+                         fn(Collection $p) => $p->map(
+                             static function ($v) {
+                                 $v['orig'] = $v['value'];
+                                 $v['value'] = abs($v['value']);
+                                 return $v;
+                             }
+                         )
+                     )
+                     ->when(
+                         $limit === "negative",
+                         fn($c) => $c->sortBy('value'),
+                         fn($c) => $c->sortByDesc('value')
+                     );
+        $result = $data->take($n);
+        if (!$absolute && $limit === null) {
+            $result = $result->merge($data->take(-$n))->sortByDesc('value');
+        }
+        return $result
+            ->when(
+                $nameFile !== null,
+                function (Collection $p) use ($nameFile) {
+                    $names = $this->readCachedFile($nameFile);
+                    return $p->map(
+                        static function ($v) use ($names) {
+                            $v['name'] = $names[$v['id']] ?? null;
+                            return $v;
+                        }
+                    );
+                }
+            )
+            ->when(
+                $absolute,
+                fn(Collection $p) => $p->map(
+                    static function ($v) {
+                        $v['value'] = $v['orig'];
+                        unset($v['orig']);
+                        return $v;
+                    }
+                )
+            );
+    }
+
+    /**
+     * Take the top $n pathways with a positive perturbation and the top $n pathways with a negative perturbation.
+     * If $absolute is TRUE it takes the top $n pathways by using their absolute value.
+     * If $limit is "positive" ("negative"), it takes the top $n positive (negative) pathways.
+     *
+     * @param int $n
+     * @param bool $absolute
+     * @param string|null $limit
+     * @return Collection
+     * @throws JsonException
+     */
+    public function topPerturbedPathways(int $n = 10, bool $absolute = false, ?string $limit = null): Collection
+    {
+        return $this->topHandler('pathways_perturbation_vector.json', $n, $absolute, $limit, 'pathways_to_names.json');
+    }
+
+    /**
+     * Take the top $n pathways with a positive activity score and the top $n pathways with a negative activity score.
+     * If $absolute is TRUE it takes the top $n pathways by using their absolute value.
+     * If $limit is "positive" ("negative"), it takes the top $n positive (negative) pathways.
+     *
+     * @param int $n
+     * @param bool $absolute
+     * @param string|null $limit
+     * @return Collection
+     * @throws JsonException
+     */
+    public function topActivePathways(int $n = 10, bool $absolute = false, ?string $limit = null): Collection
+    {
+        return $this->topHandler('pathways_activity_vector.json', $n, $absolute, $limit, 'pathways_to_names.json');
+    }
+
+    /**
+     * Take the top $n nodes with a positive perturbation and the top $n nodes with a negative perturbation.
+     * If $absolute is TRUE it takes the top $n nodes by using their absolute value.
+     * If $limit is "positive" ("negative"), it takes the top $n positive (negative) nodes.
+     *
+     * @param int $n
+     * @param bool $absolute
+     * @param string|null $limit
+     * @return Collection
+     * @throws JsonException
+     */
+    public function topPerturbedNodes(int $n = 10, bool $absolute = false, ?string $limit = null): Collection
+    {
+        return $this->topHandler('nodes_perturbation_vector.json', $n, $absolute, $limit, 'nodes_to_names.json');
+    }
+
+    /**
+     * Take the top $n nodes with a positive activity score and the top $n nodes with a negative activity score.
+     * If $absolute is TRUE it takes the top $n nodes by using their absolute value.
+     * If $limit is "positive" ("negative"), it takes the top $n positive (negative) nodes.
+     *
+     * @param int $n
+     * @param bool $absolute
+     * @param string|null $limit
+     * @return Collection
+     * @throws JsonException
+     */
+    public function topActiveNodes(int $n = 10, bool $absolute = false, ?string $limit = null): Collection
+    {
+        return $this->topHandler('nodes_activity_vector.json', $n, $absolute, $limit, 'nodes_to_names.json');
+    }
+
+    /**
+     * @throws JsonException
+     */
+    private function searchHandler(
+        string $file,
+        array $keys,
+        ?string $nameFile = null
+    ): Collection {
+        $data = $this->readCachedFile($file)
+                     ->map(fn($value, $key) => ['id' => $key, 'value' => $value])
+                     ->whereIn('id', $keys)
+                     ->when(
+                         $nameFile !== null,
+                         function (Collection $p) use ($nameFile) {
+                             $names = $this->readCachedFile($nameFile);
+                             return $p->map(
+                                 static function ($v) use ($names) {
+                                     $v['name'] = $names[$v['id']] ?? null;
+                                     return $v;
+                                 }
+                             );
+                         }
+                     );
+        // Sort in the same order as the input keys
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = $data[$key];
+        }
+        return collect($result);
+    }
+
+    /**
+     * Take a set of perturbed pathways from a simulation
+     *
+     * @param string[] $keys
+     * @return Collection
+     * @throws JsonException
+     */
+    public function perturbedPathways(array $keys): Collection
+    {
+        return $this->searchHandler('pathways_perturbation_vector.json', $keys, 'pathways_to_names.json');
+    }
+
+    /**
+     * Take a set of active pathways from a simulation
+     *
+     * @param string[] $keys
+     * @return Collection
+     * @throws JsonException
+     */
+    public function activePathways(array $keys): Collection
+    {
+        return $this->searchHandler('pathways_activity_vector.json', $keys, 'pathways_to_names.json');
+    }
+
+    /**
+     * Take a set of perturbed nodes from a simulation
+     *
+     * @param string[] $keys
+     * @return Collection
+     * @throws JsonException
+     */
+    public function perturbedNodes(array $keys): Collection
+    {
+        return $this->searchHandler('nodes_perturbation_vector.json', $keys, 'nodes_to_names.json');
+    }
+
+    /**
+     * Take a set of active nodes from a simulation
+     *
+     * @param string[] $keys
+     * @return Collection
+     * @throws JsonException
+     */
+    public function activeNodes(array $keys): Collection
+    {
+        return $this->searchHandler('nodes_activity_vector.json', $keys, 'nodes_to_names.json');
+    }
+
+    /**
      * Builds an image to show the pathway graph
      *
      * @param string $pathway

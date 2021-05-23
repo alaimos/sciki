@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import BootstrapTable, {
     ColumnDescription,
+    SelectRowProps,
     SizePerPageRendererOptions,
     SortOrder,
 } from "react-bootstrap-table-next";
@@ -23,8 +24,9 @@ interface Props {
     nodes?: string[];
     sortable?: boolean;
     filterable?: boolean;
+    enableId?: boolean;
     defaultSorting?: { dataField: keyof Node; order: SortOrder };
-    onView?: (node: string) => void;
+    onSelect?: (node: string) => void;
 }
 
 export interface Node {
@@ -50,11 +52,12 @@ const NodesTable: React.FC<Props> = ({
     nodes,
     sortable = true,
     filterable = true,
+    enableId = false,
     defaultSorting = {
         dataField: "FDR",
         order: "asc",
     },
-    onView,
+    onSelect,
 }: Props) => {
     const [state, setState] = useState<State>({
         data: undefined,
@@ -85,11 +88,6 @@ const NodesTable: React.FC<Props> = ({
     }, [simulation, nodes, pathway]);
 
     const columns: ColumnDescription[] = [
-        {
-            dataField: "nodeId",
-            text: "Id",
-            sort: sortable,
-        },
         {
             dataField: "nodeName",
             text: "Name",
@@ -127,17 +125,21 @@ const NodesTable: React.FC<Props> = ({
                 row.FDR < 0.0001 ? "< 0.0001" : row.FDR.toFixed(4),
         },
     ];
-    if (onView) {
-        columns.push({
-            dataField: "view",
-            isDummyField: true,
-            text: "",
-            headerStyle: {
-                width: "60px",
-            },
-            formatter: () => "h",
+    if (enableId) {
+        columns.unshift({
+            dataField: "nodeId",
+            text: "Id",
+            sort: sortable,
         });
     }
+    const selectRow: SelectRowProps<Node> | undefined = onSelect
+        ? {
+              mode: "checkbox",
+              clickToSelect: true,
+              hideSelectAll: true,
+              onSelect: (row) => onSelect(row.nodeId),
+          }
+        : undefined;
 
     const pagination = useMemo(
         () =>
@@ -215,6 +217,7 @@ const NodesTable: React.FC<Props> = ({
                         filter={filterFactory()}
                         bordered={false}
                         defaultSorted={[defaultSorting]}
+                        selectRow={selectRow}
                     />
                 </div>
             )}
