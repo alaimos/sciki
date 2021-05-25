@@ -446,9 +446,10 @@ class SimulationService
      *
      * @param array $tags
      * @param string $mode
+     * @param int[] $exclude
      * @return Simulation[]|Collection
      */
-    public function findSimulationsByTags(array $tags, string $mode = "all"): array|Collection
+    public function findSimulationsByTags(array $tags, string $mode = "all", ?array $exclude = []): array|Collection
     {
         $tagsCollection = collect($tags)->map(
             static function ($tag) {
@@ -461,6 +462,9 @@ class SimulationService
             $query = $query->withAllTags($tagsCollection);
         } else {
             $query = $query->withAnyTags($tagsCollection);
+        }
+        if (!empty($exclude)) {
+            $query = $query->whereNotIn('simulations.id', $exclude);
         }
         return $query->get();
     }

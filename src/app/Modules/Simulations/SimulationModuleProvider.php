@@ -52,6 +52,10 @@ class SimulationModuleProvider extends ModuleProvider
             'simulations/{simulation}/plugins/pathwayImage',
             [SimulationPluginsController::class, 'pathwayImage']
         )->name('simulations.plugins.pathwayImage');
+        Route::post(
+            'simulations/{simulation}/plugins/heatmap',
+            [SimulationPluginsController::class, 'heatmap']
+        )->name('simulations.plugins.heatmap');
 
         Route::post('simulations/table', [SimulationController::class, 'table'])->name('simulations.table');
         Route::resource('simulations', SimulationController::class)->only(['index', 'show']);

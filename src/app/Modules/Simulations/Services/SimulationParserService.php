@@ -334,7 +334,8 @@ class SimulationParserService
         int $n,
         bool $absolute,
         ?string $limit,
-        ?string $nameFile = null
+        ?string $nameFile = null,
+        ?array $appends = null
     ): Collection {
         $data = $this->readCachedFile($file)
                      ->map(fn($value, $key) => ['id' => $key, 'value' => $value])
@@ -381,6 +382,14 @@ class SimulationParserService
                         return $v;
                     }
                 )
+            )
+            ->when(
+                $appends !== null,
+                fn(Collection $p) => $p->map(
+                    static function ($v) use ($appends) {
+                        return array_merge($appends, $v);
+                    }
+                )
             );
     }
 
@@ -395,9 +404,20 @@ class SimulationParserService
      * @return Collection
      * @throws JsonException
      */
-    public function topPerturbedPathways(int $n = 10, bool $absolute = false, ?string $limit = null): Collection
-    {
-        return $this->topHandler('pathways_perturbation_vector.json', $n, $absolute, $limit, 'pathways_to_names.json');
+    public function topPerturbedPathways(
+        int $n = 10,
+        bool $absolute = false,
+        ?string $limit = null,
+        ?array $appends = null
+    ): Collection {
+        return $this->topHandler(
+            'pathways_perturbation_vector.json',
+            $n,
+            $absolute,
+            $limit,
+            'pathways_to_names.json',
+            $appends
+        );
     }
 
     /**
@@ -411,9 +431,20 @@ class SimulationParserService
      * @return Collection
      * @throws JsonException
      */
-    public function topActivePathways(int $n = 10, bool $absolute = false, ?string $limit = null): Collection
-    {
-        return $this->topHandler('pathways_activity_vector.json', $n, $absolute, $limit, 'pathways_to_names.json');
+    public function topActivePathways(
+        int $n = 10,
+        bool $absolute = false,
+        ?string $limit = null,
+        ?array $appends = null
+    ): Collection {
+        return $this->topHandler(
+            'pathways_activity_vector.json',
+            $n,
+            $absolute,
+            $limit,
+            'pathways_to_names.json',
+            $appends
+        );
     }
 
     /**
@@ -427,9 +458,20 @@ class SimulationParserService
      * @return Collection
      * @throws JsonException
      */
-    public function topPerturbedNodes(int $n = 10, bool $absolute = false, ?string $limit = null): Collection
-    {
-        return $this->topHandler('nodes_perturbation_vector.json', $n, $absolute, $limit, 'nodes_to_names.json');
+    public function topPerturbedNodes(
+        int $n = 10,
+        bool $absolute = false,
+        ?string $limit = null,
+        ?array $appends = null
+    ): Collection {
+        return $this->topHandler(
+            'nodes_perturbation_vector.json',
+            $n,
+            $absolute,
+            $limit,
+            'nodes_to_names.json',
+            $appends
+        );
     }
 
     /**
@@ -443,9 +485,13 @@ class SimulationParserService
      * @return Collection
      * @throws JsonException
      */
-    public function topActiveNodes(int $n = 10, bool $absolute = false, ?string $limit = null): Collection
-    {
-        return $this->topHandler('nodes_activity_vector.json', $n, $absolute, $limit, 'nodes_to_names.json');
+    public function topActiveNodes(
+        int $n = 10,
+        bool $absolute = false,
+        ?string $limit = null,
+        ?array $appends = null
+    ): Collection {
+        return $this->topHandler('nodes_activity_vector.json', $n, $absolute, $limit, 'nodes_to_names.json', $appends);
     }
 
     /**
@@ -454,7 +500,8 @@ class SimulationParserService
     private function searchHandler(
         string $file,
         array $keys,
-        ?string $nameFile = null
+        ?string $nameFile = null,
+        ?array $appends = null
     ): Collection {
         $data = $this->readCachedFile($file)
                      ->map(fn($value, $key) => ['id' => $key, 'value' => $value])
@@ -470,6 +517,14 @@ class SimulationParserService
                                  }
                              );
                          }
+                     )
+                     ->when(
+                         $appends !== null,
+                         fn(Collection $p) => $p->map(
+                             static function ($v) use ($appends) {
+                                 return array_merge($appends, $v);
+                             }
+                         )
                      );
         // Sort in the same order as the input keys
         $result = [];
@@ -486,9 +541,9 @@ class SimulationParserService
      * @return Collection
      * @throws JsonException
      */
-    public function perturbedPathways(array $keys): Collection
+    public function perturbedPathways(array $keys, ?array $appends = null): Collection
     {
-        return $this->searchHandler('pathways_perturbation_vector.json', $keys, 'pathways_to_names.json');
+        return $this->searchHandler('pathways_perturbation_vector.json', $keys, 'pathways_to_names.json', $appends);
     }
 
     /**
@@ -498,9 +553,9 @@ class SimulationParserService
      * @return Collection
      * @throws JsonException
      */
-    public function activePathways(array $keys): Collection
+    public function activePathways(array $keys, ?array $appends = null): Collection
     {
-        return $this->searchHandler('pathways_activity_vector.json', $keys, 'pathways_to_names.json');
+        return $this->searchHandler('pathways_activity_vector.json', $keys, 'pathways_to_names.json', $appends);
     }
 
     /**
@@ -510,9 +565,9 @@ class SimulationParserService
      * @return Collection
      * @throws JsonException
      */
-    public function perturbedNodes(array $keys): Collection
+    public function perturbedNodes(array $keys, ?array $appends = null): Collection
     {
-        return $this->searchHandler('nodes_perturbation_vector.json', $keys, 'nodes_to_names.json');
+        return $this->searchHandler('nodes_perturbation_vector.json', $keys, 'nodes_to_names.json', $appends);
     }
 
     /**
@@ -522,9 +577,9 @@ class SimulationParserService
      * @return Collection
      * @throws JsonException
      */
-    public function activeNodes(array $keys): Collection
+    public function activeNodes(array $keys, ?array $appends = null): Collection
     {
-        return $this->searchHandler('nodes_activity_vector.json', $keys, 'nodes_to_names.json');
+        return $this->searchHandler('nodes_activity_vector.json', $keys, 'nodes_to_names.json', $appends);
     }
 
     /**

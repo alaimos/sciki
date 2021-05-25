@@ -5,6 +5,8 @@ namespace App\Modules\Simulations\Controllers;
 use App\Exceptions\FileSystemException;
 use App\Http\Controllers\Controller;
 use App\Modules\Simulations\Models\Simulation;
+use App\Modules\Simulations\Requests\HeatmapRequest;
+use App\Modules\Simulations\Services\HeatmapService;
 use App\Modules\Simulations\Services\SimulationParserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -92,5 +94,22 @@ class SimulationPluginsController extends Controller
                 'data' => $image,
             ]
         );
+    }
+
+    /**
+     * @throws FileSystemException
+     * @throws JsonException
+     */
+    public function heatmap(HeatmapRequest $request, Simulation $simulation): JsonResponse
+    {
+        if (!$simulation->canBeViewed()) {
+            abort(404);
+        }
+
+        if ($simulation->status !== Simulation::COMPLETED) {
+            abort(404);
+        }
+        $data = $request->validated();
+        return response()->json((new HeatmapService($simulation, $data))->makeDataPoints());
     }
 }
