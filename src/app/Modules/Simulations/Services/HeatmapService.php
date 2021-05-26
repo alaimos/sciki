@@ -32,6 +32,7 @@ class HeatmapService
         $this->selection = (array)($data['selection'] ?? []);
         $this->absolute = (bool)($data['absolute'] ?? false);
         $this->limit = $data['limit'] ?? null;
+        $this->limit = $this->limit === "none" ? null : $this->limit;
         $attach = $data['attach'] ?? [];
         $this->attachTags = $attach['tags'] ?? [];
         $this->attachSimulations = $attach['simulations'] ?? [];
@@ -138,6 +139,19 @@ class HeatmapService
         return null;
     }
 
+    private function computeZRange(Collection $simulationData): array
+    {
+        if ($this->limit === "positive" || $this->limit === "negative") {
+            return [];
+        }
+        $max = $simulationData->flatMap->map(fn($p) => abs($p['z']))->max();
+        return [
+            'zmin' => -$max,
+            'zmid' => 0,
+            'zmax' => $max
+        ];
+    }
+
     /**
      * @return array
      * @throws \App\Exceptions\FileSystemException
@@ -158,16 +172,19 @@ class HeatmapService
         $simulationData = $simulationData->map(
             static function ($item) {
                 return [
-                    'x' => $item['id'] . ': ' . $item['name'],
-                    'y' => $item['simulation'],
+                    'x' => $item['simulation'],
+                    'y' => $item['id'] . ': ' . $item['name'],
                     'z' => $item['value'],
                 ];
             }
-        )->groupBy('x');
-        return [
-            'x' => $simulationData->keys(),
-            'y' => $simulationData->first()->pluck('y'),
-            'z' => $simulationData->map->pluck('z')->values(),
-        ];
+        )->groupBy('y');
+        return array_merge(
+            [
+                'x' => $simulationData->first()->pluck('x'),
+                'y' => $simulationData->keys(),
+                'z' => $simulationData->map->pluck('z')->values(),
+            ],
+            $this->computeZRange($simulationData)
+        );
     }
 }

@@ -18,6 +18,7 @@ import PathwaysTableEditor from "../../../Components/Modules/Simulations/Pathway
 import classNames from "classnames";
 import NodesTableEditor from "../../../Components/Modules/Simulations/NodesTableEditor";
 import PathwayImageEditor from "../../../Components/Modules/Simulations/PathwayImageEditor";
+import SimulationHeatmapEditor from "../../../Components/Modules/Simulations/SimulationHeatmapEditor";
 
 interface Props extends CommonPageProps {
     simulation: {
@@ -37,7 +38,7 @@ const Index: React.FC<Props> = ({
     },
     pathwaysToNames,
 }: Props) => {
-    const [selectedNav, setSelectedNav] = useState<number>(1);
+    const [selectedNav, setSelectedNav] = useState<number>(3);
     const [currentPathway, setCurrentPathway] = useState<string | undefined>();
     const [selectedPathways, setSelectedPathways] = useState<string[]>([]);
     const [selectedNodes, setSelectedNodes] = useState<SelectedNodesType>({});
@@ -76,7 +77,6 @@ const Index: React.FC<Props> = ({
           }
         : undefined;
 
-    console.log(selectedPathways, selectedNodes);
     return (
         <>
             <Header title={simulation.name} />
@@ -188,10 +188,17 @@ const Index: React.FC<Props> = ({
                     <Card className="shadow">
                         <CardHeader className="bg-transparent">
                             <h6 className="text-uppercase ls-1 mb-1">
-                                Get the code
+                                Pathway/Nodes heatmap
                             </h6>
                         </CardHeader>
-                        <CardBody>TODO</CardBody>
+                        <CardBody>
+                            <SimulationHeatmapEditor
+                                simulation={simulation.id}
+                                canEditPages={canEditPages}
+                                selectedPathways={selectedPathways}
+                                selectedNodes={selectedNodes}
+                            />
+                        </CardBody>
                     </Card>
                 )}
             </Container>
