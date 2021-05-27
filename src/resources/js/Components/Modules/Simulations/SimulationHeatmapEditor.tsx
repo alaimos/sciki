@@ -23,6 +23,8 @@ interface Props {
     selectedNodes: Record<string, string[]>;
 }
 
+type Limit = "none" | "positive" | "negative";
+
 interface State {
     plugin: "Modules/Simulations/SimulationHeatmap";
     simulation: number;
@@ -31,7 +33,7 @@ interface State {
     sortBy: "perturbation" | "activity";
     n: number;
     absolute: boolean;
-    limit: "none" | "positive" | "negative";
+    limit: Limit;
     attach?: {
         tags: string[];
         mode: "all" | "any";
@@ -91,7 +93,7 @@ ${JSON.stringify(
     return (
         <>
             <Row>
-                <Col xs="12" xl={canEditPages ? 8 : 12}>
+                <Col xs="12" xl="8">
                     <SimulationHeatmap
                         {...state}
                         selection={
@@ -203,153 +205,71 @@ ${JSON.stringify(
                                     </option>
                                 </Input>
                             </FormGroup>
-                            {/*<div className="custom-control custom-checkbox mb-3">*/}
-                            {/*    <input*/}
-                            {/*        className="custom-control-input"*/}
-                            {/*        id="check-pathways"*/}
-                            {/*        checked={usePathwaysSelection}*/}
-                            {/*        disabled={pathwaysSelection.length === 0}*/}
-                            {/*        type="checkbox"*/}
-                            {/*        onChange={(e) =>*/}
-                            {/*            setUsePathwaysSelection(*/}
-                            {/*                e.target.checked*/}
-                            {/*            )*/}
-                            {/*        }*/}
-                            {/*    />*/}
-                            {/*    <label*/}
-                            {/*        className="custom-control-label"*/}
-                            {/*        htmlFor="check-pathways"*/}
-                            {/*    >*/}
-                            {/*        Show only selected pathways? (The editor*/}
-                            {/*        will not reflect this change)*/}
-                            {/*    </label>*/}
-                            {/*</div>*/}
-                            {/*<div className="custom-control custom-checkbox mb-3">*/}
-                            {/*    <input*/}
-                            {/*        className="custom-control-input"*/}
-                            {/*        id="check-filterable"*/}
-                            {/*        checked={state.filterable}*/}
-                            {/*        type="checkbox"*/}
-                            {/*        onChange={(e) =>*/}
-                            {/*            setState((prevState) => ({*/}
-                            {/*                ...prevState,*/}
-                            {/*                filterable: e.target.checked,*/}
-                            {/*            }))*/}
-                            {/*        }*/}
-                            {/*    />*/}
-                            {/*    <label*/}
-                            {/*        className="custom-control-label"*/}
-                            {/*        htmlFor="check-filterable"*/}
-                            {/*    >*/}
-                            {/*        Enable search?*/}
-                            {/*    </label>*/}
-                            {/*</div>*/}
-                            {/*<div className="custom-control custom-checkbox mb-3">*/}
-                            {/*    <input*/}
-                            {/*        className="custom-control-input"*/}
-                            {/*        id="check-sortable"*/}
-                            {/*        checked={state.sortable}*/}
-                            {/*        type="checkbox"*/}
-                            {/*        onChange={(e) =>*/}
-                            {/*            setState((prevState) => ({*/}
-                            {/*                ...prevState,*/}
-                            {/*                sortable: e.target.checked,*/}
-                            {/*            }))*/}
-                            {/*        }*/}
-                            {/*    />*/}
-                            {/*    <label*/}
-                            {/*        className="custom-control-label"*/}
-                            {/*        htmlFor="check-sortable"*/}
-                            {/*    >*/}
-                            {/*        Enable sorting?*/}
-                            {/*    </label>*/}
-                            {/*</div>*/}
-                            {/*{state.sortable && (*/}
-                            {/*    <>*/}
-                            {/*        <FormGroup>*/}
-                            {/*            <Label for="input-sortBy">*/}
-                            {/*                Sorting*/}
-                            {/*            </Label>*/}
-                            {/*            <Row>*/}
-                            {/*                <Col xs={6}>*/}
-                            {/*                    <Input*/}
-                            {/*                        id="input-sortBy"*/}
-                            {/*                        type="select"*/}
-                            {/*                        value={*/}
-                            {/*                            state.defaultSorting*/}
-                            {/*                                .dataField*/}
-                            {/*                        }*/}
-                            {/*                        onChange={(e) =>*/}
-                            {/*                            setState(*/}
-                            {/*                                (prevState) => ({*/}
-                            {/*                                    ...prevState,*/}
-                            {/*                                    defaultSorting:*/}
-                            {/*                                        {*/}
-                            {/*                                            ...prevState.defaultSorting,*/}
-                            {/*                                            dataField:*/}
-                            {/*                                                e*/}
-                            {/*                                                    .target*/}
-                            {/*                                                    .value as keyof Pathway,*/}
-                            {/*                                        },*/}
-                            {/*                                })*/}
-                            {/*                            )*/}
-                            {/*                        }*/}
-                            {/*                    >*/}
-                            {/*                        <option value="pathwayId">*/}
-                            {/*                            Id*/}
-                            {/*                        </option>*/}
-                            {/*                        <option value="pathwayName">*/}
-                            {/*                            Name*/}
-                            {/*                        </option>*/}
-                            {/*                        <option value="pathwayActivityScore">*/}
-                            {/*                            Activity Score*/}
-                            {/*                        </option>*/}
-                            {/*                        <option value="averagePathwayPerturbation">*/}
-                            {/*                            Perturbation*/}
-                            {/*                        </option>*/}
-                            {/*                        <option value="pathwayPValue">*/}
-                            {/*                            p-value*/}
-                            {/*                        </option>*/}
-                            {/*                        <option value="pathwayFDR">*/}
-                            {/*                            FDR*/}
-                            {/*                        </option>*/}
-                            {/*                    </Input>*/}
-                            {/*                </Col>*/}
-                            {/*                <Col xs={6}>*/}
-                            {/*                    <Input*/}
-                            {/*                        id="input-sortDirection"*/}
-                            {/*                        type="select"*/}
-                            {/*                        value={*/}
-                            {/*                            state.defaultSorting*/}
-                            {/*                                .order*/}
-                            {/*                        }*/}
-                            {/*                        onChange={(e) =>*/}
-                            {/*                            setState(*/}
-                            {/*                                (prevState) => ({*/}
-                            {/*                                    ...prevState,*/}
-                            {/*                                    defaultSorting:*/}
-                            {/*                                        {*/}
-                            {/*                                            ...prevState.defaultSorting,*/}
-                            {/*                                            order: e*/}
-                            {/*                                                .target*/}
-                            {/*                                                .value as SortOrder,*/}
-                            {/*                                        },*/}
-                            {/*                                })*/}
-                            {/*                            )*/}
-                            {/*                        }*/}
-                            {/*                    >*/}
-                            {/*                        <option value="asc">*/}
-                            {/*                            ASC*/}
-                            {/*                        </option>*/}
-                            {/*                        <option value="desc">*/}
-                            {/*                            DESC*/}
-                            {/*                        </option>*/}
-                            {/*                    </Input>*/}
-                            {/*                </Col>*/}
-                            {/*            </Row>*/}
-                            {/*        </FormGroup>*/}
-                            {/*    </>*/}
-                            {/*)}*/}
+                            {state.mode === "top" && (
+                                <>
+                                    <FormGroup>
+                                        <Label for="input-number">
+                                            Number of top {state.type}
+                                        </Label>
+                                        <Input
+                                            id="input-number"
+                                            type="number"
+                                            value={state.n}
+                                            onChange={(e) =>
+                                                setState((prevState) => ({
+                                                    ...prevState,
+                                                    n: +e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </FormGroup>
+                                    <div className="custom-control custom-checkbox mb-3">
+                                        <input
+                                            className="custom-control-input"
+                                            id="check-absolute"
+                                            checked={state.absolute}
+                                            type="checkbox"
+                                            onChange={(e) =>
+                                                setState((prevState) => ({
+                                                    ...prevState,
+                                                    absolute: e.target.checked,
+                                                }))
+                                            }
+                                        />
+                                        <label
+                                            className="custom-control-label"
+                                            htmlFor="check-absolute"
+                                        >
+                                            Sort by absolute value?
+                                        </label>
+                                    </div>
+                                    <FormGroup>
+                                        <Label for="input-limit">
+                                            Limit selection
+                                        </Label>
+                                        <Input
+                                            id="input-limit"
+                                            type="select"
+                                            value={state.limit}
+                                            onChange={(e) =>
+                                                setState((prevState) => ({
+                                                    ...prevState,
+                                                    limit: e.target
+                                                        .value as Limit,
+                                                }))
+                                            }
+                                        >
+                                            <option value="none">None</option>
+                                            <option value="positive">
+                                                Positive values
+                                            </option>
+                                            <option value="negative">
+                                                Negative values
+                                            </option>
+                                        </Input>
+                                    </FormGroup>
+                                </>
+                            )}
                         </CardBody>
                     </Card>
                     {canEditPages && (
