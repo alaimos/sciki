@@ -141,7 +141,7 @@ class HeatmapService
 
     private function computeZRange(Collection $simulationData): array
     {
-        if ($this->limit === "positive" || $this->limit === "negative") {
+        if ($this->limit === "positive" || $this->limit === "negative" || $this->mode !== "top") {
             return [];
         }
         $max = $simulationData->flatMap->map(fn($p) => abs($p['z']))->max();

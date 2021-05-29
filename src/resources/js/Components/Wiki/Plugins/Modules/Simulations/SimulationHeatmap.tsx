@@ -88,7 +88,14 @@ const SimulationHeatmap: React.FC<Props> = ({
                                 {
                                     ...data,
                                     type: "heatmap",
-                                    colorscale: "Picnic",
+                                    colorscale: [
+                                        [0, "rgb(5,10,172)"],
+                                        [0.35, "rgb(106,137,247)"],
+                                        [0.5, "rgb(255,255,255)"],
+                                        [0.6, "rgb(220,170,132)"],
+                                        [0.7, "rgb(230,145,90)"],
+                                        [1, "rgb(178,10,28)"],
+                                    ],
                                 },
                             ]}
                             layout={{

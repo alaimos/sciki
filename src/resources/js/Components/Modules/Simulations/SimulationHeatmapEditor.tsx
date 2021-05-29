@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+    Badge,
     Button,
     Card,
     CardBody,
@@ -8,6 +9,9 @@ import {
     Col,
     FormGroup,
     Input,
+    InputGroup,
+    InputGroupAddon,
+    InputGroupText,
     Label,
     Row,
     UncontrolledTooltip,
@@ -15,6 +19,11 @@ import {
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import "react-select2-wrapper/css/select2.css";
 import SimulationHeatmap from "../../Wiki/Plugins/Modules/Simulations/SimulationHeatmap";
+import { AsyncTypeahead } from "react-bootstrap-typeahead";
+import axios from "axios";
+import route from "ziggy-js";
+
+import "react-bootstrap-typeahead/css/Typeahead.css";
 
 interface Props {
     simulation: number;
@@ -34,7 +43,7 @@ interface State {
     n: number;
     absolute: boolean;
     limit: Limit;
-    attach?: {
+    attach: {
         tags: string[];
         mode: "all" | "any";
         simulations: string[];
@@ -49,6 +58,10 @@ const SimulationHeatmapEditor: React.FC<Props> = ({
     selectedPathways,
     selectedNodes,
 }: Props) => {
+    const typeAheadRefTag = useRef<AsyncTypeahead<string>>(null);
+    const [isLoadingTags, setIsLoadingTags] = useState(false);
+    const [tagInputValue, setTagInputValue] = useState<string[]>([]);
+    const [tagInputOptions, setTagInputOptions] = useState<string[]>([]);
     const selectedNodesVector = Object.values(selectedNodes).flatMap((a) => a);
     const [pluginCode, setPluginCode] = useState("");
     const [state, setState] = useState<State>({
@@ -76,6 +89,51 @@ const SimulationHeatmapEditor: React.FC<Props> = ({
               state.type === "pathways" ? "pathway" : "node"
           } to enable)`
         : "";
+
+    const doAddTag = () => {
+        if (tagInputValue && tagInputValue.length > 0) {
+            const newTag = tagInputValue[0];
+            if (newTag) {
+                setState((prevState) => ({
+                    ...prevState,
+                    attach: {
+                        ...prevState.attach,
+                        tags: [
+                            ...prevState.attach.tags.filter(
+                                (t) => t !== newTag
+                            ),
+                            newTag,
+                        ],
+                    },
+                }));
+                // @ts-ignore
+                typeAheadRefTag.current?.clear();
+            }
+        }
+    };
+    const handleSearchTag = async (query: string) => {
+        setIsLoadingTags(true);
+        try {
+            const response = await axios.post(route("tag.typeahead"), {
+                query,
+            });
+            setTagInputOptions(response.data as string[]);
+        } catch (_) {
+            setTagInputOptions([]);
+        }
+        setIsLoadingTags(false);
+    };
+    const handleDeleteTag =
+        (tag: string) => (e: React.MouseEvent<HTMLAnchorElement>) => {
+            e.preventDefault();
+            setState((prevState) => ({
+                ...prevState,
+                attach: {
+                    ...prevState.attach,
+                    tags: [...prevState.attach.tags.filter((t) => t !== tag)],
+                },
+            }));
+        };
 
     useEffect(() => {
         setPluginCode(`\`\`\`SciKi
@@ -272,7 +330,112 @@ ${JSON.stringify(
                             )}
                         </CardBody>
                     </Card>
-                    {canEditPages && (
+                </Col>
+            </Row>
+            <Row>
+                <Col xs="12" xl={canEditPages ? "8" : "12"}>
+                    <Card className="bg-gradient-dark shadow flex-grow-1">
+                        <CardHeader className="bg-transparent">
+                            <h6 className="text-uppercase text-light ls-1 mb-1">
+                                Add columns
+                            </h6>
+                        </CardHeader>
+                        <CardBody>
+                            <div className="d-flex flex-row justify-content-start align-items-center text-sm text-white-50 flex-wrap">
+                                <div>
+                                    Add a column for each simulation having
+                                </div>
+                                <Input
+                                    type="select"
+                                    value={state.attach?.mode ?? "all"}
+                                    className="form-control-sm mx-2"
+                                    style={{ width: "auto" }}
+                                    onChange={(e) =>
+                                        setState((prevState) => ({
+                                            ...prevState,
+                                            attach: {
+                                                ...state.attach,
+                                                mode:
+                                                    e.target.value === "all"
+                                                        ? "all"
+                                                        : "any",
+                                            },
+                                        }))
+                                    }
+                                >
+                                    <option value="all">all</option>
+                                    <option value="any">any</option>
+                                </Input>
+                                <div>tags:</div>
+                            </div>
+                            <Row>
+                                <Col
+                                    style={{ height: "100px" }}
+                                    className="overflow-auto"
+                                >
+                                    {state.attach?.tags?.map((tag) => (
+                                        <Badge
+                                            key={tag}
+                                            className="badge-default mx-1 text-light"
+                                            href="#"
+                                            onClick={handleDeleteTag(tag)}
+                                            title="Click to delete"
+                                        >
+                                            {tag}
+                                        </Badge>
+                                    ))}
+                                </Col>
+                            </Row>
+                            <Row className="mt-2">
+                                <Col>
+                                    <InputGroup>
+                                        <AsyncTypeahead<string>
+                                            filterBy={() => true}
+                                            id="tags-add-tag-input"
+                                            isLoading={isLoadingTags}
+                                            options={tagInputOptions}
+                                            onSearch={handleSearchTag}
+                                            onChange={(selected: string[]) =>
+                                                setTagInputValue(selected)
+                                            }
+                                            onKeyDown={(e) => {
+                                                const re =
+                                                    e as unknown as React.KeyboardEvent<HTMLInputElement>;
+                                                if (
+                                                    re.code === "Enter" ||
+                                                    re.code === "NumpadEnter"
+                                                ) {
+                                                    doAddTag();
+                                                }
+                                            }}
+                                            selected={tagInputValue}
+                                            minLength={3}
+                                            className="text-dark"
+                                            placeholder="Add new tag (category: tag)"
+                                            ref={typeAheadRefTag}
+                                        />
+                                        <InputGroupAddon addonType="append">
+                                            <InputGroupText>
+                                                <a
+                                                    className="text-primary"
+                                                    href="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        doAddTag();
+                                                    }}
+                                                >
+                                                    <i className="fas fa-plus" />
+                                                </a>
+                                            </InputGroupText>
+                                        </InputGroupAddon>
+                                    </InputGroup>
+                                </Col>
+                            </Row>
+                        </CardBody>
+                    </Card>
+                </Col>
+                {canEditPages && (
+                    <Col xs="12" xl="4">
                         <Card className="bg-gradient-dark shadow flex-grow-1">
                             <CardHeader className="bg-transparent">
                                 <div className="d-flex flex-row justify-content-between align-items-center">
@@ -311,8 +474,8 @@ ${JSON.stringify(
                                 </code>
                             </CardBody>
                         </Card>
-                    )}
-                </Col>
+                    </Col>
+                )}
             </Row>
         </>
     );

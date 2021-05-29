@@ -57,6 +57,10 @@ class SimulationModuleProvider extends ModuleProvider
             [SimulationPluginsController::class, 'heatmap']
         )->name('simulations.plugins.heatmap');
 
+        Route::post(
+            'simulations/typeahead',
+            [SimulationPluginsController::class, 'simulationTypeahead']
+        )->name('simulations.plugins.typeahead');
         Route::post('simulations/table', [SimulationController::class, 'table'])->name('simulations.table');
         Route::resource('simulations', SimulationController::class)->only(['index', 'show']);
     }

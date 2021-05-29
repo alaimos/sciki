@@ -38,7 +38,7 @@ const Index: React.FC<Props> = ({
     },
     pathwaysToNames,
 }: Props) => {
-    const [selectedNav, setSelectedNav] = useState<number>(3);
+    const [selectedNav, setSelectedNav] = useState<number>(1);
     const [currentPathway, setCurrentPathway] = useState<string | undefined>();
     const [selectedPathways, setSelectedPathways] = useState<string[]>([]);
     const [selectedNodes, setSelectedNodes] = useState<SelectedNodesType>({});
@@ -129,7 +129,20 @@ const Index: React.FC<Props> = ({
                                     href="#"
                                     role="tab"
                                 >
-                                    Heatmaps &amp; Graphs
+                                    Heatmaps
+                                </NavLink>
+                            </NavItem>
+                            <NavItem>
+                                <NavLink
+                                    aria-selected={selectedNav === 4}
+                                    className={classNames("mb-sm-3 mb-md-0", {
+                                        active: selectedNav === 4,
+                                    })}
+                                    onClick={changeSelectedNav(4)}
+                                    href="#"
+                                    role="tab"
+                                >
+                                    Correlation
                                 </NavLink>
                             </NavItem>
                         </Nav>

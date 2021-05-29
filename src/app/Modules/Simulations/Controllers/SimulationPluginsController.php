@@ -112,4 +112,25 @@ class SimulationPluginsController extends Controller
         $data = $request->validated();
         return response()->json((new HeatmapService($simulation, $data))->makeDataPoints());
     }
+
+    public function simulationTypeahead(Request $request): JsonResponse
+    {
+        $searchQuery = $request->get('query');
+
+        $searchResults = [];
+        if (!empty($searchQuery)) {
+            $searchResults = Simulation::visibleByUser()
+                                       ->where('name', 'like', '%' . $searchQuery . '%')
+                                       ->take(10)
+                                       ->get()
+                                       ->map(
+                                           fn(Simulation $s) => [
+                                               'id'    => $s->id,
+                                               'label' => $s->name,
+                                           ]
+                                       )->toArray();
+        }
+
+        return response()->json($searchResults);
+    }
 }

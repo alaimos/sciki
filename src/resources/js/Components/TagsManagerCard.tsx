@@ -12,10 +12,10 @@ import {
 } from "reactstrap";
 import classNames from "classnames";
 import { AsyncTypeahead } from "react-bootstrap-typeahead";
-
-import "react-bootstrap-typeahead/css/Typeahead.css";
 import axios from "axios";
 import route from "ziggy-js";
+
+import "react-bootstrap-typeahead/css/Typeahead.css";
 
 interface Props {
     tags: string[];
