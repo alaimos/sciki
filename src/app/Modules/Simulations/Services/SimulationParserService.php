@@ -120,6 +120,7 @@ class SimulationParserService
         if (!file_exists($this->workingDirectory . DIRECTORY_SEPARATOR . 'pathways.json')) {
             $pathways = [];
             $nodesByPathway = [];
+            $nodesByPathwaySmall = [];
             $pathwaysToNames = [];
             $nodesToNames = [];
             $pathwaysVectors = [
@@ -155,6 +156,7 @@ class SimulationParserService
                             $pathwaysVectors['activity'][$pId] = $fields['pathwayActivityScore'];
                             $pathwaysVectors['perturbation'][$pId] = $fields['averagePathwayPerturbation'];
                             $nodesByPathway[$pId] = [];
+                            $nodesByPathwaySmall[$pId] = [];
                         }
                         $nodesByPathway[$pId][] = [
                             'nodeId'              => $fields['nodeId'],
@@ -164,6 +166,11 @@ class SimulationParserService
                             'pValue'              => $fields['pValue'],
                             'FDR'                 => $fields['FDR'],
                             'averagePerturbation' => $fields['averagePerturbation'],
+                        ];
+                        $nodesByPathwaySmall[$pId][$fields['nodeId']] = [
+                            'isEndpoint'   => $fields['isEndpoint'],
+                            'activity'     => $fields['activityScore'],
+                            'perturbation' => $fields['averagePerturbation'],
                         ];
                         $nodesToNames[$fields['nodeId']] = $fields['nodeName'];
                         $nodesVectors['activity'][$fields['nodeId']] = $fields['activityScore'];
@@ -176,13 +183,19 @@ class SimulationParserService
             ksort($pathwaysVectors['perturbation']);
             ksort($nodesVectors['activity']);
             ksort($nodesVectors['perturbation']);
+            foreach ($nodesByPathwaySmall as &$nodes) {
+                ksort($nodes);
+            }
+            unset($nodes);
+            ksort($nodesByPathwaySmall);
             $this->saveDataToCache('pathways.json', $pathways)
                  ->saveDataToCache('pathways_to_names.json', $pathwaysToNames)
                  ->saveDataToCache('pathways_activity_vector.json', $pathwaysVectors['activity'])
                  ->saveDataToCache('pathways_perturbation_vector.json', $pathwaysVectors['perturbation'])
                  ->saveDataToCache('nodes_to_names.json', $nodesToNames)
                  ->saveDataToCache('nodes_activity_vector.json', $nodesVectors['activity'])
-                 ->saveDataToCache('nodes_perturbation_vector.json', $nodesVectors['perturbation']);
+                 ->saveDataToCache('nodes_perturbation_vector.json', $nodesVectors['perturbation'])
+                 ->saveDataToCache('nodes_by_pathway.json', $nodesByPathwaySmall);
             foreach ($nodesByPathway as $pId => $data) {
                 $this->saveDataToCache('pathway_' . Str::slug($pId) . '.json', $data);
             }

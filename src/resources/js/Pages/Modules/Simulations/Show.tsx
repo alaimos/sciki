@@ -214,6 +214,16 @@ const Index: React.FC<Props> = ({
                         </CardBody>
                     </Card>
                 )}
+                {selectedNav === 4 && (
+                    <Card className="shadow">
+                        <CardHeader className="bg-transparent">
+                            <h6 className="text-uppercase ls-1 mb-1">
+                                Correlation graph
+                            </h6>
+                        </CardHeader>
+                        <CardBody>TODO</CardBody>
+                    </Card>
+                )}
             </Container>
         </>
     );
