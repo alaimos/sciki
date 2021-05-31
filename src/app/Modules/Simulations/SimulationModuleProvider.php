@@ -62,7 +62,12 @@ class SimulationModuleProvider extends ModuleProvider
             [SimulationPluginsController::class, 'simulationTypeahead']
         )->name('simulations.plugins.typeahead');
         Route::post('simulations/table', [SimulationController::class, 'table'])->name('simulations.table');
-        Route::resource('simulations', SimulationController::class)->only(['index', 'show']);
+        Route::resource('simulations', SimulationController::class)
+             ->where(
+                 [
+                     'simulation' => '[0-9]+'
+                 ]
+             )->only(['index', 'show']);
     }
 
     public function editorRoutes(): void

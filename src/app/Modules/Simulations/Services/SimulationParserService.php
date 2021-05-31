@@ -17,6 +17,17 @@ use Throwable;
 class SimulationParserService
 {
 
+    public const PATHWAYS_FILE = 'pathways.json';
+    public const PATHWAYS_TO_NAMES_FILE = 'pathways_to_names.json';
+    public const PATHWAYS_ACTIVITY_VECTOR_FILE = 'pathways_activity_vector.json';
+    public const PATHWAYS_PERTURBATION_VECTOR_FILE = 'pathways_perturbation_vector.json';
+    public const NODES_TO_NAMES_FILE = 'nodes_to_names.json';
+    public const NODES_ACTIVITY_VECTOR_FILE = 'nodes_activity_vector.json';
+    public const NODES_PERTURBATION_VECTOR_FILE = 'nodes_perturbation_vector.json';
+    public const NODES_BY_PATHWAY_FILE = 'nodes_by_pathway.json';
+    public const PATHWAY_DATA_FILE = 'pathway_%s.json';
+    public const PATHWAY_IMAGE_FILE = 'pathway_%s.png';
+
     public const FIELDS_ALL = [
         'pathwayId',
         'pathwayName',
@@ -36,7 +47,6 @@ class SimulationParserService
         'averagePerturbation',
         'averagePathwayPerturbation',
     ];
-
     public const FIELDS_CAST = [
         'pathwayId'                  => null,
         'pathwayName'                => 'pathway',
@@ -168,6 +178,7 @@ class SimulationParserService
                             'averagePerturbation' => $fields['averagePerturbation'],
                         ];
                         $nodesByPathwaySmall[$pId][$fields['nodeId']] = [
+                            'id'           => $pId . ';' . $fields['nodeId'],
                             'isEndpoint'   => $fields['isEndpoint'],
                             'activity'     => $fields['activityScore'],
                             'perturbation' => $fields['averagePerturbation'],
@@ -188,16 +199,19 @@ class SimulationParserService
             }
             unset($nodes);
             ksort($nodesByPathwaySmall);
-            $this->saveDataToCache('pathways.json', $pathways)
-                 ->saveDataToCache('pathways_to_names.json', $pathwaysToNames)
-                 ->saveDataToCache('pathways_activity_vector.json', $pathwaysVectors['activity'])
-                 ->saveDataToCache('pathways_perturbation_vector.json', $pathwaysVectors['perturbation'])
-                 ->saveDataToCache('nodes_to_names.json', $nodesToNames)
-                 ->saveDataToCache('nodes_activity_vector.json', $nodesVectors['activity'])
-                 ->saveDataToCache('nodes_perturbation_vector.json', $nodesVectors['perturbation'])
-                 ->saveDataToCache('nodes_by_pathway.json', $nodesByPathwaySmall);
+            $this->saveDataToCache(self::PATHWAYS_FILE, $pathways)
+                 ->saveDataToCache(self::PATHWAYS_TO_NAMES_FILE, $pathwaysToNames)
+                 ->saveDataToCache(self::PATHWAYS_ACTIVITY_VECTOR_FILE, $pathwaysVectors['activity'])
+                 ->saveDataToCache(self::PATHWAYS_PERTURBATION_VECTOR_FILE, $pathwaysVectors['perturbation'])
+                 ->saveDataToCache(self::NODES_TO_NAMES_FILE, $nodesToNames)
+                 ->saveDataToCache(self::NODES_ACTIVITY_VECTOR_FILE, $nodesVectors['activity'])
+                 ->saveDataToCache(self::NODES_PERTURBATION_VECTOR_FILE, $nodesVectors['perturbation'])
+                 ->saveDataToCache(self::NODES_BY_PATHWAY_FILE, $nodesByPathwaySmall);
             foreach ($nodesByPathway as $pId => $data) {
-                $this->saveDataToCache('pathway_' . Str::slug($pId) . '.json', $data);
+                $this->saveDataToCache(
+                    sprintf(self::PATHWAY_DATA_FILE, Str::slug($pId)),
+                    $data
+                );
             }
         }
     }
@@ -293,7 +307,7 @@ class SimulationParserService
      */
     public function readPathwaysList(): Collection
     {
-        return $this->readCachedFile('pathways.json');
+        return $this->readCachedFile(self::PATHWAYS_FILE);
     }
 
     /**
@@ -305,7 +319,10 @@ class SimulationParserService
      */
     public function hasPathway(string $pathway): bool
     {
-        return file_exists($this->workingDirectory . DIRECTORY_SEPARATOR . 'pathway_' . Str::slug($pathway) . '.json');
+        return file_exists(
+            $this->workingDirectory . DIRECTORY_SEPARATOR .
+            sprintf(self::PATHWAY_DATA_FILE, Str::slug($pathway))
+        );
     }
 
     /**
@@ -318,7 +335,7 @@ class SimulationParserService
      */
     public function readPathway(string $pathway): Collection
     {
-        return $this->readCachedFile('pathway_' . Str::slug($pathway) . '.json');
+        return $this->readCachedFile(sprintf(self::PATHWAY_DATA_FILE, Str::slug($pathway)));
     }
 
     /**
@@ -327,7 +344,7 @@ class SimulationParserService
      */
     public function readPathwaysToNames(): Collection
     {
-        return $this->readCachedFile('pathways_to_names.json');
+        return $this->readCachedFile(self::PATHWAYS_TO_NAMES_FILE);
     }
 
     /**
@@ -336,7 +353,16 @@ class SimulationParserService
      */
     public function readNodesToNames(): Collection
     {
-        return $this->readCachedFile('nodes_to_names.json');
+        return $this->readCachedFile(self::NODES_TO_NAMES_FILE);
+    }
+
+    /**
+     * @return Collection
+     * @throws JsonException
+     */
+    public function readNodesByPathway(): Collection
+    {
+        return $this->readCachedFile(self::NODES_BY_PATHWAY_FILE);
     }
 
     /**
@@ -424,11 +450,11 @@ class SimulationParserService
         ?array $appends = null
     ): Collection {
         return $this->topHandler(
-            'pathways_perturbation_vector.json',
+            self::PATHWAYS_PERTURBATION_VECTOR_FILE,
             $n,
             $absolute,
             $limit,
-            'pathways_to_names.json',
+            self::PATHWAYS_TO_NAMES_FILE,
             $appends
         );
     }
@@ -451,11 +477,11 @@ class SimulationParserService
         ?array $appends = null
     ): Collection {
         return $this->topHandler(
-            'pathways_activity_vector.json',
+            self::PATHWAYS_ACTIVITY_VECTOR_FILE,
             $n,
             $absolute,
             $limit,
-            'pathways_to_names.json',
+            self::PATHWAYS_TO_NAMES_FILE,
             $appends
         );
     }
@@ -478,11 +504,11 @@ class SimulationParserService
         ?array $appends = null
     ): Collection {
         return $this->topHandler(
-            'nodes_perturbation_vector.json',
+            self::NODES_PERTURBATION_VECTOR_FILE,
             $n,
             $absolute,
             $limit,
-            'nodes_to_names.json',
+            self::NODES_TO_NAMES_FILE,
             $appends
         );
     }
@@ -504,7 +530,14 @@ class SimulationParserService
         ?string $limit = null,
         ?array $appends = null
     ): Collection {
-        return $this->topHandler('nodes_activity_vector.json', $n, $absolute, $limit, 'nodes_to_names.json', $appends);
+        return $this->topHandler(
+            self::NODES_ACTIVITY_VECTOR_FILE,
+            $n,
+            $absolute,
+            $limit,
+            self::NODES_TO_NAMES_FILE,
+            $appends
+        );
     }
 
     /**
@@ -556,7 +589,12 @@ class SimulationParserService
      */
     public function perturbedPathways(array $keys, ?array $appends = null): Collection
     {
-        return $this->searchHandler('pathways_perturbation_vector.json', $keys, 'pathways_to_names.json', $appends);
+        return $this->searchHandler(
+            self::PATHWAYS_PERTURBATION_VECTOR_FILE,
+            $keys,
+            self::PATHWAYS_TO_NAMES_FILE,
+            $appends
+        );
     }
 
     /**
@@ -568,7 +606,7 @@ class SimulationParserService
      */
     public function activePathways(array $keys, ?array $appends = null): Collection
     {
-        return $this->searchHandler('pathways_activity_vector.json', $keys, 'pathways_to_names.json', $appends);
+        return $this->searchHandler(self::PATHWAYS_ACTIVITY_VECTOR_FILE, $keys, self::PATHWAYS_TO_NAMES_FILE, $appends);
     }
 
     /**
@@ -580,7 +618,7 @@ class SimulationParserService
      */
     public function perturbedNodes(array $keys, ?array $appends = null): Collection
     {
-        return $this->searchHandler('nodes_perturbation_vector.json', $keys, 'nodes_to_names.json', $appends);
+        return $this->searchHandler(self::NODES_PERTURBATION_VECTOR_FILE, $keys, self::NODES_TO_NAMES_FILE, $appends);
     }
 
     /**
@@ -592,7 +630,7 @@ class SimulationParserService
      */
     public function activeNodes(array $keys, ?array $appends = null): Collection
     {
-        return $this->searchHandler('nodes_activity_vector.json', $keys, 'nodes_to_names.json', $appends);
+        return $this->searchHandler(self::NODES_ACTIVITY_VECTOR_FILE, $keys, self::NODES_TO_NAMES_FILE, $appends);
     }
 
     /**
@@ -606,9 +644,15 @@ class SimulationParserService
      */
     public function makePathwayImage(string $pathway, string $organism): string
     {
-        $outputFile = $this->workingDirectory . DIRECTORY_SEPARATOR . 'pathway_' . Str::slug($pathway) . '.png';
+        $outputFile = $this->workingDirectory . DIRECTORY_SEPARATOR . sprintf(
+                self::PATHWAY_IMAGE_FILE,
+                Str::slug($pathway)
+            );
         if (!file_exists($outputFile)) {
-            $inputFile = $this->workingDirectory . DIRECTORY_SEPARATOR . 'pathway_' . Str::slug($pathway) . '.json';
+            $inputFile = $this->workingDirectory . DIRECTORY_SEPARATOR . sprintf(
+                    self::PATHWAY_DATA_FILE,
+                    Str::slug($pathway)
+                );
             if (!file_exists($inputFile)) {
                 throw new SimulationParserException(sprintf('Pathway "%s" not found', $pathway));
             }
