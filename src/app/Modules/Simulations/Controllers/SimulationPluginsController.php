@@ -5,12 +5,20 @@ namespace App\Modules\Simulations\Controllers;
 use App\Exceptions\FileSystemException;
 use App\Http\Controllers\Controller;
 use App\Modules\Simulations\Models\Simulation;
+use App\Modules\Simulations\Requests\CorrelationRequest;
 use App\Modules\Simulations\Requests\HeatmapRequest;
+use App\Modules\Simulations\Requests\PartialCorrelationRequest;
+use App\Modules\Simulations\Services\CorrelationService;
 use App\Modules\Simulations\Services\HeatmapService;
+use App\Modules\Simulations\Services\PartialCorrelationService;
 use App\Modules\Simulations\Services\SimulationParserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 use JsonException;
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
+use League\Csv\InvalidArgument;
 use Throwable;
 
 
@@ -111,6 +119,56 @@ class SimulationPluginsController extends Controller
         }
         $data = $request->validated();
         return response()->json((new HeatmapService($simulation, $data))->makeDataPoints());
+    }
+
+    /**
+     * @param CorrelationRequest $request
+     * @param Simulation $simulation
+     * @return JsonResponse
+     * @throws FileSystemException
+     * @throws JsonException
+     * @throws CannotInsertRecord
+     * @throws Exception
+     * @throws InvalidArgument
+     */
+    public function correlation(CorrelationRequest $request, Simulation $simulation): JsonResponse
+    {
+        if (!$simulation->canBeViewed()) {
+            abort(404);
+        }
+
+        if ($simulation->status !== Simulation::COMPLETED) {
+            abort(404);
+        }
+        $data = $request->validated();
+        try {
+            return response()->json((new CorrelationService($simulation, $data))->makeDataPoints());
+        } catch (InvalidArgumentException $e) {
+            abort(422, $e->getMessage());
+        }
+    }
+
+    /**
+     * @param PartialCorrelationRequest $request
+     * @param Simulation $simulation
+     * @return JsonResponse
+     * @throws CannotInsertRecord
+     * @throws Exception
+     * @throws FileSystemException
+     * @throws InvalidArgument
+     * @throws JsonException
+     */
+    public function partialCorrelation(PartialCorrelationRequest $request, Simulation $simulation): JsonResponse
+    {
+        if (!$simulation->canBeViewed()) {
+            abort(404);
+        }
+
+        if ($simulation->status !== Simulation::COMPLETED) {
+            abort(404);
+        }
+        $data = $request->validated();
+        return response()->json((new PartialCorrelationService($simulation, $data))->makeDataPoints());
     }
 
     public function simulationTypeahead(Request $request): JsonResponse

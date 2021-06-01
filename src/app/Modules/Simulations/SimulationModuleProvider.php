@@ -56,6 +56,14 @@ class SimulationModuleProvider extends ModuleProvider
             'simulations/{simulation}/plugins/heatmap',
             [SimulationPluginsController::class, 'heatmap']
         )->name('simulations.plugins.heatmap');
+        Route::post(
+            'simulations/{simulation}/plugins/correlation',
+            [SimulationPluginsController::class, 'correlation']
+        )->name('simulations.plugins.correlation');
+        Route::post(
+            'simulations/{simulation}/plugins/partialCorrelation',
+            [SimulationPluginsController::class, 'partialCorrelation']
+        )->name('simulations.plugins.partialCorrelation');
 
         Route::post(
             'simulations/typeahead',

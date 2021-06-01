@@ -5,9 +5,7 @@ namespace App\Modules\Simulations\Services;
 use App\Exceptions\FileSystemException;
 use App\Modules\Simulations\Models\Simulation;
 use App\Services\Utils;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
-use InvalidArgumentException;
 use JsonException;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
@@ -16,14 +14,15 @@ use League\Csv\Reader;
 use League\Csv\Statement;
 use League\Csv\Writer;
 
-class CorrelationService
+class PartialCorrelationService
 {
 
     private const CSV_DATA_FILE = '/data.tsv';
     private const CORRELATION_OUTPUT_FILE = '/correlation.tsv';
     private const JSON_OUTPUT_FILE = '/correlation.json';
 
-    private Simulation $simulation;
+    private Simulation $firstSimulation;
+    private Simulation $secondSimulation;
     private string $id;
     private string $function;
     private bool $top;
@@ -31,21 +30,18 @@ class CorrelationService
     private string $direction;
     private bool $useEndpoints;
     private bool $usePerturbation;
-    private array $findByTags;
-    private string $searchMode;
     private string $directory;
 
     public function __construct(Simulation $simulation, array $data)
     {
-        $this->simulation = $simulation;
+        $this->firstSimulation = $simulation;
+        $this->secondSimulation = Simulation::findOrFail($data['compareWith']);
         $this->function = $data['function'] ?? 'pearson';
         $this->top = (bool)($data['top'] ?? false);
         $this->n = (int)($data['n'] ?? 10);
-        $this->direction = $data['direction'] ?? 'negative';
+        $this->direction = $data['direction'] ?? 'both';
         $this->useEndpoints = (bool)($data['useEndpoints'] ?? true);
         $this->usePerturbation = (bool)($data['usePerturbation'] ?? false);
-        $this->findByTags = $data['findByTags'] ?? [];
-        $this->searchMode = $data['mode'] ?? 'all';
         $this->computeId();
     }
 
@@ -58,12 +54,11 @@ class CorrelationService
         $this->id = md5(
             json_encode(
                 [
-                    $this->simulation->id,
+                    $this->firstSimulation->id,
+                    $this->secondSimulation->id,
                     $this->function,
                     $this->useEndpoints,
                     $this->usePerturbation,
-                    collect($this->findByTags)->map(fn($t) => strtolower($t))->sort()->toArray(),
-                    $this->searchMode
                 ]
             )
         );
@@ -75,8 +70,21 @@ class CorrelationService
      */
     private function makeDirectory(): void
     {
-        $this->directory = $this->simulation->fileAbsolutePath('correlations/' . $this->id);
+        $this->directory = $this->firstSimulation->fileAbsolutePath('partial_correlations/' . $this->id);
         Utils::createDirectory($this->directory);
+    }
+
+    /**
+     * @return Simulation[]|Collection
+     */
+    private function makeSimulationCollection(): Collection
+    {
+        return collect(
+            [
+                $this->firstSimulation,
+                $this->secondSimulation
+            ]
+        );
     }
 
     /**
@@ -97,27 +105,6 @@ class CorrelationService
     }
 
     /**
-     * Get all simulations from their tags
-     *
-     * @throws InvalidArgumentException
-     */
-    private function getSimulationsFromTags(): EloquentCollection
-    {
-        if (!empty($this->findByTags)) {
-            $simulationService = new SimulationService();
-            $foundSimulations = $simulationService->findSimulationsByTags(
-                $this->findByTags,
-                $this->searchMode,
-                [$this->simulation->id]
-            );
-            if ($foundSimulations->count() > 1) {
-                return $foundSimulations;
-            }
-        }
-        throw new InvalidArgumentException('Two or more simulations are needed to compute the correlation heatmap.');
-    }
-
-    /**
      * Get all common array keys from a set of simulations
      *
      * @param Collection[] $simulationData
@@ -135,19 +122,16 @@ class CorrelationService
     /**
      * Prepare the CSV file where simulation data will be stored
      *
-     * @param EloquentCollection $simulations
+     * @param Simulation[]|Collection simulations
      * @return string
-     * @throws FileSystemException
-     * @throws JsonException
      * @throws CannotInsertRecord
      * @throws InvalidArgument
      */
-    private function prepareCSVFile(EloquentCollection $simulations): string
+    private function prepareCSVFile(Collection $simulations): string
     {
         $outputFile = $this->directory . self::CSV_DATA_FILE;
         $data = $simulations->keyBy('id')
-                            ->map(fn($s) => $this->prepareSimulationData($s))
-                            ->prepend($this->prepareSimulationData($this->simulation), $this->simulation->id);
+                            ->map(fn($s) => $this->prepareSimulationData($s));
         $commonKeys = $this->getCommonKeys($data);
         $data = $data->map(fn($d) => $d->filter(fn($v, $k) => isset($commonKeys[$k])));
         $keys = $data->first()->keys()->toArray();
@@ -171,7 +155,7 @@ class CorrelationService
         Utils::runCommand(
             [
                 config('sciki.rscript_executable'),
-                config('modules.simulations.compute_correlation'),
+                config('modules.simulations.compute_partial_correlation'),
                 '-i',
                 $csvFile,
                 '-c',
@@ -192,22 +176,23 @@ class CorrelationService
      * @param string $jsonFile
      * @param Collection $simulations
      * @return Collection
-     * @throws InvalidArgument
      * @throws Exception
+     * @throws FileSystemException
+     * @throws InvalidArgument
+     * @throws JsonException
      */
     private function prepareCollection(string $correlationFile, string $jsonFile, Collection $simulations): Collection
     {
+        $pathwayNames = (new SimulationParserService($this->firstSimulation))->readPathwaysToNames();
         $csv = Reader::createFromPath($correlationFile)
                      ->setDelimiter("\t")
                      ->setHeaderOffset(0);
         $reader = Statement::create()->process($csv);
-        $map = $simulations->pluck('name', 'id');
         $data =
             collect(iterator_to_array($reader, false))
                 ->map(
                     fn($row) => [
-                        'id'          => (int)$row['simulation'],
-                        'name'        => $map[(int)$row['simulation']],
+                        'name'        => $pathwayNames[$row['pathway']],
                         'correlation' => (double)$row['correlation'],
                     ]
                 );
@@ -241,7 +226,7 @@ class CorrelationService
         $this->makeDirectory();
         $jsonFile = $this->directory . self::JSON_OUTPUT_FILE;
         if (!file_exists($jsonFile)) {
-            $simulations = $this->getSimulationsFromTags();
+            $simulations = $this->makeSimulationCollection();
             $csvFile = $this->prepareCSVFile($simulations);
             $correlationFile = $this->computeCorrelationFile($csvFile);
             $data = $this->prepareCollection($correlationFile, $jsonFile, $simulations);
@@ -252,21 +237,15 @@ class CorrelationService
         if ($this->top) {
             if ($this->direction === 'negative') {
                 $data = $data->take($this->n);
-            } else {
+            } elseif ($this->direction === 'positive') {
                 $data = $data->take(-$this->n);
+            } else {
+                $data = $data->take($this->n)->merge($data->take(-$this->n));
             }
         }
         return [
-            'x'          => $data->pluck('name'),
-            'y'          => $data->pluck('correlation'),
-            'customdata' => $data->pluck('id')->map(
-                fn($id) => [
-                    'compareWith'     => $id,
-                    'function'        => $this->function,
-                    'useEndpoints'    => $this->useEndpoints,
-                    'usePerturbation' => $this->usePerturbation,
-                ]
-            ),
+            'x' => $data->pluck('name'),
+            'y' => $data->pluck('correlation'),
         ];
     }
 }
