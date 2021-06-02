@@ -25,7 +25,7 @@ class CorrelationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'function'        => ['sometimes', Rule::in(['pearson', 'spearman'])],
+            'fn'              => ['sometimes', Rule::in(['pearson', 'spearman'])],
             'top'             => ['sometimes', 'boolean'],
             'n'               => ['sometimes', 'integer', 'min:0'],
             'direction'       => ['sometimes', Rule::in(['positive', 'negative'])],

@@ -25,7 +25,7 @@ class CorrelationService
 
     private Simulation $simulation;
     private string $id;
-    private string $function;
+    private string $fn;
     private bool $top;
     private int $n;
     private string $direction;
@@ -38,7 +38,7 @@ class CorrelationService
     public function __construct(Simulation $simulation, array $data)
     {
         $this->simulation = $simulation;
-        $this->function = $data['function'] ?? 'pearson';
+        $this->fn = $data['fn'] ?? 'pearson';
         $this->top = (bool)($data['top'] ?? false);
         $this->n = (int)($data['n'] ?? 10);
         $this->direction = $data['direction'] ?? 'negative';
@@ -59,7 +59,7 @@ class CorrelationService
             json_encode(
                 [
                     $this->simulation->id,
-                    $this->function,
+                    $this->fn,
                     $this->useEndpoints,
                     $this->usePerturbation,
                     collect($this->findByTags)->map(fn($t) => strtolower($t))->sort()->toArray(),
@@ -175,7 +175,7 @@ class CorrelationService
                 '-i',
                 $csvFile,
                 '-c',
-                $this->function,
+                $this->fn,
                 '-o',
                 $outputFile,
             ],
@@ -238,6 +238,7 @@ class CorrelationService
      */
     public function makeDataPoints(): array
     {
+        set_time_limit(3600); //1 hour time limit
         $this->makeDirectory();
         $jsonFile = $this->directory . self::JSON_OUTPUT_FILE;
         if (!file_exists($jsonFile)) {
@@ -261,10 +262,10 @@ class CorrelationService
             'y'          => $data->pluck('correlation'),
             'customdata' => $data->pluck('id')->map(
                 fn($id) => [
-                    'compareWith'     => $id,
-                    'function'        => $this->function,
-                    'useEndpoints'    => $this->useEndpoints,
-                    'usePerturbation' => $this->usePerturbation,
+                    $id,
+                    $this->fn,
+                    $this->useEndpoints,
+                    $this->usePerturbation,
                 ]
             ),
         ];

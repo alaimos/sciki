@@ -19,6 +19,7 @@ import classNames from "classnames";
 import NodesTableEditor from "../../../Components/Modules/Simulations/NodesTableEditor";
 import PathwayImageEditor from "../../../Components/Modules/Simulations/PathwayImageEditor";
 import SimulationHeatmapEditor from "../../../Components/Modules/Simulations/SimulationHeatmapEditor";
+import CorrelationGraph from "../../../Components/Wiki/Plugins/Modules/Simulations/CorrelationGraph";
 
 interface Props extends CommonPageProps {
     simulation: {
@@ -38,7 +39,7 @@ const Index: React.FC<Props> = ({
     },
     pathwaysToNames,
 }: Props) => {
-    const [selectedNav, setSelectedNav] = useState<number>(1);
+    const [selectedNav, setSelectedNav] = useState<number>(4);
     const [currentPathway, setCurrentPathway] = useState<string | undefined>();
     const [selectedPathways, setSelectedPathways] = useState<string[]>([]);
     const [selectedNodes, setSelectedNodes] = useState<SelectedNodesType>({});
@@ -221,7 +222,13 @@ const Index: React.FC<Props> = ({
                                 Correlation graph
                             </h6>
                         </CardHeader>
-                        <CardBody>TODO</CardBody>
+                        <CardBody>
+                            <CorrelationGraph
+                                id="123"
+                                simulation={simulation.id}
+                                findByTags={["another: test"]}
+                            />
+                        </CardBody>
                     </Card>
                 )}
             </Container>

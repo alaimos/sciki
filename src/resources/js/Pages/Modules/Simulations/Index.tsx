@@ -21,8 +21,8 @@ import BootstrapTable, {
 } from "react-bootstrap-table-next";
 import paginationFactory from "react-bootstrap-table2-paginator";
 import filterFactory, {
-    textFilter,
     selectFilter,
+    textFilter,
 } from "react-bootstrap-table2-filter";
 import axios from "axios";
 // @ts-ignore
@@ -185,13 +185,13 @@ const Index: React.FC<Props> = ({
                                     href={route("simulations.publish", row.id)}
                                     className="btn btn-sm btn-link"
                                 >
-                                    <i className="fas fa-lock text-warning" />
+                                    <i className="fas fa-unlock text-green" />
                                 </InertiaLink>
                                 <UncontrolledTooltip
                                     placement="auto"
                                     target={`make-private-link-${row.id}`}
                                 >
-                                    Make private
+                                    Click to make private
                                 </UncontrolledTooltip>
                             </>
                         )}
@@ -202,13 +202,13 @@ const Index: React.FC<Props> = ({
                                     href={route("simulations.publish", row.id)}
                                     className="btn btn-sm btn-link"
                                 >
-                                    <i className="fas fa-unlock text-green" />
+                                    <i className="fas fa-lock text-warning" />
                                 </InertiaLink>
                                 <UncontrolledTooltip
                                     placement="auto"
                                     target={`publish-link-${row.id}`}
                                 >
-                                    Publish
+                                    Click to make public
                                 </UncontrolledTooltip>
                             </>
                         )}

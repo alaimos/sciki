@@ -41,6 +41,13 @@ abstract class ModuleProvider
     }
 
     /**
+     * Register all authorization gates
+     */
+    public function registerGates(): void
+    {
+    }
+
+    /**
      * Returns a list of paths were database migrations can be found
      *
      * @return string[]|null

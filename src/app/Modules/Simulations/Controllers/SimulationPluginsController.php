@@ -12,6 +12,7 @@ use App\Modules\Simulations\Services\CorrelationService;
 use App\Modules\Simulations\Services\HeatmapService;
 use App\Modules\Simulations\Services\PartialCorrelationService;
 use App\Modules\Simulations\Services\SimulationParserService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -27,13 +28,11 @@ class SimulationPluginsController extends Controller
     /**
      * @throws FileSystemException
      * @throws JsonException
+     * @throws AuthorizationException
      */
     public function pathwaysTable(Request $request, Simulation $simulation): JsonResponse
     {
-        if (!$simulation->canBeViewed()) {
-            abort(404);
-        }
-
+        $this->authorize('view', $simulation);
         if ($simulation->status !== Simulation::COMPLETED) {
             abort(404);
         }
@@ -50,13 +49,11 @@ class SimulationPluginsController extends Controller
     /**
      * @throws FileSystemException
      * @throws JsonException
+     * @throws AuthorizationException
      */
     public function nodesTable(Request $request, Simulation $simulation): JsonResponse
     {
-        if (!$simulation->canBeViewed()) {
-            abort(404);
-        }
-
+        $this->authorize('view', $simulation);
         if ($simulation->status !== Simulation::COMPLETED) {
             abort(404);
         }
@@ -79,13 +76,11 @@ class SimulationPluginsController extends Controller
      * @throws FileSystemException
      * @throws JsonException
      * @throws Throwable
+     * @throws AuthorizationException
      */
     public function pathwayImage(Request $request, Simulation $simulation): JsonResponse
     {
-        if (!$simulation->canBeViewed()) {
-            abort(404);
-        }
-
+        $this->authorize('view', $simulation);
         if ($simulation->status !== Simulation::COMPLETED) {
             abort(404);
         }
@@ -107,16 +102,15 @@ class SimulationPluginsController extends Controller
     /**
      * @throws FileSystemException
      * @throws JsonException
+     * @throws AuthorizationException
      */
     public function heatmap(HeatmapRequest $request, Simulation $simulation): JsonResponse
     {
-        if (!$simulation->canBeViewed()) {
-            abort(404);
-        }
-
+        $this->authorize('view', $simulation);
         if ($simulation->status !== Simulation::COMPLETED) {
             abort(404);
         }
+
         $data = $request->validated();
         return response()->json((new HeatmapService($simulation, $data))->makeDataPoints());
     }
@@ -130,16 +124,15 @@ class SimulationPluginsController extends Controller
      * @throws CannotInsertRecord
      * @throws Exception
      * @throws InvalidArgument
+     * @throws AuthorizationException
      */
     public function correlation(CorrelationRequest $request, Simulation $simulation): JsonResponse
     {
-        if (!$simulation->canBeViewed()) {
-            abort(404);
-        }
-
+        $this->authorize('view', $simulation);
         if ($simulation->status !== Simulation::COMPLETED) {
             abort(404);
         }
+
         $data = $request->validated();
         try {
             return response()->json((new CorrelationService($simulation, $data))->makeDataPoints());
@@ -157,22 +150,25 @@ class SimulationPluginsController extends Controller
      * @throws FileSystemException
      * @throws InvalidArgument
      * @throws JsonException
+     * @throws AuthorizationException
      */
     public function partialCorrelation(PartialCorrelationRequest $request, Simulation $simulation): JsonResponse
     {
-        if (!$simulation->canBeViewed()) {
-            abort(404);
-        }
-
+        $this->authorize('view', $simulation);
         if ($simulation->status !== Simulation::COMPLETED) {
             abort(404);
         }
+
         $data = $request->validated();
         return response()->json((new PartialCorrelationService($simulation, $data))->makeDataPoints());
     }
 
+    /**
+     * @throws AuthorizationException
+     */
     public function simulationTypeahead(Request $request): JsonResponse
     {
+        $this->authorize('viewAny');
         $searchQuery = $request->get('query');
 
         $searchResults = [];

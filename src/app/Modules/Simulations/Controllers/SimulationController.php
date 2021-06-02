@@ -10,6 +10,7 @@ use App\Modules\Simulations\Models\Simulation;
 use App\Modules\Simulations\Requests\SaveSimulationRequest;
 use App\Modules\Simulations\Services\SimulationParserService;
 use App\Modules\Simulations\Services\SimulationService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,8 +22,12 @@ use JsonException;
 class SimulationController extends Controller
 {
 
+    /**
+     * @throws AuthorizationException
+     */
     public function index(): Response
     {
+        $this->authorize('viewAny', Simulation::class);
         return Inertia::render(
             'Modules/Simulations/Index',
             [
@@ -32,20 +37,23 @@ class SimulationController extends Controller
         );
     }
 
+    /**
+     * @throws AuthorizationException
+     */
     public function table(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Simulation::class);
         return response()->json((new SimulationService())->handleSimulationsTableRequest($request));
     }
 
     /**
      * @throws FileSystemException
      * @throws JsonException
+     * @throws AuthorizationException
      */
     public function show(Simulation $simulation): Response
     {
-        if (!$simulation->canBeViewed()) {
-            abort(404);
-        }
+        $this->authorize('view', $simulation);
         if ($simulation->status !== Simulation::COMPLETED) {
             abort(404);
         }
@@ -62,6 +70,9 @@ class SimulationController extends Controller
         );
     }
 
+    /**
+     * @throws AuthorizationException
+     */
     public function create(): Response
     {
         $this->authorize('create', Simulation::class);
@@ -74,6 +85,9 @@ class SimulationController extends Controller
         );
     }
 
+    /**
+     * @throws AuthorizationException
+     */
     public function nodesTable(Request $request, Organism $organism): JsonResponse
     {
         $this->authorize('create', Simulation::class);
@@ -81,6 +95,9 @@ class SimulationController extends Controller
         return response()->json((new SimulationService())->handleNodesTableRequest($organism, $request));
     }
 
+    /**
+     * @throws AuthorizationException
+     */
     public function store(SaveSimulationRequest $request): RedirectResponse
     {
         $this->authorize('create', Simulation::class);
@@ -122,6 +139,9 @@ class SimulationController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    /**
+     * @throws AuthorizationException
+     */
     public function togglePublic(Simulation $simulation): RedirectResponse
     {
         $this->authorize('update', $simulation);
@@ -135,6 +155,9 @@ class SimulationController extends Controller
         return redirect()->route('simulations.index');
     }
 
+    /**
+     * @throws AuthorizationException
+     */
     public function destroy(Simulation $simulation): RedirectResponse
     {
         $this->authorize('delete', $simulation);

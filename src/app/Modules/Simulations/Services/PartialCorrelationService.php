@@ -223,6 +223,7 @@ class PartialCorrelationService
      */
     public function makeDataPoints(): array
     {
+        set_time_limit(3600); //1 hour time limit
         $this->makeDirectory();
         $jsonFile = $this->directory . self::JSON_OUTPUT_FILE;
         if (!file_exists($jsonFile)) {

@@ -39,6 +39,9 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-        //
+        // Register custom gates
+        foreach (config('sciki.resource_providers') as $resourceProviderClass) {
+            $policies[] = app($resourceProviderClass)->registerGates();
+        }
     }
 }
