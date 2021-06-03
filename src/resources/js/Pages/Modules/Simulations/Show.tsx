@@ -19,7 +19,7 @@ import classNames from "classnames";
 import NodesTableEditor from "../../../Components/Modules/Simulations/NodesTableEditor";
 import PathwayImageEditor from "../../../Components/Modules/Simulations/PathwayImageEditor";
 import SimulationHeatmapEditor from "../../../Components/Modules/Simulations/SimulationHeatmapEditor";
-import CorrelationGraph from "../../../Components/Wiki/Plugins/Modules/Simulations/CorrelationGraph";
+import CorrelationGraphEditor from "../../../Components/Modules/Simulations/CorrelationGraphEditor";
 
 interface Props extends CommonPageProps {
     simulation: {
@@ -223,10 +223,10 @@ const Index: React.FC<Props> = ({
                             </h6>
                         </CardHeader>
                         <CardBody>
-                            <CorrelationGraph
-                                id="123"
+                            <CorrelationGraphEditor
                                 simulation={simulation.id}
-                                findByTags={["another: test"]}
+                                canEditPages={canEditPages}
+                                onIdChange={(id) => console.log(id)}
                             />
                         </CardBody>
                     </Card>

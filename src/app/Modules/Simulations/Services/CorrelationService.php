@@ -45,7 +45,7 @@ class CorrelationService
         $this->useEndpoints = (bool)($data['useEndpoints'] ?? true);
         $this->usePerturbation = (bool)($data['usePerturbation'] ?? false);
         $this->findByTags = $data['findByTags'] ?? [];
-        $this->searchMode = $data['mode'] ?? 'all';
+        $this->searchMode = $data['searchMode'] ?? 'all';
         $this->computeId();
     }
 

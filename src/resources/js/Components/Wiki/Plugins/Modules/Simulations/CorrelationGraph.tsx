@@ -62,6 +62,7 @@ const CorrelationGraph: React.FC<Props> = ({
     const { data, error, message } = state;
 
     useEffect(() => {
+        setState({});
         axios
             .post<Data>(route("simulations.plugins.correlation", simulation), {
                 fn,
