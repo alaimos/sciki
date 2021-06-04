@@ -3,37 +3,27 @@ import axios from "axios";
 import route from "ziggy-js";
 import { Alert } from "reactstrap";
 import Plot from "react-plotly.js";
-import { useDispatcher } from "../../../../../Contexts/DispatcherProvider";
-
-export interface SelectedSimulation {
-    sender: string;
-    compareWith: number;
-    fn?: "pearson" | "spearman";
-    useEndpoints: boolean;
-    usePerturbation: boolean;
-}
+import { useDispatcherEventWithSender } from "../../../../../Hooks/useDispatcherEvent";
+import { SelectedSimulation } from "./CorrelationGraph";
 
 interface Props {
     id?: string;
     simulation: number;
+    compareWith?: number;
     fn?: "pearson" | "spearman";
     top?: boolean;
     n?: number;
-    direction?: "positive" | "negative";
+    direction?: "positive" | "negative" | "both";
     useEndpoints?: boolean;
     usePerturbation?: boolean;
-    findByTags: string[];
-    searchMode?: "all" | "any";
     title?: string;
     height?: number;
+    connectedTo?: string;
 }
-
-type CustomData = [number, "pearson" | "spearman", number, number];
 
 interface Data {
     x: string[];
     y: number[];
-    customdata: CustomData[];
 }
 
 interface State {
@@ -42,40 +32,48 @@ interface State {
     message?: string;
 }
 
-const CorrelationGraph: React.FC<Props> = ({
-    id,
+interface SelectionState {
+    compareWith?: number;
+    fn?: "pearson" | "spearman";
+    useEndpoints?: boolean;
+    usePerturbation?: boolean;
+}
+
+const PartialCorrelationGraph: React.FC<Props> = ({
     simulation,
     title,
     height = 600,
-    fn = "pearson",
     top = false,
     n = 10,
     direction = "negative",
-    useEndpoints = true,
-    usePerturbation = false,
-    findByTags,
-    searchMode = "all",
+    connectedTo,
+    ...selectionProps
 }: Props) => {
     const [state, setState] = useState<State>({});
-    const dispatcher = useDispatcher();
+    const [selectionState, setSelectionState] = useState<SelectionState>({
+        compareWith: selectionProps.compareWith,
+        fn: selectionProps.fn,
+        useEndpoints: selectionProps.useEndpoints,
+        usePerturbation: selectionProps.useEndpoints,
+    });
 
     const { data, error, message } = state;
+    const { compareWith, fn, useEndpoints, usePerturbation } = selectionState;
 
     useEffect(() => {
         setState({});
-        if (findByTags && findByTags.length > 0) {
+        if (compareWith && compareWith > 0) {
             axios
                 .post<Data>(
-                    route("simulations.plugins.correlation", simulation),
+                    route("simulations.plugins.partialCorrelation", simulation),
                     {
+                        compareWith,
                         fn,
                         top,
                         n,
                         direction,
                         useEndpoints,
                         usePerturbation,
-                        findByTags,
-                        searchMode,
                     }
                 )
                 .then(({ data }) => {
@@ -90,22 +88,32 @@ const CorrelationGraph: React.FC<Props> = ({
         }
     }, [
         simulation,
+        compareWith,
         fn,
         top,
         n,
         direction,
         useEndpoints,
         usePerturbation,
-        findByTags,
-        searchMode,
     ]);
 
-    if (!findByTags || findByTags.length === 0) {
+    useDispatcherEventWithSender<SelectedSimulation>(
+        "onCorrelationGraphBarClick",
+        (selection) => {
+            setSelectionState((prevState) => ({
+                ...prevState,
+                ...selection,
+            }));
+        },
+        connectedTo,
+        [setSelectionState]
+    );
+
+    if (!compareWith || compareWith < 0) {
         return (
             <Alert color="primary">
                 <i className="fas fa-exclamation-circle mx-2" />
-                You cannot view any graph until you select at lest two
-                simulations through their tags.
+                Click on a bar in the correlation graph to display its details.
             </Alert>
         );
     }
@@ -113,6 +121,12 @@ const CorrelationGraph: React.FC<Props> = ({
     if (error) {
         return <p className="text-red">{message}</p>;
     }
+
+    const min = data ? Math.min(...data.y) : 0;
+    const max = data ? Math.max(...data.y) : 0;
+    const range = Math.max(Math.abs(min), Math.abs(max));
+    const cmin = -range;
+    // const cdiff = data ? cmax - cmin : 0;
 
     return (
         <>
@@ -125,9 +139,9 @@ const CorrelationGraph: React.FC<Props> = ({
                                     ...data,
                                     type: "bar",
                                     marker: {
-                                        color: data.y.map((y) => (y + 1) / 2),
-                                        cmin: -1,
-                                        cmax: 1,
+                                        color: data.y,
+                                        cmin: cmin,
+                                        cmax: range,
                                         colorscale: [
                                             [0, "rgb(5,10,172)"],
                                             [0.35, "rgb(106,137,247)"],
@@ -147,7 +161,7 @@ const CorrelationGraph: React.FC<Props> = ({
                                         fn === "pearson"
                                             ? "Pearson Correlation"
                                             : "Spearman Correlation",
-                                    range: [-1, 1],
+                                    // range: [-1, 1],
                                 },
                                 font: { size: 12 },
                                 autosize: true,
@@ -162,23 +176,6 @@ const CorrelationGraph: React.FC<Props> = ({
                                 height: `${height}px`,
                             }}
                             useResizeHandler
-                            onClick={(event) => {
-                                if (id && event.points.length > 0) {
-                                    const point = event.points[0];
-                                    const data =
-                                        point.customdata as unknown as CustomData;
-                                    dispatcher.dispatch<SelectedSimulation>(
-                                        "onCorrelationGraphBarClick",
-                                        {
-                                            sender: id,
-                                            compareWith: data[0],
-                                            fn: data[1],
-                                            useEndpoints: !!data[2],
-                                            usePerturbation: !!data[3],
-                                        }
-                                    );
-                                }
-                            }}
                         />
                     </div>
                 </>
@@ -193,4 +190,4 @@ const CorrelationGraph: React.FC<Props> = ({
     );
 };
 
-export default CorrelationGraph;
+export default PartialCorrelationGraph;

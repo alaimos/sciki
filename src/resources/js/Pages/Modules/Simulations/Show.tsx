@@ -20,6 +20,7 @@ import NodesTableEditor from "../../../Components/Modules/Simulations/NodesTable
 import PathwayImageEditor from "../../../Components/Modules/Simulations/PathwayImageEditor";
 import SimulationHeatmapEditor from "../../../Components/Modules/Simulations/SimulationHeatmapEditor";
 import CorrelationGraphEditor from "../../../Components/Modules/Simulations/CorrelationGraphEditor";
+import PartialCorrelationGraphEditor from "../../../Components/Modules/Simulations/PartialCorrelationGraphEditor";
 
 interface Props extends CommonPageProps {
     simulation: {
@@ -39,10 +40,11 @@ const Index: React.FC<Props> = ({
     },
     pathwaysToNames,
 }: Props) => {
-    const [selectedNav, setSelectedNav] = useState<number>(4);
+    const [selectedNav, setSelectedNav] = useState<number>(1);
     const [currentPathway, setCurrentPathway] = useState<string | undefined>();
     const [selectedPathways, setSelectedPathways] = useState<string[]>([]);
     const [selectedNodes, setSelectedNodes] = useState<SelectedNodesType>({});
+    const [correlationGraphId, setCorrelationGraphId] = useState<string>();
     const changeSelectedNav =
         (selection: number) => (e: React.MouseEvent<HTMLAnchorElement>) => {
             e.preventDefault();
@@ -216,20 +218,36 @@ const Index: React.FC<Props> = ({
                     </Card>
                 )}
                 {selectedNav === 4 && (
-                    <Card className="shadow">
-                        <CardHeader className="bg-transparent">
-                            <h6 className="text-uppercase ls-1 mb-1">
-                                Correlation graph
-                            </h6>
-                        </CardHeader>
-                        <CardBody>
-                            <CorrelationGraphEditor
-                                simulation={simulation.id}
-                                canEditPages={canEditPages}
-                                onIdChange={(id) => console.log(id)}
-                            />
-                        </CardBody>
-                    </Card>
+                    <>
+                        <Card className="shadow">
+                            <CardHeader className="bg-transparent">
+                                <h6 className="text-uppercase ls-1 mb-1">
+                                    Correlation graph
+                                </h6>
+                            </CardHeader>
+                            <CardBody>
+                                <CorrelationGraphEditor
+                                    simulation={simulation.id}
+                                    canEditPages={canEditPages}
+                                    onIdChange={setCorrelationGraphId}
+                                />
+                            </CardBody>
+                        </Card>
+                        <Card className="shadow">
+                            <CardHeader className="bg-transparent">
+                                <h6 className="text-uppercase ls-1 mb-1">
+                                    Correlation details
+                                </h6>
+                            </CardHeader>
+                            <CardBody>
+                                <PartialCorrelationGraphEditor
+                                    simulation={simulation.id}
+                                    canEditPages={canEditPages}
+                                    correlationGraphId={correlationGraphId}
+                                />
+                            </CardBody>
+                        </Card>
+                    </>
                 )}
             </Container>
         </>

@@ -26,7 +26,7 @@ class PartialCorrelationRequest extends FormRequest
     {
         return [
             'compareWith'     => ['required', Rule::exists('simulations', 'id')],
-            'function'        => ['sometimes', Rule::in(['pearson', 'spearman'])],
+            'fn'              => ['sometimes', Rule::in(['pearson', 'spearman'])],
             'top'             => ['sometimes', 'boolean'],
             'n'               => ['sometimes', 'integer', 'min:0'],
             'direction'       => ['sometimes', Rule::in(['both', 'positive', 'negative'])],

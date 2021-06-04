@@ -24,7 +24,7 @@ class PartialCorrelationService
     private Simulation $firstSimulation;
     private Simulation $secondSimulation;
     private string $id;
-    private string $function;
+    private string $fn;
     private bool $top;
     private int $n;
     private string $direction;
@@ -36,7 +36,7 @@ class PartialCorrelationService
     {
         $this->firstSimulation = $simulation;
         $this->secondSimulation = Simulation::findOrFail($data['compareWith']);
-        $this->function = $data['function'] ?? 'pearson';
+        $this->fn = $data['fn'] ?? 'pearson';
         $this->top = (bool)($data['top'] ?? false);
         $this->n = (int)($data['n'] ?? 10);
         $this->direction = $data['direction'] ?? 'both';
@@ -56,7 +56,7 @@ class PartialCorrelationService
                 [
                     $this->firstSimulation->id,
                     $this->secondSimulation->id,
-                    $this->function,
+                    $this->fn,
                     $this->useEndpoints,
                     $this->usePerturbation,
                 ]
@@ -159,7 +159,7 @@ class PartialCorrelationService
                 '-i',
                 $csvFile,
                 '-c',
-                $this->function,
+                $this->fn,
                 '-o',
                 $outputFile,
             ],
@@ -192,7 +192,7 @@ class PartialCorrelationService
             collect(iterator_to_array($reader, false))
                 ->map(
                     fn($row) => [
-                        'name'        => $pathwayNames[$row['pathway']],
+                        'name'        => $row['pathway'] . ': ' . $pathwayNames[$row['pathway']],
                         'correlation' => (double)$row['correlation'],
                     ]
                 );

@@ -2,6 +2,10 @@
     "compilerOptions": {
         "target": "es5",
         "module": "commonjs",
+        /*
+        "module": "esnext",
+        "moduleResolution": "node",
+        */
         "lib": [
             "dom",
             "esnext"
