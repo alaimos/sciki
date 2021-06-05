@@ -97,6 +97,7 @@
         "react-datetime": "^3.0.4",
         "react-dom": "^17.0.2",
         "react-helmet": "^6.1.0",
+        "react-loading-overlay": "^1.0.1",
         "react-plotly.js": "^2.5.1",
         "react-select2-wrapper": "*",
         "react-tagsinput": "^3.19.0",

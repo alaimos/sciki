@@ -55,12 +55,23 @@ class User extends Authenticatable
      *
      * @return array
      */
-    #[ArrayShape(['small' => "string", 'medium' => "string", 'large' => "string"])] public function getAvatarAttribute(): array
+    #[ArrayShape(['small' => "string", 'medium' => "string", 'large' => "string"])] public function getAvatarAttribute(
+    ): array
     {
         return [
             'small'  => Gravatar::src($this->email, 40),
             'medium' => Gravatar::src($this->email, 800),
             'large'  => Gravatar::src($this->email, 1920),
         ];
+    }
+
+    /**
+     * Returns the human readable version of the created_at attribute
+     *
+     * @return string
+     */
+    public function getReadableCreatedAtAttribute(): string
+    {
+        return $this->created_at->diffForHumans();
     }
 }

@@ -2,16 +2,16 @@ import React from "react";
 import { render } from "react-dom";
 import { InertiaApp } from "@inertiajs/inertia-react";
 import { InertiaProgress } from "@inertiajs/progress";
-import "./Common/axios";
-
-InertiaProgress.init();
-
-const app = document.getElementById("app");
-
-import "../css/nucleo/css/nucleo.css";
 import Dashboard from "./Components/Layout/Dashboard";
 import { pluginRegex } from "./Common/pluginResolver";
+import "./Common/axios";
+import "../css/nucleo/css/nucleo.css";
 
+InertiaProgress.init({
+    showSpinner: true,
+});
+
+const app = document.getElementById("app");
 const DefaultLayout = (page: React.ReactNode) => <Dashboard>{page}</Dashboard>;
 
 render(

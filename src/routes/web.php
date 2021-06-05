@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Editor\MediaController;
 use App\Http\Controllers\Editor\PageController;
 use App\Http\Controllers\TagController;
@@ -68,8 +69,12 @@ Route::group(
         Route::group(
             [
                 'middleware' => 'role:admin',
+                'prefix'     => 'admin',
+                'as'         => 'admin.'
             ],
             static function () {
+                Route::post('users/table', [UserController::class, 'indexTable'])->name('users.table');
+                Route::resource('users', UserController::class)->except("show");
                 /// Plugins admin routes
                 foreach (config('sciki.resource_providers') as $resourceProviderClass) {
                     app($resourceProviderClass)->adminRoutes();

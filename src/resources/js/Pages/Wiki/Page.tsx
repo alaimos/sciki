@@ -9,6 +9,7 @@ import {
     NavItem,
     NavLink,
     Row,
+    Spinner,
 } from "reactstrap";
 import { Helmet } from "react-helmet";
 import { usePage } from "@inertiajs/inertia-react";
@@ -16,6 +17,8 @@ import { Inertia, Page as InertiaPage } from "@inertiajs/inertia";
 import { CommonPageProps } from "../../Types/page";
 import route from "ziggy-js";
 import { pluginRegex } from "../../Common/pluginResolver";
+// @ts-ignore
+import LoadingOverlay from "react-loading-overlay";
 
 interface CustomContent {
     key: string;
@@ -48,6 +51,7 @@ const Page: React.FC<Props> = ({
     const {
         auth: { check: userIsLoggedIn },
     } = usePage<InertiaPage<CommonPageProps>>().props;
+    const [isLoading, setIsLoading] = useState(false);
     const [processedContent, setProcessedContent] = useState<React.ReactNode[]>(
         []
     );
@@ -67,9 +71,11 @@ const Page: React.FC<Props> = ({
     useEffect(() => {
         if (!content) return;
         (async () => {
-            const newContent: React.ReactNode[] = [];
-            for (const component of content) {
-                const { component: componentName, key, props } = component;
+            setIsLoading(true);
+            const newContent: React.ReactNode[] = new Array(content.length);
+            newContent.fill(undefined);
+            for (let i = 0; i < content.length; i++) {
+                const { component: componentName, key, props } = content[i];
                 if (componentName) {
                     try {
                         let importedModule;
@@ -95,22 +101,21 @@ const Page: React.FC<Props> = ({
                             );
                         }
                         const { default: reactComponent } = importedModule;
-                        newContent.push(
-                            React.createElement(
-                                reactComponent,
-                                {
-                                    key,
-                                    ...props,
-                                },
-                                null
-                            )
+                        newContent[i] = React.createElement(
+                            reactComponent,
+                            {
+                                key,
+                                ...props,
+                            },
+                            null
                         );
                     } catch (e) {
                         console.error(e);
                     }
                 }
+                setProcessedContent(newContent.filter((c) => !!c));
             }
-            setProcessedContent(newContent);
+            setIsLoading(false);
         })().catch((e) => console.error(e));
     }, [content, setProcessedContent]);
 
@@ -178,9 +183,15 @@ const Page: React.FC<Props> = ({
                         </Nav>
                     </Col>
                 </Row>
-                <Card className="shadow">
-                    <CardBody>{processedContent}</CardBody>
-                </Card>
+                <LoadingOverlay
+                    active={isLoading}
+                    spinner={<Spinner color="light" className="mr-2" />}
+                    text="Rendering..."
+                >
+                    <Card className="shadow">
+                        <CardBody>{processedContent}</CardBody>
+                    </Card>
+                </LoadingOverlay>
             </Container>
         </>
     );
