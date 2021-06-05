@@ -119,14 +119,14 @@ class PageService
         $originalContent = $this->model->content;
         $converter = $this->makeMarkdownParser();
         $convertedContent = $converter->convertToHtml($originalContent);
-        $splittedBlocks = preg_split(
+        $dividedBlocks = preg_split(
             ScikiFencedCodeRenderer::SCIKI_BLOCK_REGEXP,
             $convertedContent,
             -1,
             PREG_SPLIT_DELIM_CAPTURE
         );
         $reactContentArray = [];
-        foreach ($splittedBlocks as $i => $content) {
+        foreach ($dividedBlocks as $i => $content) {
             // Even-indexed elements are things before/after the SciKi plugin blocks
             if ($i % 2 === 0) {
                 $reactContentArray[] = [

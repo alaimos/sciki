@@ -21,12 +21,12 @@ class ScikiFencedCodeRenderer implements BlockRendererInterface, ConfigurationAw
     public static array $detectedBlocks = [];
 
     public const SCIKI_BLOCK_SEPARATOR = '{{SCIKI_BLOCK_%s}}';
-    public const SCIKI_BLOCK_REGEXP    = '/{{SCIKI_BLOCK_([a-z0-9\-]+)}}/ixu';
+    public const SCIKI_BLOCK_REGEXP = '/{{SCIKI_BLOCK_([a-z0-9\-]+)}}/ixu';
 
-    public const SCIKI       = 'SciKi';
+    public const SCIKI = 'SciKi';
     public const SCIKI_MEDIA = 'SciKiMedia';
-    public const KATEX       = 'KaTeX';
-    public const MERMAID     = 'mermaid';
+    public const KATEX = 'KaTeX';
+    public const MERMAID = 'mermaid';
 
     public const SUPPORTED_INFO = [
         self::SCIKI,
@@ -45,11 +45,20 @@ class ScikiFencedCodeRenderer implements BlockRendererInterface, ConfigurationAw
         self::$detectedBlocks = [];
     }
 
+    private static function resolvePlugin(string $pluginName): string
+    {
+        if (str_starts_with($pluginName, '@')) {
+            return $pluginName;
+        }
+
+        return '#' . ucfirst($pluginName);
+    }
+
     private static function addDetectedBlock(string $pluginName, array $config): string
     {
         $id = Str::uuid()->toString();
         self::$detectedBlocks[$id] = [
-            'component' => 'Plugins/' . ucfirst($pluginName),
+            'component' => self::resolvePlugin($pluginName),
             'props'     => $config,
         ];
 
@@ -90,7 +99,7 @@ class ScikiFencedCodeRenderer implements BlockRendererInterface, ConfigurationAw
     }
 
     /**
-     * @param  \League\CommonMark\Block\Element\FencedCode  $code
+     * @param \League\CommonMark\Block\Element\FencedCode $code
      *
      * @return \League\CommonMark\HtmlElement|null
      * @throws \App\Exceptions\SciKiMarkdownRendererException

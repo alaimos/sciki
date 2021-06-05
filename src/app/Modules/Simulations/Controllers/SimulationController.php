@@ -29,7 +29,7 @@ class SimulationController extends Controller
     {
         $this->authorize('viewAny', Simulation::class);
         return Inertia::render(
-            'Modules/Simulations/Index',
+            '@Simulations:Simulations/Index',
             [
                 'organisms' => Organism::select(['id', 'name'])->get(),
                 'states'    => Simulation::HUMAN_READABLE_STATES,
@@ -61,7 +61,7 @@ class SimulationController extends Controller
         $simulationService = new SimulationParserService($simulation);
 
         return Inertia::render(
-            'Modules/Simulations/Show',
+            '@Simulations:Simulations/Show',
             [
                 'simulation'      => $simulation,
                 'pathwaysToNames' => $simulationService->readPathwaysToNames(),
@@ -78,7 +78,7 @@ class SimulationController extends Controller
         $this->authorize('create', Simulation::class);
 
         return Inertia::render(
-            'Modules/Simulations/Create',
+            '@Simulations:Simulations/Create',
             [
                 'organisms' => Organism::select(['id', 'name'])->get(),
             ]

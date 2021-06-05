@@ -15,6 +15,7 @@ import { usePage } from "@inertiajs/inertia-react";
 import { Inertia, Page as InertiaPage } from "@inertiajs/inertia";
 import { CommonPageProps } from "../../Types/page";
 import route from "ziggy-js";
+import { pluginRegex } from "../../Common/pluginResolver";
 
 interface CustomContent {
     key: string;
@@ -65,28 +66,52 @@ const Page: React.FC<Props> = ({
 
     useEffect(() => {
         if (!content) return;
-        content.forEach((component) => {
-            const { component: componentName, key, props } = component;
-            if (!componentName) return;
-            const isPlugin = componentName.startsWith("Plugins/");
-            import(
-                `./../../Components/Wiki/${isPlugin ? componentName : "Html"}`
-            )
-                .then(({ default: reactComponent }) => {
-                    setProcessedContent((oldContent) => [
-                        ...oldContent,
-                        React.createElement(
-                            reactComponent,
-                            {
-                                key,
-                                ...props,
-                            },
-                            null
-                        ),
-                    ]);
-                })
-                .catch((e) => console.error(e));
-        });
+        (async () => {
+            const newContent: React.ReactNode[] = [];
+            for (const component of content) {
+                const { component: componentName, key, props } = component;
+                if (componentName) {
+                    try {
+                        let importedModule;
+                        if (componentName.startsWith("#")) {
+                            const cleanedName = componentName.replace(/^#/, "");
+                            importedModule = await import(
+                                `./../../Components/Wiki/Plugins/${cleanedName}`
+                            );
+                        } else if (!componentName.startsWith("@")) {
+                            importedModule = await import(
+                                `./../../Components/Wiki/Html`
+                            );
+                        } else {
+                            const match = componentName.match(pluginRegex);
+                            if (!match) {
+                                console.error(`Syntax error: ${componentName}`);
+                                continue;
+                            }
+                            const plugin = match[1];
+                            const path = match[2].replace(/^\//, "");
+                            importedModule = await import(
+                                `./../../Modules/${plugin}/WikiPlugins/${path}`
+                            );
+                        }
+                        const { default: reactComponent } = importedModule;
+                        newContent.push(
+                            React.createElement(
+                                reactComponent,
+                                {
+                                    key,
+                                    ...props,
+                                },
+                                null
+                            )
+                        );
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }
+            setProcessedContent(newContent);
+        })().catch((e) => console.error(e));
     }, [content, setProcessedContent]);
 
     return (
