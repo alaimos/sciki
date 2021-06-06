@@ -14,6 +14,7 @@ export interface AuthUser {
 
 export interface AuthContent {
     check: boolean;
+    is_admin: boolean;
     user: AuthUser | null | undefined;
 }
 

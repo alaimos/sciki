@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Role;
 use App\Modules\Abstract\ModuleProvider;
 use App\Modules\Abstract\ScikiSidebarLink;
 use App\Services\AccessControlService;
@@ -56,6 +57,7 @@ class HandleInertiaRequests extends Middleware
             parent::share($request),
             [
                 'auth.check'    => $userIsLoggedIn,
+                'auth.is_admin' => fn() => $userIsLoggedIn && auth()->user()->role_id === Role::ADMIN,
                 'auth.user'     => fn() => $userIsLoggedIn ? auth()->user()->only(
                     [
                         'id',

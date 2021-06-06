@@ -19,11 +19,12 @@ import { Page } from "@inertiajs/inertia";
 
 const Sidebar: React.FC = () => {
     const {
-        auth: { check: isUserLoggedIn },
+        auth: { check: isUserLoggedIn, is_admin: isUserAdmin },
         capabilities: userCapabilities,
         gui: { resources: resourceLinks, tools: toolLinks },
     } = usePage<Page<CommonPageProps>>().props;
     const [collapseOpen, setCollapseOpen] = useState(true);
+    console.log(usePage<Page<CommonPageProps>>().props);
 
     const renderLink = (link: GuiLink) => {
         if (link.resourceName && link.resourcePermission) {
@@ -159,14 +160,42 @@ const Sidebar: React.FC = () => {
                         {/* Tools */}
                         <hr className="my-3" />
                         <h6 className="navbar-heading text-muted">Resources</h6>
-                        <Nav navbar>{resourceLinks.map(renderLink)}</Nav>
+                        <Nav navbar>
+                            {resourceLinks.map(renderLink)}
+                            {isUserAdmin && (
+                                <NavItem>
+                                    <NavLink
+                                        href={route("admin.users.index")}
+                                        tag={InertiaLink}
+                                        onClick={closeCollapse}
+                                    >
+                                        <i className="fas fa-users text-primary" />
+                                        Users
+                                    </NavLink>
+                                </NavItem>
+                            )}
+                        </Nav>
                     </>
                     {isUserLoggedIn && (
                         <>
                             {/* Tools */}
                             <hr className="my-3" />
                             <h6 className="navbar-heading text-muted">Tools</h6>
-                            <Nav navbar>{toolLinks.map(renderLink)}</Nav>
+                            <Nav navbar>
+                                {toolLinks.map(renderLink)}
+                                {isUserAdmin && (
+                                    <NavItem>
+                                        <NavLink
+                                            href={route("admin.users.create")}
+                                            tag={InertiaLink}
+                                            onClick={closeCollapse}
+                                        >
+                                            <i className="fas fa-user-plus text-green" />
+                                            New user
+                                        </NavLink>
+                                    </NavItem>
+                                )}
+                            </Nav>
                         </>
                     )}
                 </Collapse>
