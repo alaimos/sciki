@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Editor\EditPageRequest;
 use App\Http\Requests\Editor\StorePageRequest;
 use App\Models\Page;
+use App\Services\TablesService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 
 class PageController extends Controller
 {
@@ -17,6 +20,20 @@ class PageController extends Controller
     public const DEFAULT_CONTENT = <<<CONTENT
 # %s
 CONTENT;
+
+    public function index(): InertiaResponse
+    {
+        $this->authorize('viewTable', Page::class);
+
+        return Inertia::render('Pages/Index');
+    }
+
+    public function indexTable(Request $request): JsonResponse
+    {
+        $this->authorize('viewTable', Page::class);
+
+        return response()->json((new TablesService())->handlePagesTableRequest($request));
+    }
 
     /**
      * @throws AuthorizationException
@@ -44,7 +61,7 @@ CONTENT;
     /**
      * @throws AuthorizationException
      */
-    public function edit(Page $page): Response
+    public function edit(Page $page): InertiaResponse
     {
         $this->authorize('update', $page);
         $page->load(['media']);

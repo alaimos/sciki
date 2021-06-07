@@ -15,20 +15,20 @@ class PagePolicy
     /**
      * Determine whether the user can view any pages.
      *
-     * @param  User  $user
+     * @param User $user
      *
      * @return bool
      */
-    public function viewAny(User $user): bool
+    public function viewTable(User $user): bool
     {
-        return true;
+        return $user->role_id === Role::EDITOR || $user->role_id === Role::ADMIN;
     }
 
     /**
      * Determine whether the user can view the page.
      *
-     * @param  User  $user
-     * @param  Page  $page
+     * @param User $user
+     * @param Page $page
      *
      * @return bool
      */
@@ -44,20 +44,22 @@ class PagePolicy
     /**
      * Determine whether the user can create pages.
      *
-     * @param  User  $user
+     * @param User $user
      *
      * @return \Illuminate\Auth\Access\Response
      */
     public function create(User $user): Response
     {
-        return $user->role_id >= Role::EDITOR ? $this->allow() : $this->deny('You are not allowed to create a new page');
+        return $user->role_id >= Role::EDITOR ? $this->allow() : $this->deny(
+            'You are not allowed to create a new page'
+        );
     }
 
     /**
      * Determine whether the user can update the page.
      *
-     * @param  User  $user
-     * @param  Page  $page
+     * @param User $user
+     * @param Page $page
      *
      * @return \Illuminate\Auth\Access\Response
      */
@@ -68,14 +70,16 @@ class PagePolicy
         $isAllowedWhenPageIsNotDraft = !$page->draft && $user->role_id >= Role::EDITOR;
         $message = (!$isAllowedWhenPageIsDraft) ? 'You are not allowed to update a draft of another user' : 'You are not allowed to update this page';
 
-        return ($isAdmin || $isAllowedWhenPageIsDraft || $isAllowedWhenPageIsNotDraft) ? $this->allow() : $this->deny($message);
+        return ($isAdmin || $isAllowedWhenPageIsDraft || $isAllowedWhenPageIsNotDraft) ? $this->allow() : $this->deny(
+            $message
+        );
     }
 
     /**
      * Determine whether the user can delete the page.
      *
-     * @param  User  $user
-     * @param  Page  $page
+     * @param User $user
+     * @param Page $page
      *
      * @return \Illuminate\Auth\Access\Response
      */
@@ -87,8 +91,8 @@ class PagePolicy
     /**
      * Determine whether the user can restore the page.
      *
-     * @param  User  $user
-     * @param  Page  $page
+     * @param User $user
+     * @param Page $page
      *
      * @return \Illuminate\Auth\Access\Response
      */
@@ -100,8 +104,8 @@ class PagePolicy
     /**
      * Determine whether the user can permanently delete the page.
      *
-     * @param  User  $user
-     * @param  Page  $page
+     * @param User $user
+     * @param Page $page
      *
      * @return bool
      */

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\ArrayShape;
 use Laravel\Scout\Searchable;
+use Spatie\Image\Exceptions\InvalidManipulation;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -140,9 +141,9 @@ class Page extends Model implements HasMedia
     }
 
     /**
-     * @param  \Spatie\MediaLibrary\MediaCollections\Models\Media|null  $media
+     * @param Media|null  $media
      *
-     * @throws \Spatie\Image\Exceptions\InvalidManipulation
+     * @throws InvalidManipulation
      */
     public function registerMediaConversions(Media $media = null): void
     {
@@ -154,5 +155,15 @@ class Page extends Model implements HasMedia
              ->width(256)
              ->height(256)
              ->sharpen(10);
+    }
+
+    /**
+     * Returns the human readable version of the created_at attribute
+     *
+     * @return string
+     */
+    public function getReadableCreatedAtAttribute(): string
+    {
+        return $this->created_at->diffForHumans();
     }
 }

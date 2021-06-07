@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useMemo, useState } from "react";
-import Header from "../../../Components/Layout/Headers/DefaultHeader";
+import Header from "../../Components/Layout/Headers/DefaultHeader";
 import {
     Card,
     CardBody,
@@ -12,16 +12,13 @@ import {
     Row,
     UncontrolledTooltip,
 } from "reactstrap";
-import type { CommonPageProps } from "../../../Types/page";
+import type { CommonPageProps } from "../../Types/page";
 import BootstrapTable, {
     ColumnDescription,
     SizePerPageRendererOptions,
 } from "react-bootstrap-table-next";
 import paginationFactory from "react-bootstrap-table2-paginator";
-import filterFactory, {
-    selectFilter,
-    textFilter,
-} from "react-bootstrap-table2-filter";
+import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
 import axios from "axios";
 // @ts-ignore
 import overlayFactory from "react-bootstrap-table2-overlay";
@@ -32,29 +29,25 @@ import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css";
 import "react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css";
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    role: {
-        id: number;
-        name: string;
-    };
+interface Page {
+    id: string;
+    title: string;
+    slug: string;
+    user_id: string;
+    created_at: string;
     readable_created_at: string;
 }
 
 interface State {
-    data?: User[];
+    data?: Page[];
     sizePerPage: number;
     page: number;
     totalSize: number;
 }
 
-interface Props extends CommonPageProps {
-    roles: { value: number; label: string }[];
-}
-
-const Index: React.FC<Props> = ({ roles }: Props) => {
+const Index: React.FC<CommonPageProps> = ({
+    auth: { is_admin: userIsAdmin },
+}: CommonPageProps) => {
     const [state, setState] = useState<State>({
         data: undefined,
         sizePerPage: 10,
@@ -67,7 +60,7 @@ const Index: React.FC<Props> = ({ roles }: Props) => {
     useEffect(() => {
         if (data === undefined) {
             axios
-                .post<State>(route("admin.users.table"), {
+                .post<State>(route("page.index.table"), {
                     sortField: "created_at",
                     sortOrder: "desc",
                 })
@@ -126,22 +119,18 @@ const Index: React.FC<Props> = ({ roles }: Props) => {
 
     const columns: ColumnDescription[] = [
         {
-            dataField: "name",
-            text: "Name",
+            dataField: "title",
+            text: "Title",
             sort: true,
             filter: textFilter({
                 className: "form-control-sm",
             }),
         },
         {
-            dataField: "role.id",
-            text: "Role",
+            dataField: "user_id",
+            text: "Created by",
             sort: true,
-            formatter: (_, row) => row.role.name,
-            filter: selectFilter({
-                options: roles,
-                className: "form-control-sm",
-            }),
+            formatter: (_, row) => row.user.name,
         },
         {
             dataField: "created_at",
@@ -155,14 +144,27 @@ const Index: React.FC<Props> = ({ roles }: Props) => {
             text: "",
             sort: false,
             headerStyle: {
-                width: "120px",
+                width: "160px",
             },
             formatter: (_, row) => {
                 return (
                     <>
                         <InertiaLink
+                            id={`view-link-${row.id}`}
+                            href={route("wiki.show", row.slug)}
+                            className="btn btn-sm btn-link"
+                        >
+                            <i className="fas fa-eye" />
+                        </InertiaLink>
+                        <UncontrolledTooltip
+                            placement="auto"
+                            target={`view-link-${row.id}`}
+                        >
+                            View
+                        </UncontrolledTooltip>
+                        <InertiaLink
                             id={`edit-link-${row.id}`}
-                            href={route("admin.users.edit", row.id)}
+                            href={route("page.edit", row.slug)}
                             className="btn btn-sm btn-link"
                         >
                             <i className="fas fa-pencil-alt" />
@@ -177,7 +179,7 @@ const Index: React.FC<Props> = ({ roles }: Props) => {
                             id={`delete-link-${row.id}`}
                             as="button"
                             method="delete"
-                            href={route("admin.users.destroy", row.id)}
+                            href={route("page.destroy", row.slug)}
                             className="btn btn-sm btn-link"
                             preserveState={false}
                         >
@@ -197,7 +199,7 @@ const Index: React.FC<Props> = ({ roles }: Props) => {
 
     return (
         <>
-            <Header title="Users" />
+            <Header title={userIsAdmin ? "Pages" : "My Pages"} />
             <Container className="mt--7" fluid>
                 <Row className="mb-2">
                     <Col lg={12} className="text-right">
@@ -208,11 +210,14 @@ const Index: React.FC<Props> = ({ roles }: Props) => {
                             <NavItem className="flex-grow-0">
                                 <NavLink
                                     className="mb-sm-3 mb-md-0"
-                                    tag={InertiaLink}
-                                    href={route("admin.users.create")}
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        alert("TODO");
+                                    }}
                                 >
                                     <i className="fas fa-plus-square mr-2" />
-                                    New user
+                                    New page
                                 </NavLink>
                             </NavItem>
                         </Nav>
@@ -239,7 +244,7 @@ const Index: React.FC<Props> = ({ roles }: Props) => {
                                 onTableChange={(_, newState) => {
                                     axios
                                         .post<State>(
-                                            route("admin.users.table"),
+                                            route("page.index.table"),
                                             {
                                                 page: newState.page,
                                                 sizePerPage:

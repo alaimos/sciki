@@ -51,7 +51,7 @@ class AccessControlService
         $userCanDelete = $userIsLoggedIn && $pageExists && $this->currentUser->can('delete', $page);
 
         return [
-            'list'            => true,
+            'list'            => $userIsLoggedIn && $this->currentUser->can('viewTable', Page::class),
             'view'            => $userCanView,
             'comment'         => $userIsLoggedIn,
             'perform_actions' => $userCanCreate || $userCanEdit || $userCanDelete,

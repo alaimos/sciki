@@ -174,6 +174,18 @@ const Sidebar: React.FC = () => {
                                     </NavLink>
                                 </NavItem>
                             )}
+                            {userCapabilities["pages"]["list"] && (
+                                <NavItem>
+                                    <NavLink
+                                        href={route("page.index")}
+                                        tag={InertiaLink}
+                                        onClick={closeCollapse}
+                                    >
+                                        <i className="fas fa-file text-primary" />
+                                        {isUserAdmin ? "Pages" : "My Pages"}
+                                    </NavLink>
+                                </NavItem>
+                            )}
                         </Nav>
                     </>
                     {isUserLoggedIn && (

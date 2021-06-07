@@ -7,7 +7,7 @@ use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\UserService;
+use App\Services\TablesService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,7 +36,7 @@ class UserController extends Controller
 
     public function indexTable(Request $request): JsonResponse
     {
-        return response()->json((new UserService())->handleUsersTableRequest($request));
+        return response()->json((new TablesService())->handleUsersTableRequest($request));
     }
 
     public function create(): InertiaResponse

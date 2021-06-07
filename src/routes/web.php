@@ -59,7 +59,8 @@ Route::group(
                 /// Page Routes
                 Route::put('/page/{page}/publish', [PageController::class, 'publish'])->name('page.publish');
                 Route::put('/page/{page}/draft', [PageController::class, 'draft'])->name('page.draft');
-                Route::resource('page', PageController::class)->only(['store', 'edit', 'update', 'destroy']);
+                Route::post('/page-table', [PageController::class, 'indexTable'])->name('page.index.table');
+                Route::resource('page', PageController::class)->except(['show', 'create']);
                 /// Plugins editor routes
                 foreach (config('sciki.resource_providers') as $resourceProviderClass) {
                     app($resourceProviderClass)->editorRoutes();
