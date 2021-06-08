@@ -26,6 +26,13 @@ class WikiController extends Controller
         return $pageService->render($request);
     }
 
+    public function showRevisions(string $page): InertiaResponse
+    {
+        $pageService = new PageService($page);
+
+        return $pageService->renderRevisions();
+    }
+
     public function typeahead(Request $request): JsonResponse
     {
         $searchQuery = $request->get('query');

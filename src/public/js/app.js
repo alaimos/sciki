@@ -544,6 +544,16 @@ var map = {
 		"/js/vendor",
 		"resources_js_Pages_Wiki_Page_tsx"
 	],
+	"./Wiki/PageHistory": [
+		"./resources/js/Pages/Wiki/PageHistory.tsx",
+		"/js/vendor",
+		"resources_js_Pages_Wiki_PageHistory_tsx"
+	],
+	"./Wiki/PageHistory.tsx": [
+		"./resources/js/Pages/Wiki/PageHistory.tsx",
+		"/js/vendor",
+		"resources_js_Pages_Wiki_PageHistory_tsx"
+	],
 	"./Wiki/PageNotFound": [
 		"./resources/js/Pages/Wiki/PageNotFound.tsx",
 		"/js/vendor",

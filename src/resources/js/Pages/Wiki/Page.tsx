@@ -12,7 +12,7 @@ import {
     Spinner,
 } from "reactstrap";
 import { Helmet } from "react-helmet";
-import { usePage } from "@inertiajs/inertia-react";
+import { InertiaLink, usePage } from "@inertiajs/inertia-react";
 import { Inertia, Page as InertiaPage } from "@inertiajs/inertia";
 import { CommonPageProps } from "../../Types/page";
 import route from "ziggy-js";
@@ -173,8 +173,11 @@ const Page: React.FC<Props> = ({
                             <NavItem className="ml-2 flex-grow-0">
                                 <NavLink
                                     className="mb-sm-3 mb-md-0"
-                                    onClick={(e) => e.preventDefault()}
-                                    href="#"
+                                    tag={InertiaLink}
+                                    href={route(
+                                        "wiki.show.revisions",
+                                        pageSlug
+                                    )}
                                 >
                                     <i className="fas fa-history mr-2" />
                                     History

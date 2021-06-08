@@ -9,10 +9,10 @@ use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as LaravelHttpResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Environment;
 use League\CommonMark\Extension\Autolink\AutolinkExtension;
 use League\CommonMark\Extension\Footnote\FootnoteExtension;
@@ -22,6 +22,7 @@ use League\CommonMark\Extension\SmartPunct\SmartPunctExtension;
 use League\CommonMark\Extension\TableOfContents\TableOfContentsExtension;
 use League\CommonMark\MarkdownConverter;
 use Symfony\Component\HttpFoundation\Response as SymfonyHttpResponse;
+use Venturecraft\Revisionable\Revision;
 
 class PageService
 {
@@ -57,7 +58,10 @@ class PageService
                 ($this->pageNotFound && $this->userCanCreateNewPage) ||
                 (!$this->pageNotFound && auth()->user()->can('update', $this->model))
             );
-        $this->userCanDeletePage = $this->userIsLoggedIn && !$this->pageNotFound && auth()->user()->can('delete', $this->model);
+        $this->userCanDeletePage = $this->userIsLoggedIn && !$this->pageNotFound && auth()->user()->can(
+                'delete',
+                $this->model
+            );
     }
 
     private function getTitleFromSlug(): string
@@ -184,6 +188,55 @@ class PageService
         }
 
         return $response;
+    }
+
+    public function renderRevisions(): Response
+    {
+        abort_if(
+            $this->pageNotFound || ($this->pageIsDraft &&
+                (!$this->userIsLoggedIn || !auth()->user()->can('update', $this->model))
+            ),
+            404
+        );
+        /** @var Collection $history */
+        $history = $this->model->revisionHistory;
+        $history = $history->whereIn('key', ['title', 'content'])
+                           ->sortByDesc('created_at')
+                           ->map(
+                               static function (Revision $revision) {
+                                   return [
+                                       'id'          => $revision->id,
+                                       'description' => ($revision->key === 'title') ?
+                                           sprintf(
+                                               'Title updated from "%s" to "%s"',
+                                               $revision->old_value,
+                                               $revision->new_value
+                                           ) :
+                                           sprintf(
+                                               'Content updated (%d characters) (%+d)',
+                                               strlen($revision->new_value),
+                                               strlen($revision->new_value) - strlen($revision->old_value)
+                                           ),
+                                       'responsible' => $revision->userResponsible()->name,
+                                       'created_at'  => $revision->created_at->diffForHumans(),
+                                   ];
+                               }
+                           )->values();
+
+        return Inertia::render(
+            'Wiki/PageHistory',
+            [
+                'slug'    => $this->slug,
+                'title'   => $this->model->title,
+                'history' => $history,
+                'draft'   => $this->userIsLoggedIn && $this->pageIsDraft,
+                'can'     => [
+                    'create' => $this->userCanCreateNewPage,
+                    'update' => $this->userCanUpdatePage,
+                    'delete' => $this->userCanDeletePage,
+                ],
+            ]
+        );
     }
 
 

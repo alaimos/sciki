@@ -34,7 +34,6 @@ class Page extends Model implements HasMedia
     protected $fillable = [
         'title',
         'content',
-        'simulation_id',
         'user_id',
         'draft',
     ];
@@ -42,6 +41,8 @@ class Page extends Model implements HasMedia
     protected $casts = [
         'draft' => 'boolean',
     ];
+
+    protected $keepRevisionOf = ['title', 'content'];
 
     /**
      * Get the options for generating the slug.
@@ -112,15 +113,17 @@ class Page extends Model implements HasMedia
         return $this;
     }
 
-    #[ArrayShape(['id'     => "int|mixed",
-                  'uuid'   => "mixed|null|string",
-                  'title'  => "mixed",
-                  'legend' => "mixed",
-                  'url'    => "string",
-                  'thumbs' => "array",
-                  'srcset' => "string"
-    ])] public function formatMedia(Media $media): array
-    {
+    #[ArrayShape([
+        'id'     => "int|mixed",
+        'uuid'   => "mixed|null|string",
+        'title'  => "mixed",
+        'legend' => "mixed",
+        'url'    => "string",
+        'thumbs' => "array",
+        'srcset' => "string"
+    ])] public function formatMedia(
+        Media $media
+    ): array {
         return [
             'id'     => $media->id,
             'uuid'   => $media->uuid,
@@ -141,7 +144,7 @@ class Page extends Model implements HasMedia
     }
 
     /**
-     * @param Media|null  $media
+     * @param Media|null $media
      *
      * @throws InvalidManipulation
      */
