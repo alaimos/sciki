@@ -206,6 +206,7 @@ class PageService
                                static function (Revision $revision) {
                                    return [
                                        'id'          => $revision->id,
+                                       'key'         => $revision->key,
                                        'description' => ($revision->key === 'title') ?
                                            sprintf(
                                                'Title updated from "%s" to "%s"',
@@ -239,5 +240,56 @@ class PageService
         );
     }
 
+    public function renderRevision(int $revision): Response
+    {
+        abort_if(
+            $this->pageNotFound || ($this->pageIsDraft &&
+                (!$this->userIsLoggedIn || !auth()->user()->can('update', $this->model))
+            ),
+            404
+        );
+        /** @var Revision $revision */
+        $revision = $this->model->revisionHistory()->where('id', $revision)->where('key', 'content')->firstOrFail();
+
+        return Inertia::render(
+            'Wiki/PageHistoryDiff',
+            [
+                'slug'            => $this->slug,
+                'title'           => $this->model->title,
+                'revision'        => $revision,
+                'current_content' => $this->model->content,
+                'draft'           => $this->userIsLoggedIn && $this->pageIsDraft,
+                'can'             => [
+                    'create' => $this->userCanCreateNewPage,
+                    'update' => $this->userCanUpdatePage,
+                    'delete' => $this->userCanDeletePage,
+                ],
+            ]
+        );
+    }
+
+    public function renderComments(): Response
+    {
+        abort_if(
+            $this->pageNotFound || ($this->pageIsDraft &&
+                (!$this->userIsLoggedIn || !auth()->user()->can('update', $this->model))
+            ),
+            404
+        );
+        return Inertia::render(
+            'Wiki/PageComments',
+            [
+                'slug'     => $this->slug,
+                'title'    => $this->model->title,
+                'draft'    => $this->userIsLoggedIn && $this->pageIsDraft,
+                'comments' => $this->model->comments,
+                'can'      => [
+                    'create' => $this->userCanCreateNewPage,
+                    'update' => $this->userCanUpdatePage,
+                    'delete' => $this->userCanDeletePage,
+                ],
+            ]
+        );
+    }
 
 }

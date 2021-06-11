@@ -14,11 +14,14 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use JetBrains\PhpStorm\ArrayShape;
 use RuntimeException;
 
 class SimulationService
 {
+
+    public const SIMULATION_TAG = 'simulation: %s';
 
     public const PHENSIM_TO_SCIKI = [
         'OVEREXPRESSION'  => Simulation::OVER_EXPRESSED,
@@ -411,6 +414,7 @@ class SimulationService
     public function saveAndSubmitSimulation(array $validatedData): Simulation
     {
         $existing = $validatedData['existing'];
+        $tags = $validatedData['tags'];
         $newSimulation = Simulation::create(
             [
                 'name'        => $validatedData['name'],
@@ -420,7 +424,11 @@ class SimulationService
                 'user_id'     => auth()->id(),
             ]
         );
-        $newSimulation->syncFormattedTags($validatedData['tags']);
+        $simulationTag = sprintf(self::SIMULATION_TAG, Str::slug($validatedData['name']));
+        if (!in_array($simulationTag, $tags, true)) {
+            $tags[] = $simulationTag;
+        }
+        $newSimulation->syncFormattedTags($tags);
         $newSimulation->save();
         if ($existing) {
             SyncSimulationJob::dispatch($newSimulation, true);

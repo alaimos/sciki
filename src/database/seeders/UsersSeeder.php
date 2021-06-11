@@ -15,28 +15,45 @@ class UsersSeeder extends Seeder
     public function run(): void
     {
         $password = \Hash::make('password');
-        User::create(
+        User::firstOrCreate(
+            [
+                'email' => 'user@user',
+            ],
             [
                 'name'              => 'user',
-                'email'             => 'user@user',
                 'password'          => $password,
                 'email_verified_at' => now(),
                 'role_id'           => 1,
             ]
         );
-        User::create(
+        User::firstOrCreate(
+            [
+                'email' => 'editor@editor',
+            ],
             [
                 'name'              => 'editor',
-                'email'             => 'editor@editor',
                 'password'          => $password,
                 'email_verified_at' => now(),
                 'role_id'           => 2,
             ]
         );
-        User::create(
+        User::firstOrCreate(
+            [
+                'email' => 'editor1@editor',
+            ],
+            [
+                'name'              => 'editor1',
+                'password'          => $password,
+                'email_verified_at' => now(),
+                'role_id'           => 2,
+            ]
+        );
+        User::firstOrCreate(
+            [
+                'email' => 'admin@admin',
+            ],
             [
                 'name'              => 'admin',
-                'email'             => 'admin@admin',
                 'password'          => $password,
                 'email_verified_at' => now(),
                 'role_id'           => 3,

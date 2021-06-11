@@ -544,6 +544,16 @@ var map = {
 		"/js/vendor",
 		"resources_js_Pages_Wiki_Page_tsx"
 	],
+	"./Wiki/PageComments": [
+		"./resources/js/Pages/Wiki/PageComments.tsx",
+		"/js/vendor",
+		"resources_js_Pages_Wiki_PageComments_tsx"
+	],
+	"./Wiki/PageComments.tsx": [
+		"./resources/js/Pages/Wiki/PageComments.tsx",
+		"/js/vendor",
+		"resources_js_Pages_Wiki_PageComments_tsx"
+	],
 	"./Wiki/PageHistory": [
 		"./resources/js/Pages/Wiki/PageHistory.tsx",
 		"/js/vendor",
@@ -553,6 +563,16 @@ var map = {
 		"./resources/js/Pages/Wiki/PageHistory.tsx",
 		"/js/vendor",
 		"resources_js_Pages_Wiki_PageHistory_tsx"
+	],
+	"./Wiki/PageHistoryDiff": [
+		"./resources/js/Pages/Wiki/PageHistoryDiff.tsx",
+		"/js/vendor",
+		"resources_js_Pages_Wiki_PageHistoryDiff_tsx"
+	],
+	"./Wiki/PageHistoryDiff.tsx": [
+		"./resources/js/Pages/Wiki/PageHistoryDiff.tsx",
+		"/js/vendor",
+		"resources_js_Pages_Wiki_PageHistoryDiff_tsx"
 	],
 	"./Wiki/PageNotFound": [
 		"./resources/js/Pages/Wiki/PageNotFound.tsx",

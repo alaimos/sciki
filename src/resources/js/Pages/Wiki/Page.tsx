@@ -1,24 +1,12 @@
 import React, { useEffect, useState } from "react";
-import Header from "../../Components/Layout/Headers/DefaultHeader";
-import {
-    Card,
-    CardBody,
-    Col,
-    Container,
-    Nav,
-    NavItem,
-    NavLink,
-    Row,
-    Spinner,
-} from "reactstrap";
-import { Helmet } from "react-helmet";
-import { InertiaLink, usePage } from "@inertiajs/inertia-react";
-import { Inertia, Page as InertiaPage } from "@inertiajs/inertia";
+import { Card, CardBody, NavItem, NavLink, Spinner } from "reactstrap";
+import { InertiaLink } from "@inertiajs/inertia-react";
 import { CommonPageProps } from "../../Types/page";
 import route from "ziggy-js";
 import { pluginRegex } from "../../Common/pluginResolver";
 // @ts-ignore
 import LoadingOverlay from "react-loading-overlay";
+import WikiPageHeader from "../../Components/Wiki/WikiPageHeader";
 
 interface CustomContent {
     key: string;
@@ -27,7 +15,7 @@ interface CustomContent {
     content: string;
 }
 
-interface Props {
+interface Props extends CommonPageProps {
     slug: string;
     page: {
         id: number;
@@ -44,29 +32,15 @@ interface Props {
 }
 
 const Page: React.FC<Props> = ({
+    auth: { check: userIsLoggedIn },
     page: { slug: pageSlug, title },
     content,
     can: { update: userCanUpdate, delete: userCanDelete },
 }: Props) => {
-    const {
-        auth: { check: userIsLoggedIn },
-    } = usePage<InertiaPage<CommonPageProps>>().props;
     const [isLoading, setIsLoading] = useState(false);
     const [processedContent, setProcessedContent] = useState<React.ReactNode[]>(
         []
     );
-    const userCanUpdateOrDelete = userCanUpdate || userCanDelete;
-    const handleDelete = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-        if (confirm("Do you really want to delete this page?")) {
-            return Inertia.delete(route("page.destroy", pageSlug));
-        }
-        return;
-    };
-    const handleEdit = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-        return Inertia.get(route("page.edit", pageSlug));
-    };
 
     useEffect(() => {
         if (!content) return;
@@ -120,83 +94,48 @@ const Page: React.FC<Props> = ({
     }, [content, setProcessedContent]);
 
     return (
-        <>
-            <Helmet>
-                <title>{title}</title>
-            </Helmet>
-            <Header title={title} />
-            <Container className="mt--7" fluid>
-                <Row className="mb-2">
-                    <Col lg={12} className="text-right">
-                        <Nav
-                            className="nav-fill flex-column-reverse flex-sm-row-reverse"
-                            pills
-                        >
-                            {userIsLoggedIn && userCanUpdateOrDelete && (
-                                <>
-                                    {userCanDelete && (
-                                        <NavItem className="ml-2 flex-grow-0">
-                                            <NavLink
-                                                className="mb-sm-3 mb-md-0 text-danger"
-                                                onClick={handleDelete}
-                                                href="#"
-                                            >
-                                                <i className="fas fa-trash mr-2" />
-                                                Delete
-                                            </NavLink>
-                                        </NavItem>
-                                    )}
-                                    {userCanUpdate && (
-                                        <NavItem className="ml-2 flex-grow-0">
-                                            <NavLink
-                                                className="mb-sm-3 mb-md-0"
-                                                onClick={handleEdit}
-                                                href="#"
-                                            >
-                                                <i className="fas fa-pencil-alt mr-2" />
-                                                Edit
-                                            </NavLink>
-                                        </NavItem>
-                                    )}
-                                </>
-                            )}
-                            <NavItem className="ml-2 flex-grow-0">
-                                <NavLink
-                                    className="mb-sm-3 mb-md-0"
-                                    onClick={(e) => e.preventDefault()}
-                                    href="#"
-                                >
-                                    <i className="fas fa-comments mr-2" />
-                                    Comments
-                                </NavLink>
-                            </NavItem>
-                            <NavItem className="ml-2 flex-grow-0">
-                                <NavLink
-                                    className="mb-sm-3 mb-md-0"
-                                    tag={InertiaLink}
-                                    href={route(
-                                        "wiki.show.revisions",
-                                        pageSlug
-                                    )}
-                                >
-                                    <i className="fas fa-history mr-2" />
-                                    History
-                                </NavLink>
-                            </NavItem>
-                        </Nav>
-                    </Col>
-                </Row>
-                <LoadingOverlay
-                    active={isLoading}
-                    spinner={<Spinner color="light" className="mr-2" />}
-                    text="Rendering..."
+        <WikiPageHeader
+            userIsLoggedIn={userIsLoggedIn}
+            pageSlug={pageSlug}
+            title={title}
+            userCanUpdate={userCanUpdate}
+            userCanDelete={userCanDelete}
+            customNavButtons={[
+                <NavItem className="ml-2 flex-grow-0" key="wiki.comments.index">
+                    <NavLink
+                        className="mb-sm-3 mb-md-0"
+                        tag={InertiaLink}
+                        href={route("wiki.comments", pageSlug)}
+                    >
+                        <i className="fas fa-comments mr-2" />
+                        Comments
+                    </NavLink>
+                </NavItem>,
+                <NavItem
+                    className="ml-2 flex-grow-0"
+                    key="wiki.revisions.index"
                 >
-                    <Card className="shadow">
-                        <CardBody>{processedContent}</CardBody>
-                    </Card>
-                </LoadingOverlay>
-            </Container>
-        </>
+                    <NavLink
+                        className="mb-sm-3 mb-md-0"
+                        tag={InertiaLink}
+                        href={route("wiki.revisions.index", pageSlug)}
+                    >
+                        <i className="fas fa-history mr-2" />
+                        History
+                    </NavLink>
+                </NavItem>,
+            ]}
+        >
+            <LoadingOverlay
+                active={isLoading}
+                spinner={<Spinner color="light" className="mr-2" />}
+                text="Rendering..."
+            >
+                <Card className="shadow">
+                    <CardBody>{processedContent}</CardBody>
+                </Card>
+            </LoadingOverlay>
+        </WikiPageHeader>
     );
 };
 

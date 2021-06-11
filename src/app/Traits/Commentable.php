@@ -4,12 +4,15 @@ namespace App\Traits;
 
 use App\Models\Comment;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait Commentable
 {
-    public function comments()
+    public function comments(): MorphMany
     {
-        return $this->morphMany(Comment::class, 'commentable');
+        return $this->morphMany(Comment::class, 'commentable')
+                    ->with('user')
+                    ->withSum('votes', 'vote');
     }
 
     public function comment(string $comment): Comment
@@ -31,7 +34,7 @@ trait Commentable
         );
     }
 
-    private function newComment(array $data)
+    private function newComment(array $data): Comment
     {
         return $this->comments()->create(
             array_merge(

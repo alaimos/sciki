@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCommentRequest;
 use App\Models\Page;
 use App\Services\PageService;
 use App\Services\SearchService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
@@ -26,11 +28,19 @@ class WikiController extends Controller
         return $pageService->render($request);
     }
 
-    public function showRevisions(string $page): InertiaResponse
+    public function showComments(string $page): InertiaResponse
     {
         $pageService = new PageService($page);
 
-        return $pageService->renderRevisions();
+        return $pageService->renderComments();
+    }
+
+    public function storeComment(StoreCommentRequest $request, Page $page): RedirectResponse
+    {
+        $data = $request->validated();
+        $page->comment($data['comment']);
+
+        return redirect()->route('wiki.comments', $page)->with('success', 'Comment posted successfully!');
     }
 
     public function typeahead(Request $request): JsonResponse

@@ -1,37 +1,36 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\CommentsController;
 use App\Http\Controllers\Editor\MediaController;
 use App\Http\Controllers\Editor\PageController;
+use App\Http\Controllers\RevisionsController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\WikiController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-/// Wiki Routes
 Route::get('/', [WikiController::class, 'index'])->name('wiki.index');
-Route::get('/wiki/{page}/revisions', [WikiController::class, 'showRevisions'])->name('wiki.show.revisions');
-Route::get('/wiki/{page}', [WikiController::class, 'show'])->name('wiki.show');
+
+/// Auth Routes
+Auth::routes();
+
+Route::post('/comments/{comment}/vote', [CommentsController::class, 'vote'])->name('comments.vote');
 Route::post('/search', [WikiController::class, 'search'])->name('wiki.search');
 Route::get('/search', fn() => redirect()->route('wiki.index'));
 Route::post('/typeahead', [WikiController::class, 'typeahead'])->name('wiki.typeahead');
-/// Auth Routes
-Auth::routes();
 /// Tags Routes
 Route::post('/tags/typeahead', [TagController::class, 'typeahead'])->name('tag.typeahead');
+/// Wiki Routes
+Route::get('/wiki/{page}/revisions/{revision}', [RevisionsController::class, 'show'])->name('wiki.revisions.show');
+Route::get('/wiki/{page}/revisions', [RevisionsController::class, 'index'])->name('wiki.revisions.index');
+Route::get('/wiki/{page}/comments', [WikiController::class, 'showComments'])->name('wiki.comments');
+Route::post('/wiki/{page}/comments', [WikiController::class, 'storeComment'])->name('wiki.comments.store');
+Route::get('/wiki/{page}', [WikiController::class, 'show'])->name('wiki.show');
 /// Plugins public routes
 foreach (config('sciki.resource_providers') as $resourceProviderClass) {
     app($resourceProviderClass)->publicRoutes();
 }
+
 
 /// Auth Users routes
 Route::group(
