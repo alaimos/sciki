@@ -52,10 +52,7 @@ const UserDropdown: React.FC<Props> = ({ showUserName }: Props) => {
                         <DropdownItem className="noti-title" header tag="div">
                             <h6 className="text-overflow m-0">Welcome!</h6>
                         </DropdownItem>
-                        <DropdownItem
-                            href="/admin/user-profile"
-                            tag={InertiaLink}
-                        >
+                        <DropdownItem href={route("home")} tag={InertiaLink}>
                             <i className="ni ni-single-02" />
                             <span>My profile</span>
                         </DropdownItem>

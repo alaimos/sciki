@@ -6,6 +6,7 @@ use App\Http\Controllers\Editor\MediaController;
 use App\Http\Controllers\Editor\PageController;
 use App\Http\Controllers\RevisionsController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\WikiController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,7 +43,7 @@ Route::group(
         ],
     ],
     static function () {
-        Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+        Route::get('/home', [ProfileController::class, 'index'])->name('home');
         /// Plugins user routes
         foreach (config('sciki.resource_providers') as $resourceProviderClass) {
             app($resourceProviderClass)->userRoutes();
