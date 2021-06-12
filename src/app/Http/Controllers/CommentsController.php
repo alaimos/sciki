@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\VoteCommentRequest;
 use App\Models\Comment;
+use App\Models\Role;
 use Illuminate\Http\JsonResponse;
 
 class CommentsController
@@ -14,17 +15,27 @@ class CommentsController
     public function vote(VoteCommentRequest $request, Comment $comment): JsonResponse
     {
         $data = $request->validated();
-        $vote = (int)$data['vote'];
-        $currentUserVote = $comment->current_user_vote;
-        if ($currentUserVote === null || $currentUserVote === 0) {
-            $comment->vote($vote);
-        } else {
-            $comment->vote(($currentUserVote === $vote) ? 0 : $vote);
-        }
+        $comment->vote((int)$data['vote']);
         return response()->json(
             [
                 'current_user_vote' => $comment->current_user_vote,
-                'total_votes'       => $comment->votes()->sum('vote'),
+                'total_votes'       => $comment->total_vote,
+            ]
+        );
+    }
+
+    public function destroy(Comment $comment): JsonResponse
+    {
+        abort_unless(
+            auth()->check() && ($comment->user_id === auth()->id() || auth()->user()->role_id === Role::ADMIN),
+            403,
+            'You are not allowed to perform this action'
+        );
+        $comment->votes()->delete();
+        $comment->delete();
+        return response()->json(
+            [
+                'id' => $comment->id,
             ]
         );
     }

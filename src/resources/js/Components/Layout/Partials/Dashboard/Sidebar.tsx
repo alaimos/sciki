@@ -24,7 +24,6 @@ const Sidebar: React.FC = () => {
         gui: { resources: resourceLinks, tools: toolLinks },
     } = usePage<Page<CommonPageProps>>().props;
     const [collapseOpen, setCollapseOpen] = useState(true);
-    console.log(usePage<Page<CommonPageProps>>().props);
 
     const renderLink = (link: GuiLink) => {
         if (link.resourceName && link.resourcePermission) {

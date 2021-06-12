@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Traits\Commentable;
 use App\Traits\HasFormattedTags;
+use App\Traits\HasReadableDates;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -24,6 +25,7 @@ class Page extends Model implements HasMedia
 
     use Commentable;
     use HasFormattedTags;
+    use HasReadableDates;
     use HasSlug;
     use HasTags;
     use InteractsWithMedia;
@@ -158,15 +160,5 @@ class Page extends Model implements HasMedia
              ->width(256)
              ->height(256)
              ->sharpen(10);
-    }
-
-    /**
-     * Returns the human readable version of the created_at attribute
-     *
-     * @return string
-     */
-    public function getReadableCreatedAtAttribute(): string
-    {
-        return $this->created_at->diffForHumans();
     }
 }

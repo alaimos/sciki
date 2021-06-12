@@ -15,6 +15,7 @@ Route::get('/', [WikiController::class, 'index'])->name('wiki.index');
 Auth::routes();
 
 Route::post('/comments/{comment}/vote', [CommentsController::class, 'vote'])->name('comments.vote');
+Route::delete('/comments/{comment}', [CommentsController::class, 'destroy'])->name('comments.destroy');
 Route::post('/search', [WikiController::class, 'search'])->name('wiki.search');
 Route::get('/search', fn() => redirect()->route('wiki.index'));
 Route::post('/typeahead', [WikiController::class, 'typeahead'])->name('wiki.typeahead');

@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CommentVote extends Model
+class Vote extends Model
 {
 
     protected $fillable = [
-        'comment_id',
+        'voteable_id',
+        'voteable_type',
         'user_id',
         'vote',
     ];
@@ -18,10 +19,7 @@ class CommentVote extends Model
         'vote' => 'integer',
     ];
 
-    public function comment(): BelongsTo
-    {
-        return $this->belongsTo(Comment::class);
-    }
+
 
     public function user(): BelongsTo
     {

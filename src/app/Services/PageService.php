@@ -5,6 +5,7 @@ namespace App\Services;
 
 use App\CommonMark\SciKiExtension\SciKiExtension;
 use App\CommonMark\SciKiExtension\ScikiFencedCodeRenderer;
+use App\Http\Resources\CommentResource;
 use App\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -282,7 +283,7 @@ class PageService
                 'slug'     => $this->slug,
                 'title'    => $this->model->title,
                 'draft'    => $this->userIsLoggedIn && $this->pageIsDraft,
-                'comments' => $this->model->comments,
+                'comments' => CommentResource::collection($this->model->comments),
                 'can'      => [
                     'create' => $this->userCanCreateNewPage,
                     'update' => $this->userCanUpdatePage,

@@ -1,0 +1,18 @@
+.comment {
+
+    .like {
+        opacity: 0.5;
+    }
+
+    .like.selected {
+        opacity: 1;
+    }
+
+    .cursor:hover {
+        color: $primary
+    }
+
+    .cursor {
+        cursor: pointer
+    }
+}

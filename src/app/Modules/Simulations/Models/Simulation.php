@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Simulations\Services\AccessControlService;
 use App\Services\Utils;
 use App\Traits\HasFormattedTags;
+use App\Traits\HasReadableDates;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ class Simulation extends Model
         forceDelete as originalForceDelete;
     }
     use HasFormattedTags;
+    use HasReadableDates;
     use HasTags;
     use Searchable;
 
@@ -122,16 +124,6 @@ class Simulation extends Model
     public function getReadableStatusAttribute(): string
     {
         return self::HUMAN_READABLE_STATES[$this->status]['label'] ?? '';
-    }
-
-    /**
-     * Returns the human readable version of the created_at attribute
-     *
-     * @return string
-     */
-    public function getReadableCreatedAtAttribute(): string
-    {
-        return $this->created_at->diffForHumans();
     }
 
     /**

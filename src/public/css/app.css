@@ -22359,6 +22359,19 @@ button:focus, :focus {
   margin-right: 10px;
 }
 
+.comment .like {
+  opacity: 0.5;
+}
+.comment .like.selected {
+  opacity: 1;
+}
+.comment .cursor:hover {
+  color: #5e72e4;
+}
+.comment .cursor {
+  cursor: pointer;
+}
+
 .react-bootstrap-table .table {
   margin-bottom: 1.25rem;
   border-bottom: 1px solid #e9ecef;
