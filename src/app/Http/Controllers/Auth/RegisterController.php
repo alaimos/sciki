@@ -62,7 +62,13 @@ class RegisterController extends Controller
             [
                 'name'     => ['required', 'string', 'max:255'],
                 'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                'password' => ['required', 'string', 'min:8', 'confirmed'],
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8', // TODO remove this line and uncomment the following line
+                    // (new Password(8))->mixedCase()->numbers()->symbols()->uncompromised(),
+                    'confirmed'
+                ],
             ]
         );
     }

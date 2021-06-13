@@ -44,6 +44,8 @@ Route::group(
     ],
     static function () {
         Route::get('/home', [ProfileController::class, 'index'])->name('home');
+        Route::patch('/user/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::patch('/user/password', [ProfileController::class, 'passwordUpdate'])->name('profile.password.update');
         /// Plugins user routes
         foreach (config('sciki.resource_providers') as $resourceProviderClass) {
             app($resourceProviderClass)->userRoutes();

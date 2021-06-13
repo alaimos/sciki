@@ -7,39 +7,76 @@ import {
     Col,
     Container,
     Form,
-    FormFeedback,
-    FormGroup,
-    Input,
-    Label,
     Row,
 } from "reactstrap";
 import { CommonPageProps } from "../../../Types/page";
 import HeaderWithImage from "../../../Components/Layout/Headers/HeaderWithImage";
-import classNames from "classnames";
 import { useForm } from "@inertiajs/inertia-react";
+import InputWithLabel from "../../../Components/Common/Forms/InputWithLabel";
+import route from "ziggy-js";
 // import {InertiaLink} from "@inertiajs/inertia-react";
 // import {Helmet} from "react-helmet";
 // import route from "ziggy-js";
 
-type Props = CommonPageProps;
+interface Props extends CommonPageProps {
+    published: number;
+    drafts: number;
+    comments: number;
+}
 
 interface ProfileFormType {
     name: string;
     email: string;
 }
 
-const Index: React.FC<Props> = ({ auth: { user } }: Props) => {
+interface ChangePasswordFormType {
+    current_password: string;
+    password: string;
+    password_confirmation: string;
+}
+
+const Index: React.FC<Props> = ({
+    auth: { user },
+    published,
+    drafts,
+    comments,
+}: Props) => {
     const {
         data: profileData,
         setData: setProfileData,
         errors: profileErrors,
         processing: profileProcessing,
+        patch: profilePatch,
     } =
         // @ts-ignore
         useForm<ProfileFormType>("UpdateProfileForm", {
             name: user?.name ?? "",
             email: user?.email ?? "",
         });
+
+    const {
+        data: passwordData,
+        setData: setPasswordData,
+        errors: passwordErrors,
+        processing: passwordProcessing,
+        patch: passwordPatch,
+    } =
+        // @ts-ignore
+        useForm<ChangePasswordFormType>("ChangePasswordForm", {
+            current_password: "",
+            password: "",
+            password_confirmation: "",
+        });
+
+    const submitChangePassword = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        return passwordPatch(route("profile.password.update"));
+    };
+
+    const submitUpdateProfile = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        return profilePatch(route("profile.update"));
+    };
 
     return (
         <>
@@ -99,23 +136,23 @@ const Index: React.FC<Props> = ({ auth: { user } }: Props) => {
                                                 <div className="card-profile-stats d-flex justify-content-center">
                                                     <div>
                                                         <span className="heading">
-                                                            22
+                                                            {published}
                                                         </span>
                                                         <span className="description">
-                                                            Friends
+                                                            Pages
                                                         </span>
                                                     </div>
                                                     <div>
                                                         <span className="heading">
-                                                            10
+                                                            {drafts}
                                                         </span>
                                                         <span className="description">
-                                                            Photos
+                                                            Drafts
                                                         </span>
                                                     </div>
                                                     <div>
                                                         <span className="heading">
-                                                            89
+                                                            {comments}
                                                         </span>
                                                         <span className="description">
                                                             Comments
@@ -136,200 +173,128 @@ const Index: React.FC<Props> = ({ auth: { user } }: Props) => {
                                         <h6 className="heading-small text-muted mb-4">
                                             User information
                                         </h6>
-                                        <div className="pl-lg-4">
-                                            <Row>
-                                                <Col lg="12">
-                                                    <Form>
-                                                        <FormGroup
-                                                            className={classNames(
-                                                                {
-                                                                    "has-danger":
-                                                                        !!profileErrors.name,
-                                                                }
-                                                            )}
-                                                        >
-                                                            <Label
-                                                                className="form-control-label"
-                                                                for="create-simulation-name"
-                                                            >
-                                                                Name
-                                                            </Label>
-                                                            <Input
-                                                                id="create-simulation-name"
-                                                                placeholder="Name"
-                                                                type="text"
-                                                                value={
-                                                                    profileData.name
-                                                                }
-                                                                invalid={
-                                                                    !!profileErrors.name
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setProfileData(
-                                                                        "name",
-                                                                        e.target
-                                                                            .value
-                                                                    )
-                                                                }
-                                                            />
-                                                            <FormFeedback
-                                                                tag="span"
-                                                                className="invalid-feedback"
-                                                                style={{
-                                                                    display:
-                                                                        "block",
-                                                                }}
-                                                            >
-                                                                <strong>
-                                                                    {
-                                                                        profileErrors.name
-                                                                    }
-                                                                </strong>
-                                                            </FormFeedback>
-                                                        </FormGroup>
-                                                        <FormGroup
-                                                            className={classNames(
-                                                                {
-                                                                    "has-danger":
-                                                                        !!profileErrors.email,
-                                                                }
-                                                            )}
-                                                        >
-                                                            <Label
-                                                                className="form-control-label"
-                                                                for="create-simulation-email"
-                                                            >
-                                                                E-mail
-                                                            </Label>
-                                                            <Input
-                                                                id="create-simulation-email"
-                                                                placeholder="Email"
-                                                                type="email"
-                                                                autoComplete="new-email"
-                                                                value={
-                                                                    profileData.email
-                                                                }
-                                                                invalid={
-                                                                    !!profileErrors.email
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setProfileData(
-                                                                        "email",
-                                                                        e.target
-                                                                            .value
-                                                                    )
-                                                                }
-                                                            />
-                                                            <FormFeedback
-                                                                tag="span"
-                                                                className="invalid-feedback"
-                                                                style={{
-                                                                    display:
-                                                                        "block",
-                                                                }}
-                                                            >
-                                                                <strong>
-                                                                    {
-                                                                        profileErrors.email
-                                                                    }
-                                                                </strong>
-                                                            </FormFeedback>
-                                                        </FormGroup>
-                                                    </Form>
-                                                </Col>
-                                            </Row>
-                                            <div className="d-flex justify-content-center">
-                                                <Button
-                                                    color="primary"
-                                                    href="#pablo"
-                                                    onClick={(e) =>
-                                                        e.preventDefault()
-                                                    }
-                                                    size="sm"
-                                                    disabled={profileProcessing}
-                                                >
-                                                    <i className="fas fa-save mr-2" />
-                                                    Save
-                                                </Button>
+                                        <Form onSubmit={submitUpdateProfile}>
+                                            <div className="pl-lg-4">
+                                                <Row>
+                                                    <Col lg="12">
+                                                        <InputWithLabel
+                                                            name="name"
+                                                            label="Name"
+                                                            type="text"
+                                                            value={
+                                                                profileData.name
+                                                            }
+                                                            error={
+                                                                profileErrors.name
+                                                            }
+                                                            setValue={
+                                                                setProfileData
+                                                            }
+                                                        />
+                                                        <InputWithLabel
+                                                            name="email"
+                                                            label="E-mail"
+                                                            type="email"
+                                                            value={
+                                                                profileData.email
+                                                            }
+                                                            error={
+                                                                profileErrors.email
+                                                            }
+                                                            setValue={
+                                                                setProfileData
+                                                            }
+                                                        />
+                                                    </Col>
+                                                </Row>
+                                                <div className="d-flex justify-content-center">
+                                                    <Button
+                                                        type="submit"
+                                                        color="primary"
+                                                        size="sm"
+                                                        disabled={
+                                                            profileProcessing
+                                                        }
+                                                    >
+                                                        <i className="fas fa-save mr-2" />
+                                                        Save
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </Form>
                                         <hr className="my-4" />
                                         <h6 className="heading-small text-muted mb-4">
                                             Change your password
                                         </h6>
-                                        <div className="pl-lg-4">
-                                            <Row>
-                                                <Col md="12">
-                                                    <FormGroup>
-                                                        <label
-                                                            className="form-control-label"
-                                                            htmlFor="input-address"
-                                                        >
-                                                            Address
-                                                        </label>
-                                                        <Input
-                                                            className="form-control-alternative"
-                                                            defaultValue="Bld Mihail Kogalniceanu, nr. 8 Bl 1, Sc 1, Ap 09"
-                                                            id="input-address"
-                                                            placeholder="Home Address"
-                                                            type="text"
+                                        <Form onSubmit={submitChangePassword}>
+                                            <div className="pl-lg-4">
+                                                <Row>
+                                                    <Col md="12">
+                                                        <InputWithLabel
+                                                            name="current_password"
+                                                            label="Current Password"
+                                                            type="password"
+                                                            value={
+                                                                passwordData.current_password
+                                                            }
+                                                            error={
+                                                                passwordErrors.current_password
+                                                            }
+                                                            setValue={
+                                                                setPasswordData
+                                                            }
                                                         />
-                                                    </FormGroup>
-                                                </Col>
-                                            </Row>
-                                            <Row>
-                                                <Col lg="4">
-                                                    <FormGroup>
-                                                        <label
-                                                            className="form-control-label"
-                                                            htmlFor="input-city"
-                                                        >
-                                                            City
-                                                        </label>
-                                                        <Input
-                                                            className="form-control-alternative"
-                                                            defaultValue="New York"
-                                                            id="input-city"
-                                                            placeholder="City"
-                                                            type="text"
+                                                    </Col>
+                                                </Row>
+                                                <Row>
+                                                    <Col md="6">
+                                                        <InputWithLabel
+                                                            name="password"
+                                                            label="New Password"
+                                                            type="password"
+                                                            value={
+                                                                passwordData.password
+                                                            }
+                                                            error={
+                                                                passwordErrors.password
+                                                            }
+                                                            setValue={
+                                                                setPasswordData
+                                                            }
                                                         />
-                                                    </FormGroup>
-                                                </Col>
-                                                <Col lg="4">
-                                                    <FormGroup>
-                                                        <label
-                                                            className="form-control-label"
-                                                            htmlFor="input-country"
-                                                        >
-                                                            Country
-                                                        </label>
-                                                        <Input
-                                                            className="form-control-alternative"
-                                                            defaultValue="United States"
-                                                            id="input-country"
-                                                            placeholder="Country"
-                                                            type="text"
+                                                    </Col>
+                                                    <Col md="6">
+                                                        <InputWithLabel
+                                                            name="password_confirmation"
+                                                            label="Confirm password"
+                                                            type="password"
+                                                            value={
+                                                                passwordData.password_confirmation
+                                                            }
+                                                            error={
+                                                                passwordErrors.password_confirmation
+                                                            }
+                                                            setValue={
+                                                                setPasswordData
+                                                            }
                                                         />
-                                                    </FormGroup>
-                                                </Col>
-                                                <Col lg="4">
-                                                    <FormGroup>
-                                                        <label
-                                                            className="form-control-label"
-                                                            htmlFor="input-country"
-                                                        >
-                                                            Postal code
-                                                        </label>
-                                                        <Input
-                                                            className="form-control-alternative"
-                                                            id="input-postal-code"
-                                                            placeholder="Postal code"
-                                                            type="number"
-                                                        />
-                                                    </FormGroup>
-                                                </Col>
-                                            </Row>
-                                        </div>
+                                                    </Col>
+                                                </Row>
+                                                <div className="d-flex justify-content-center">
+                                                    <Button
+                                                        type="submit"
+                                                        color="primary"
+                                                        size="sm"
+                                                        disabled={
+                                                            passwordProcessing
+                                                        }
+                                                    >
+                                                        <i className="fas fa-key mr-2" />
+                                                        Change password
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </Form>
                                     </CardBody>
                                 </Card>
                             </Col>
