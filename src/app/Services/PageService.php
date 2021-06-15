@@ -7,6 +7,7 @@ use App\CommonMark\SciKiExtension\SciKiExtension;
 use App\CommonMark\SciKiExtension\ScikiFencedCodeRenderer;
 use App\Http\Resources\CommentResource;
 use App\Models\Page;
+use App\Models\Role;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as LaravelHttpResponse;
@@ -156,11 +157,16 @@ class PageService
 
     private function renderExistingPage(): Response
     {
+        $page = $this->model->toArray();
+        if (auth()->check() && auth()->user()->role_id >= Role::EDITOR) {
+            $page['votes_sum_vote'] = $this->model->total_vote;
+            $page['current_user_vote'] = $this->model->current_user_vote;
+        }
         return Inertia::render(
             'Wiki/Page',
             [
                 'slug'    => $this->slug,
-                'page'    => $this->model,
+                'page'    => $page,
                 'content' => $this->parsePageContent(),
                 'draft'   => $this->userIsLoggedIn && $this->pageIsDraft,
                 'can'     => [

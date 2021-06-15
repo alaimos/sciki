@@ -80,8 +80,107 @@ function scikiPlugin(editor: TUIEditorObject) {
     codeBlockManager.setReplacer("SciKi", scikiPluginReplacer);
 }
 
+const ADD_NOTE_POPUP_CONTENT = `
+    <label for="ref">Identifier</label>
+    <input name="ref" type="text" class="te-ref-input" />
+    <label for="noteText">Text</label>
+    <input name="noteText" type="text" class="te-note-text-input" />
+    <div class="te-button-section">
+        <button type="button" class="te-ok-button" style="width: auto; padding: 0px 14px 0px 15px; height: 28px;">OK</button>
+        <button type="button" class="te-close-button" style="width: auto; padding: 0px 14px 0px 15px; height: 28px;">Cancel</button>
+    </div>
+`;
+
 const scikiExtendedMarkdownPlugin: PluginInfo = {
-    pluginFn() {
+    pluginFn(editor) {
+        editor.eventManager.addEventType("clickAddTOC");
+        editor.eventManager.listen("clickAddTOC", function () {
+            editor.insertText("[TOC]");
+        });
+        editor
+            .getUI()
+            .getToolbar()
+            .addItem({
+                type: "button",
+                options: {
+                    className: "addTOC",
+                    event: "clickAddTOC",
+                    tooltip: "Add table of content",
+                    text: "T",
+                    style: "background: none; color: black; font-weight: bold",
+                },
+            });
+        //@ts-ignore
+        const popup = editor.getUI().createPopup({
+            header: true,
+            title: "Add note/citation",
+            content: ADD_NOTE_POPUP_CONTENT,
+            className: "tui-popup-add-note tui-editor-popup",
+            modal: false,
+            target: editor.getUI().getToolbar().el,
+            css: {
+                width: "auto",
+                position: "absolute",
+            },
+        });
+        editor.eventManager.addEventType("clickAddNoteButton");
+        editor.eventManager.listen("clickAddNoteButton", function () {
+            if (popup.isShow()) {
+                popup.hide();
+                return;
+            }
+            editor.eventManager.emit("closeAllPopup");
+            popup.show();
+        });
+        const refTextBox = popup.el.querySelector(".te-ref-input");
+        const noteTextBox = popup.el.querySelector(".te-note-text-input");
+        editor.addCommand("markdown", {
+            name: "add_note",
+            exec(mde, ref, note) {
+                const cm = mde.getEditor();
+                const oldCursor = cm.getCursor();
+                editor.moveCursorToEnd();
+                editor.insertText(`\n[^${ref}]: ${note}`);
+                cm.setCursor(oldCursor);
+            },
+        });
+        popup.el
+            .querySelector(".te-close-button")
+            .addEventListener("click", () => {
+                refTextBox.value = "";
+                noteTextBox.value = "";
+                popup.hide();
+            });
+        popup.el
+            .querySelector(".te-ok-button")
+            .addEventListener("click", () => {
+                if (refTextBox.value != "") {
+                    editor.insertText(`[^${refTextBox.value}]`);
+                    if (noteTextBox.value != "") {
+                        editor.exec(
+                            "add_note",
+                            refTextBox.value,
+                            noteTextBox.value
+                        );
+                    }
+                    refTextBox.value = "";
+                    noteTextBox.value = "";
+                }
+                popup.hide();
+            });
+        editor
+            .getUI()
+            .getToolbar()
+            .addItem({
+                type: "button",
+                options: {
+                    className: "addNote",
+                    event: "clickAddNoteButton",
+                    tooltip: "Add note/citation",
+                    text: "N",
+                    style: "background: none; color: black; font-weight: bold",
+                },
+            });
         return;
     },
     renderer: {

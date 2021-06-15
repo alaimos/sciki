@@ -4,7 +4,7 @@
 namespace App\Http\Controllers;
 
 
-use App\Http\Requests\VoteCommentRequest;
+use App\Http\Requests\VoteRequest;
 use App\Models\Comment;
 use App\Models\Role;
 use Illuminate\Http\JsonResponse;
@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 class CommentsController
 {
 
-    public function vote(VoteCommentRequest $request, Comment $comment): JsonResponse
+    public function vote(VoteRequest $request, Comment $comment): JsonResponse
     {
         $data = $request->validated();
         $comment->vote((int)$data['vote']);

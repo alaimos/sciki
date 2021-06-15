@@ -56,9 +56,10 @@ class HandleInertiaRequests extends Middleware
         $shared = [
             parent::share($request),
             [
-                'auth.check'    => $userIsLoggedIn,
-                'auth.is_admin' => fn() => $userIsLoggedIn && auth()->user()->role_id === Role::ADMIN,
-                'auth.user'     => fn() => $userIsLoggedIn ? auth()->user()->only(
+                'auth.check'     => $userIsLoggedIn,
+                'auth.is_editor' => fn() => $userIsLoggedIn && auth()->user()->role_id === Role::EDITOR,
+                'auth.is_admin'  => fn() => $userIsLoggedIn && auth()->user()->role_id === Role::ADMIN,
+                'auth.user'      => fn() => $userIsLoggedIn ? auth()->user()->only(
                     [
                         'id',
                         'name',
@@ -67,10 +68,10 @@ class HandleInertiaRequests extends Middleware
                         'avatar',
                     ]
                 ) : null,
-                'capabilities'  => fn() => $this->accessControlService->getCommonCapabilities(),
-                'flash.success' => fn() => $request->session()->get('success'),
-                'flash.error'   => fn() => $request->session()->get('error'),
-                'flash.status'  => fn() => $request->session()->get('status'),
+                'capabilities'   => fn() => $this->accessControlService->getCommonCapabilities(),
+                'flash.success'  => fn() => $request->session()->get('success'),
+                'flash.error'    => fn() => $request->session()->get('error'),
+                'flash.status'   => fn() => $request->session()->get('status'),
             ],
         ];
         $sidebarGuiResources = [];

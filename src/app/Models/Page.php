@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\Commentable;
 use App\Traits\HasFormattedTags;
 use App\Traits\HasReadableDates;
+use App\Traits\Voteable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -32,6 +33,7 @@ class Page extends Model implements HasMedia
     use RevisionableTrait;
     use Searchable;
     use SoftDeletes;
+    use Voteable;
 
     protected $fillable = [
         'title',

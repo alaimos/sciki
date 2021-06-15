@@ -22359,16 +22359,16 @@ button:focus, :focus {
   margin-right: 10px;
 }
 
-.comment .like {
+.vote .like {
   opacity: 0.5;
 }
-.comment .like.selected {
+.vote .like.selected {
   opacity: 1;
 }
-.comment .cursor:hover {
+.vote .cursor:hover {
   color: #5e72e4;
 }
-.comment .cursor {
+.vote .cursor {
   cursor: pointer;
 }
 

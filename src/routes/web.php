@@ -63,6 +63,7 @@ Route::group(
                 /// Page Routes
                 Route::put('/page/{page}/publish', [PageController::class, 'publish'])->name('page.publish');
                 Route::put('/page/{page}/draft', [PageController::class, 'draft'])->name('page.draft');
+                Route::post('/page/{page}/vote', [PageController::class, 'vote'])->name('page.vote');
                 Route::post('/page-table', [PageController::class, 'indexTable'])->name('page.index.table');
                 Route::resource('page', PageController::class)->except(['show', 'create']);
                 /// Plugins editor routes

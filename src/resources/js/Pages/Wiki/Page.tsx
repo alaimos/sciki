@@ -7,6 +7,7 @@ import { pluginRegex } from "../../Common/pluginResolver";
 // @ts-ignore
 import LoadingOverlay from "react-loading-overlay";
 import WikiPageHeader from "../../Components/Wiki/WikiPageHeader";
+import Vote from "../../Components/Common/Vote";
 
 interface CustomContent {
     key: string;
@@ -21,6 +22,8 @@ interface Props extends CommonPageProps {
         id: number;
         slug: string;
         title: string;
+        current_user_vote: number;
+        votes_sum_vote: number;
     };
     content: CustomContent[];
     draft: boolean;
@@ -32,11 +35,12 @@ interface Props extends CommonPageProps {
 }
 
 const Page: React.FC<Props> = ({
-    auth: { check: userIsLoggedIn },
-    page: { slug: pageSlug, title },
+    auth: { check: userIsLoggedIn, is_editor, is_admin },
+    page,
     content,
     can: { update: userCanUpdate, delete: userCanDelete },
 }: Props) => {
+    const { slug: pageSlug, title } = page;
     const [isLoading, setIsLoading] = useState(false);
     const [processedContent, setProcessedContent] = useState<React.ReactNode[]>(
         []
@@ -132,7 +136,27 @@ const Page: React.FC<Props> = ({
                 text="Rendering..."
             >
                 <Card className="shadow">
-                    <CardBody>{processedContent}</CardBody>
+                    <CardBody>
+                        {processedContent}
+                        {userIsLoggedIn && (is_editor || is_admin) && (
+                            <div
+                                className="bg-white"
+                                style={{
+                                    position: "absolute",
+                                    top: "0",
+                                    right: "0",
+                                }}
+                            >
+                                <div className="m-2">
+                                    <Vote
+                                        object={page}
+                                        idKey="slug"
+                                        commentRoute="page.vote"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </CardBody>
                 </Card>
             </LoadingOverlay>
         </WikiPageHeader>

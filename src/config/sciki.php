@@ -10,4 +10,7 @@ return [
     'resource_providers' => [
         SimulationModuleProvider::class,
     ],
+
+    'proxy_url'    => env('PROXY_URL'),
+    'proxy_scheme' => env('PROXY_SCHEMA'),
 ];

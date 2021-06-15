@@ -7,6 +7,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -37,16 +38,29 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiting();
 
-        $this->routes(function () {
-            Route::prefix('api')
-                ->middleware('api')
-                ->namespace($this->namespace)
-                ->group(base_path('routes/api.php'));
+        $this->routes(
+            function () {
+                $proxy_url = config('sciki.proxy_url');
+                $proxy_schema = config('sciki.proxy_scheme');
 
-            Route::middleware('web')
-                ->namespace($this->namespace)
-                ->group(base_path('routes/web.php'));
-        });
+                if (!empty($proxy_url)) {
+                    URL::forceRootUrl($proxy_url);
+                }
+
+                if (!empty($proxy_schema)) {
+                    URL::forceScheme($proxy_schema);
+                }
+
+                Route::prefix('api')
+                     ->middleware('api')
+                     ->namespace($this->namespace)
+                     ->group(base_path('routes/api.php'));
+
+                Route::middleware('web')
+                     ->namespace($this->namespace)
+                     ->group(base_path('routes/web.php'));
+            }
+        );
     }
 
     /**
@@ -56,8 +70,11 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function configureRateLimiting()
     {
-        RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
-        });
+        RateLimiter::for(
+            'api',
+            function (Request $request) {
+                return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+            }
+        );
     }
 }

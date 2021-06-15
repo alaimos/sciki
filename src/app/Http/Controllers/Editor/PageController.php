@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Editor;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Editor\EditPageRequest;
 use App\Http\Requests\Editor\StorePageRequest;
+use App\Http\Requests\VoteRequest;
 use App\Models\Page;
 use App\Services\TablesService;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -137,6 +138,18 @@ CONTENT;
         return redirect()
             ->route('wiki.index')
             ->with('success', sprintf('The page %s has been deleted', $page->title));
+    }
+
+    public function vote(VoteRequest $request, Page $page): JsonResponse
+    {
+        $data = $request->validated();
+        $page->vote((int)$data['vote']);
+        return response()->json(
+            [
+                'current_user_vote' => $page->current_user_vote,
+                'total_votes'       => $page->total_vote,
+            ]
+        );
     }
 
 }

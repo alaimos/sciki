@@ -3,7 +3,7 @@ import { Card, CardBody } from "reactstrap";
 import route from "ziggy-js";
 import { AuthUser } from "../../../Types/page";
 import axios from "../../../Common/axios";
-import classNames from "classnames";
+import Vote from "../Vote";
 
 export interface Comment {
     id: number;
@@ -16,54 +16,25 @@ export interface Comment {
     can_delete: boolean;
 }
 
-interface CommentVoteResponse {
-    current_user_vote: number;
-    total_votes: number;
-}
-
 interface Props {
     userIsLoggedIn: boolean;
     comment: Comment;
     onDeleteComment?: (id: number) => void;
 }
-
-interface State {
-    deleted?: boolean;
-    voting?: boolean;
-    currentUserVote: number;
-    totalVote: number;
-}
-
 const CommentCard: React.FC<Props> = ({
     comment,
     userIsLoggedIn,
     onDeleteComment,
 }: Props) => {
-    const [state, setState] = useState<State>({
-        currentUserVote: comment.current_user_vote ?? 0,
-        totalVote: comment.votes_sum_vote,
-    });
-    const doVote = async (vote: number) => {
-        if (state.voting) return;
-        setState((prevState) => ({ ...prevState, voting: true }));
-        const response = await axios.post<CommentVoteResponse>(
-            route("comments.vote", comment.id),
-            {
-                vote,
-            }
-        );
-        setState({
-            currentUserVote: response.data.current_user_vote,
-            totalVote: response.data.total_votes ?? 0,
-        });
-    };
+    const [isDeleted, setIsDeleted] = useState(false);
+
     const doDelete = async () => {
         if (comment.can_delete) {
             const response = await axios.delete(
                 route("comments.destroy", comment.id)
             );
             if (response.status === 200 && onDeleteComment) {
-                setState((prevState) => ({ ...prevState, deleted: true }));
+                setIsDeleted(true);
                 onDeleteComment(comment.id);
             }
         }
@@ -90,7 +61,7 @@ const CommentCard: React.FC<Props> = ({
                                     {comment.readable_created_at}
                                 </span>
                             </div>
-                            {comment.can_delete && !state.deleted && (
+                            {comment.can_delete && !isDeleted && (
                                 <div className="m-2">
                                     <a
                                         href="#"
@@ -110,40 +81,11 @@ const CommentCard: React.FC<Props> = ({
                         </div>
                     </div>
                     {userIsLoggedIn && (
-                        <div>
-                            <div className="d-flex flex-row text-sm">
-                                <div
-                                    className={classNames({
-                                        like: true,
-                                        "p-2": true,
-                                        cursor: true,
-                                        selected: state.currentUserVote === 1,
-                                    })}
-                                    onClick={() => doVote(+1)}
-                                >
-                                    <i className="fas fa-thumbs-up" />
-                                    <span className="ml-1">Up-vote</span>
-                                </div>
-                                <div className="p-2" title="Votes">
-                                    <i className="fas fa-vote-yea" />
-                                    <span className="ml-1">
-                                        {state.totalVote}
-                                    </span>
-                                </div>
-                                <div
-                                    className={classNames({
-                                        like: true,
-                                        "p-2": true,
-                                        cursor: true,
-                                        selected: state.currentUserVote === -1,
-                                    })}
-                                    onClick={() => doVote(-1)}
-                                >
-                                    <i className="fas fa-thumbs-down" />
-                                    <span className="ml-1">Down-vote</span>
-                                </div>
-                            </div>
-                        </div>
+                        <Vote
+                            object={comment}
+                            idKey="id"
+                            commentRoute="comments.vote"
+                        />
                     )}
                 </CardBody>
             </Card>
