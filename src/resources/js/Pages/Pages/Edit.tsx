@@ -37,6 +37,7 @@ interface Props {
         slug: string;
         title: string;
         content: string;
+        featured_image_id?: number;
         draft: boolean;
     };
     formatted_tags: string[];
@@ -44,7 +45,7 @@ interface Props {
 }
 
 const Index: React.FC<Props> = ({
-    page: { slug, title, content, draft },
+    page: { slug, title, content, draft, featured_image_id },
     formatted_tags: tags,
     media,
 }: Props) => {
@@ -54,6 +55,7 @@ const Index: React.FC<Props> = ({
         content,
         tags,
         media,
+        featured_image_id,
         deletedMedia: [] as string[],
     });
 
@@ -251,6 +253,9 @@ const Index: React.FC<Props> = ({
                             deletedMedia: [...previousData.deletedMedia, uuid],
                         }))
                     }
+                    enableFeatured
+                    featuredId={data.featured_image_id}
+                    onFeaturedSelect={(m) => setData("featured_image_id", m.id)}
                 />
                 <Row>
                     <Col>

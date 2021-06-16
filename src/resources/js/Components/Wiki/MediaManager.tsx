@@ -43,8 +43,11 @@ export interface Media {
 interface Props {
     currentPageSlug: string;
     media: Record<string, Media>;
+    enableFeatured?: boolean;
+    featuredId?: number;
     deletedMedia: string[];
     onMediaSelect: (media: Media) => void;
+    onFeaturedSelect?: (media: Media) => void;
     onMediaUpdate: (media: Media) => void;
     onMediaUpload: (newMedia: Media) => void;
     onMediaDelete: (uuid: string) => void;
@@ -63,12 +66,16 @@ interface EditState {
 const MediaManager: React.FC<Props> = ({
     currentPageSlug,
     media,
+    enableFeatured = false,
+    featuredId,
     deletedMedia,
     onMediaUpload,
     onMediaUpdate,
     onMediaSelect,
+    onFeaturedSelect,
     onMediaDelete,
 }: Props) => {
+    const isFeaturedEnabled = enableFeatured && onFeaturedSelect;
     const titleRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const legendRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
     const uppy = useUppy(() => {
@@ -237,6 +244,38 @@ const MediaManager: React.FC<Props> = ({
                                                         Copy Id to Clipboard
                                                     </UncontrolledTooltip>
                                                 </div>
+                                                {isFeaturedEnabled && (
+                                                    <div>
+                                                        <a
+                                                            id={`FeatureMediaTooltip${m.uuid}`}
+                                                            href="#"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                if (
+                                                                    onFeaturedSelect
+                                                                )
+                                                                    onFeaturedSelect(
+                                                                        m
+                                                                    );
+                                                            }}
+                                                            className="text-danger"
+                                                            title="Mark as featured"
+                                                        >
+                                                            {featuredId ===
+                                                            m.id ? (
+                                                                <i className="fas fa-star" />
+                                                            ) : (
+                                                                <i className="far fa-star" />
+                                                            )}
+                                                        </a>
+                                                        <UncontrolledTooltip
+                                                            placement="auto"
+                                                            target={`FeatureMediaTooltip${m.uuid}`}
+                                                        >
+                                                            Mark as featured
+                                                        </UncontrolledTooltip>
+                                                    </div>
+                                                )}
                                                 <div>
                                                     <a
                                                         id={`EditMediaTooltip${m.uuid}`}

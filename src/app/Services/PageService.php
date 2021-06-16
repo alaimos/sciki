@@ -121,38 +121,11 @@ class PageService
 
     private function parsePageContent(): array
     {
-        ScikiFencedCodeRenderer::clearDetectedBlocks();
-        $originalContent = $this->model->content;
-        $converter = $this->makeMarkdownParser();
-        $convertedContent = $converter->convertToHtml($originalContent);
-        $dividedBlocks = preg_split(
-            ScikiFencedCodeRenderer::SCIKI_BLOCK_REGEXP,
-            $convertedContent,
-            -1,
-            PREG_SPLIT_DELIM_CAPTURE
-        );
-        $reactContentArray = [];
-        foreach ($dividedBlocks as $i => $content) {
-            // Even-indexed elements are things before/after the SciKi plugin blocks
-            if ($i % 2 === 0) {
-                $reactContentArray[] = [
-                    'key'       => Str::uuid()->toString(),
-                    'component' => 'Html',
-                    'props'     => [
-                        'content' => $content,
-                    ],
-                ];
-            } elseif (($block = ScikiFencedCodeRenderer::getDetectedBlock($content)) !== null) {
-                $reactContentArray[] = [
-                    'key'       => Str::uuid()->toString(),
-                    'component' => $block['component'],
-                    'props'     => $block['props'],
-                ];
-            }
-        }
-        ScikiFencedCodeRenderer::clearDetectedBlocks();
-
-        return $reactContentArray;
+        $parser = new PageParserService($this->model);
+        $parsedContent = $parser->contentParser();
+        $blocks = $parser->extractBlocks($parsedContent);
+        $parser->cleanup();
+        return $blocks;
     }
 
     private function renderExistingPage(): Response

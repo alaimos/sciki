@@ -88,8 +88,9 @@ CONTENT;
 
         $page->update(
             [
-                'title'   => $data['title'],
-                'content' => $data['content'],
+                'title'             => $data['title'],
+                'content'           => $data['content'],
+                'featured_image_id' => $data['featured_image_id'],
             ]
         );
 

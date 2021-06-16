@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCommentRequest;
 use App\Models\Page;
+use App\Services\HomepageService;
 use App\Services\PageService;
 use App\Services\SearchService;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +19,7 @@ class WikiController extends Controller
 
     public function index(): InertiaResponse
     {
-        return Inertia::render('Wiki/Index');
+        return (new HomepageService())->render();
     }
 
     public function show(Request $request, string $page): BaseResponse

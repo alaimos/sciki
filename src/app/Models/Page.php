@@ -39,6 +39,7 @@ class Page extends Model implements HasMedia
         'title',
         'content',
         'user_id',
+        'featured_image_id',
         'draft',
     ];
 
@@ -109,12 +110,24 @@ class Page extends Model implements HasMedia
         return $this->belongsTo(User::class);
     }
 
+    public function featuredImage(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'featured_image_id');
+    }
 
     public function deleteMediaByUuid(array $deletedMedia): self
     {
         $this->media()->whereIn('uuid', $deletedMedia)->delete();
 
         return $this;
+    }
+
+    public function formattedFeaturedImage(): ?array
+    {
+        if (!$this->featuredImage) {
+            return null;
+        }
+        return $this->formatMedia($this->featuredImage);
     }
 
     #[ArrayShape([

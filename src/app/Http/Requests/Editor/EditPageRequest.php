@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Editor;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class EditPageRequest extends FormRequest
 {
@@ -24,12 +25,13 @@ class EditPageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'          => ['required', 'string'],
-            'content'        => ['required', 'string'],
-            'tags'           => ['array'],
-            'tags.*'         => ['string'],
-            'deletedMedia'   => ['array'],
-            'deletedMedia.*' => ['uuid'],
+            'title'             => ['required', 'string'],
+            'content'           => ['required', 'string'],
+            'featured_image_id' => ['nullable', Rule::exists('media', 'id')],
+            'tags'              => ['array'],
+            'tags.*'            => ['string'],
+            'deletedMedia'      => ['array'],
+            'deletedMedia.*'    => ['uuid'],
         ];
     }
 }
