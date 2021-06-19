@@ -134,24 +134,24 @@ const Sidebar: React.FC = () => {
                                 Main Page
                             </NavLink>
                         </NavItem>
+                        {/*<NavItem>*/}
+                        {/*    <NavLink*/}
+                        {/*        href={route("wiki.index")}*/}
+                        {/*        tag={InertiaLink}*/}
+                        {/*        onClick={closeCollapse}*/}
+                        {/*    >*/}
+                        {/*        <i className="fas fa-info text-green" />*/}
+                        {/*        About SciKi*/}
+                        {/*    </NavLink>*/}
+                        {/*</NavItem>*/}
                         <NavItem>
                             <NavLink
-                                href={route("wiki.index")}
-                                tag={InertiaLink}
-                                onClick={closeCollapse}
-                            >
-                                <i className="fas fa-info text-green" />
-                                About SciKi
-                            </NavLink>
-                        </NavItem>
-                        <NavItem>
-                            <NavLink
-                                href={route("wiki.index")}
+                                href={route("static.contacts")}
                                 tag={InertiaLink}
                                 onClick={closeCollapse}
                             >
                                 <i className="fas fa-address-card text-orange" />
-                                Contact Us
+                                Contacts
                             </NavLink>
                         </NavItem>
                     </Nav>

@@ -6,6 +6,7 @@ use App\Exceptions\FileSystemException;
 use App\Modules\Simulations\Models\Simulation;
 use App\Services\Utils;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use JsonException;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
@@ -226,11 +227,12 @@ class PartialCorrelationService
         set_time_limit(3600); //1 hour time limit
         $this->makeDirectory();
         $jsonFile = $this->directory . self::JSON_OUTPUT_FILE;
-        if (!file_exists($jsonFile)) {
+        if (!file_exists($jsonFile) || !Cache::has($jsonFile)) {
             $simulations = $this->makeSimulationCollection();
             $csvFile = $this->prepareCSVFile($simulations);
             $correlationFile = $this->computeCorrelationFile($csvFile);
             $data = $this->prepareCollection($correlationFile, $jsonFile, $simulations);
+            Cache::put($jsonFile, true, now()->addWeek());
         } else {
             $data = $this->readCollection($jsonFile);
         }

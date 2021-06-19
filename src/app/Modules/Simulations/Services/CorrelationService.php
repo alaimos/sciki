@@ -7,6 +7,7 @@ use App\Modules\Simulations\Models\Simulation;
 use App\Services\Utils;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use JsonException;
 use League\Csv\CannotInsertRecord;
@@ -241,11 +242,12 @@ class CorrelationService
         set_time_limit(3600); //1 hour time limit
         $this->makeDirectory();
         $jsonFile = $this->directory . self::JSON_OUTPUT_FILE;
-        if (!file_exists($jsonFile)) {
+        if (!file_exists($jsonFile) || !Cache::has($jsonFile)) {
             $simulations = $this->getSimulationsFromTags();
             $csvFile = $this->prepareCSVFile($simulations);
             $correlationFile = $this->computeCorrelationFile($csvFile);
             $data = $this->prepareCollection($correlationFile, $jsonFile, $simulations);
+            Cache::put($jsonFile, true, now()->addWeek());
         } else {
             $data = $this->readCollection($jsonFile);
         }

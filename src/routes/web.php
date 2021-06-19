@@ -9,8 +9,10 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\WikiController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 Route::get('/', [WikiController::class, 'index'])->name('wiki.index');
+Route::get('/contacts', fn() => Inertia::render('Static/Contacts'))->name('static.contacts');
 
 /// Auth Routes
 Auth::routes();

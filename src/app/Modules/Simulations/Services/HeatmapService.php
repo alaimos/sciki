@@ -3,8 +3,10 @@
 namespace App\Modules\Simulations\Services;
 
 
+use App\Exceptions\FileSystemException;
 use App\Modules\Simulations\Models\Simulation;
 use Illuminate\Support\Collection;
+use JsonException;
 
 class HeatmapService
 {
@@ -43,8 +45,8 @@ class HeatmapService
     /**
      * @param Simulation $simulation
      * @return Collection
-     * @throws \App\Exceptions\FileSystemException
-     * @throws \JsonException
+     * @throws FileSystemException
+     * @throws JsonException
      */
     private function getTop(Simulation $simulation): Collection
     {
@@ -68,8 +70,8 @@ class HeatmapService
      * @param Simulation $simulation
      * @param array $selection
      * @return Collection
-     * @throws \App\Exceptions\FileSystemException
-     * @throws \JsonException
+     * @throws FileSystemException
+     * @throws JsonException
      */
     private function getBySelection(Simulation $simulation, array $selection): Collection
     {
@@ -77,19 +79,18 @@ class HeatmapService
         $methodName = ($this->sortBy === 'perturbation' ? 'perturbed' : 'active') .
             ($this->type === 'pathways' ? 'Pathways' : 'Nodes');
         /** @var Collection $simulationData */
-        $simulationData = $parserService->$methodName(
+        return $parserService->$methodName(
             $selection,
             [
                 'simulation' => $simulation->name
             ]
         )->values();
-        return $simulationData;
     }
 
     /**
      * @return Collection
-     * @throws \App\Exceptions\FileSystemException
-     * @throws \JsonException
+     * @throws FileSystemException
+     * @throws JsonException
      */
     private function get(): Collection
     {
@@ -154,8 +155,8 @@ class HeatmapService
 
     /**
      * @return array
-     * @throws \App\Exceptions\FileSystemException
-     * @throws \JsonException
+     * @throws FileSystemException
+     * @throws JsonException
      */
     public function makeDataPoints(): array
     {

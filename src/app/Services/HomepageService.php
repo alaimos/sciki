@@ -13,15 +13,18 @@ use Inertia\Response as InertiaResponse;
 class HomepageService
 {
 
-    private function getPreviewText(Page $page): string
+    private function getPreviewText(?Page $page): ?string
     {
+        if (!$page) {
+            return null;
+        }
         $parserService = new PageParserService($page);
         $preview = $parserService->extractSummaryBlock();
         $parserService->cleanup();
         return Str::limit($preview, 1000);
     }
 
-    private function getFeaturedPage(): Page
+    private function getFeaturedPage(): ?Page
     {
         $maxVote = (int)DB::query()
                           ->from(Page::withSum("votes", "vote"), 'mv')
@@ -31,12 +34,12 @@ class HomepageService
                    ->having('votes_sum_vote', $maxVote)->first();
     }
 
-    private function getLastCreatedPage(): Page
+    private function getLastCreatedPage(): ?Page
     {
         return Page::with('featuredImage')->latest('created_at')->first();
     }
 
-    private function getLastUpdatedPage(): Page
+    private function getLastUpdatedPage(): ?Page
     {
         return Page::with('featuredImage')->latest('updated_at')->first();
     }
@@ -50,13 +53,13 @@ class HomepageService
             'Wiki/Index',
             [
                 'featuredPage'           => $featuredPage,
-                'featuredPageImage'      => $featuredPage->formattedFeaturedImage(),
+                'featuredPageImage'      => optional($featuredPage)->formattedFeaturedImage(),
                 'featuredPagePreview'    => $this->getPreviewText($featuredPage),
                 'lastCreatedPage'        => $lastCreatedPage,
-                'lastCreatedPageImage'   => $lastCreatedPage->formattedFeaturedImage(),
+                'lastCreatedPageImage'   => optional($lastCreatedPage)->formattedFeaturedImage(),
                 'lastCreatedPagePreview' => $this->getPreviewText($lastCreatedPage),
                 'lastUpdatedPage'        => $lastUpdatedPage,
-                'lastUpdatedPageImage'   => $lastUpdatedPage->formattedFeaturedImage(),
+                'lastUpdatedPageImage'   => optional($lastUpdatedPage)->formattedFeaturedImage(),
                 'lastUpdatedPagePreview' => $this->getPreviewText($lastUpdatedPage),
             ]
         );
