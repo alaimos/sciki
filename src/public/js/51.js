@@ -1,2 +1,0 @@
-(self.webpackChunk=self.webpackChunk||[]).push([[51],{53051:(e,t,n)=>{"use strict";n.r(t),n.d(t,{default:()=>c});var r=n(67294),a=n(17834),l=n(20527),o=n.n(l);n(22956);const c=function(e){var t=e.content;return r.createElement(r.Fragment,null,!t&&r.createElement(a.Z,{color:"danger"},"Content not provided for the Katex plugin"),t&&r.createElement("div",{className:"text-center",dangerouslySetInnerHTML:{__html:o().renderToString(t,{throwOnError:!1})}}))}}}]);
-//# sourceMappingURL=51.js.map?id=3e0396d04ca7c49cdb79

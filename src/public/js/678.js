@@ -1,2 +1,0 @@
-(self.webpackChunk=self.webpackChunk||[]).push([[678],{55678:(e,l,n)=>{"use strict";n.r(l),n.d(l,{default:()=>u});var t=n(67294);const u=function(e){var l=e.hello;return t.createElement(t.Fragment,null,t.createElement("h1",null,"This is a custom plugin"),t.createElement("p",null,"Hello: ",l))}}}]);
-//# sourceMappingURL=678.js.map?id=d28ee09b2692ff7e6b73

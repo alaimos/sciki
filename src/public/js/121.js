@@ -1,2 +1,0 @@
-(self.webpackChunk=self.webpackChunk||[]).push([[121],{17121:(e,n,r)=>{"use strict";r.r(n),r.d(n,{default:()=>c});var t=r(67294),a=r(17834);const c=function(e){var n=e.message;return t.createElement(t.Fragment,null,t.createElement(a.Z,{color:"danger"},n))}}}]);
-//# sourceMappingURL=121.js.map?id=1b903f9201d74ac6463e
