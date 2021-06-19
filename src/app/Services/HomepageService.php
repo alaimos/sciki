@@ -27,21 +27,28 @@ class HomepageService
     private function getFeaturedPage(): ?Page
     {
         $maxVote = (int)DB::query()
-                          ->from(Page::withSum("votes", "vote"), 'mv')
+                          ->from(Page::where('draft', 0)->withSum("votes", "vote"), 'mv')
                           ->max('mv.votes_sum_vote');
-        return Page::with('featuredImage')
+        return Page::where('draft', 0)
+                   ->with('featuredImage')
                    ->withSum('votes', 'vote')
                    ->having('votes_sum_vote', $maxVote)->first();
     }
 
     private function getLastCreatedPage(): ?Page
     {
-        return Page::with('featuredImage')->latest('created_at')->first();
+        return Page::where('draft', 0)
+                   ->with('featuredImage')
+                   ->latest('created_at')
+                   ->first();
     }
 
     private function getLastUpdatedPage(): ?Page
     {
-        return Page::with('featuredImage')->latest('updated_at')->first();
+        return Page::where('draft', 0)
+                   ->with('featuredImage')
+                   ->latest('updated_at')
+                   ->first();
     }
 
     public function render(): InertiaResponse

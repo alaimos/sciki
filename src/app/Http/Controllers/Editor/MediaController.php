@@ -9,6 +9,8 @@ use App\Models\Page;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Spatie\MediaLibrary\MediaCollections\Exceptions\FileDoesNotExist;
 use Spatie\MediaLibrary\MediaCollections\Exceptions\FileIsTooBig;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -17,6 +19,25 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class MediaController extends Controller
 {
+
+    public function show(Media $media): InertiaResponse
+    {
+        return Inertia::render(
+            'Wiki/Media',
+            [
+                'id'     => $media->id,
+                'uuid'   => $media->uuid,
+                'title'  => $media->getCustomProperty('title', $media->name),
+                'legend' => $media->getCustomProperty('legend', $media->name),
+                'url'    => $media->getUrl(),
+                'thumbs' => [
+                    'small' => $media->getUrl('thumb-small'),
+                    'large' => $media->getUrl('thumb-large'),
+                ],
+                'srcset' => $media->getSrcset(),
+            ]
+        );
+    }
 
     /**
      * Upload a new media

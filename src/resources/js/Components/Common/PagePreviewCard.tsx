@@ -22,7 +22,7 @@ const PagePreviewCard: React.FC<Props> = ({
 }: Props) => {
     return (
         <Card
-            className={classNames("shadow", {
+            className={classNames("shadow", "flex-grow-1", {
                 "bg-gradient-dark": dark,
             })}
         >

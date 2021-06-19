@@ -133,7 +133,7 @@ class ScikiFencedCodeRenderer implements BlockRendererInterface, ConfigurationAw
                 [
                     new HtmlElement(
                         'a',
-                        ['href' => route('page.media.show', $media), 'class' => 'fig'],
+                        ['href' => route('page.media.show', $media), 'class' => 'fig', 'target' => '_blank'],
                         $media('thumb-large')
                     ),
                     new HtmlElement(

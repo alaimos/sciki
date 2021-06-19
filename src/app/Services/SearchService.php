@@ -7,6 +7,7 @@ use App\Http\Resources\TagResource;
 use App\Models\Page;
 use App\Models\Tag;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use MeiliSearch\Exceptions\ApiException;
 
 class SearchService
 {
@@ -21,12 +22,20 @@ class SearchService
 
     private function searchPages(): AnonymousResourceCollection
     {
-        return PageResource::collection(Page::search($this->query)->paginate(pageName: 'pages_page'));
+        try {
+            return PageResource::collection(Page::search($this->query)->paginate(pageName: 'pages_page'));
+        } catch (ApiException) {
+            return PageResource::collection(collect([]));
+        }
     }
 
     private function searchTags(): AnonymousResourceCollection
     {
-        return TagResource::collection(Tag::search($this->query)->paginate(pageName: 'tags_page'));
+        try {
+            return TagResource::collection(Tag::search($this->query)->paginate(pageName: 'tags_page'));
+        } catch (ApiException) {
+            return TagResource::collection(collect([]));
+        }
     }
 
     public function search(): array

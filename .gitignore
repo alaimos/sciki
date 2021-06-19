@@ -16,3 +16,8 @@ yarn-error.log
 src/_ide_helper.php
 
 src/.phpstorm.meta.php
+
+deploy.conf
+
+src/public/css/
+src/public/js/

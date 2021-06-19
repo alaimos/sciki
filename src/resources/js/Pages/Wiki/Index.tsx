@@ -42,6 +42,7 @@ const Index: React.FC<Props> = (props: Props) => {
                     {props.lastUpdatedPage && (
                         <Col
                             md={props.featuredPage ? 6 : { offset: 3, size: 6 }}
+                            className="d-flex flex-column"
                         >
                             <PagePreviewCard
                                 title="Latest update"

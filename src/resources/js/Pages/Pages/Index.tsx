@@ -28,6 +28,8 @@ import { InertiaLink } from "@inertiajs/inertia-react";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css";
 import "react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css";
+import { Inertia } from "@inertiajs/inertia";
+import SweetAlert from "react-bootstrap-sweetalert";
 
 interface Page {
     id: string;
@@ -48,6 +50,7 @@ interface State {
 const Index: React.FC<CommonPageProps> = ({
     auth: { is_admin: userIsAdmin },
 }: CommonPageProps) => {
+    const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [state, setState] = useState<State>({
         data: undefined,
         sizePerPage: 10,
@@ -116,6 +119,11 @@ const Index: React.FC<CommonPageProps> = ({
             }),
         [page, totalSize, sizePerPage]
     );
+
+    const handleCreatePage = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        setIsAlertVisible(true);
+    };
 
     const columns: ColumnDescription[] = [
         {
@@ -211,10 +219,7 @@ const Index: React.FC<CommonPageProps> = ({
                                 <NavLink
                                     className="mb-sm-3 mb-md-0"
                                     href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        alert("TODO");
-                                    }}
+                                    onClick={handleCreatePage}
                                 >
                                     <i className="fas fa-plus-square mr-2" />
                                     New page
@@ -270,6 +275,24 @@ const Index: React.FC<CommonPageProps> = ({
                     </CardBody>
                 </Card>
             </Container>
+            {isAlertVisible && (
+                <SweetAlert
+                    input
+                    showCancel
+                    cancelBtnBsStyle="light"
+                    title="Page title:"
+                    required={false}
+                    onConfirm={(title: string) => {
+                        if (title.trim() !== "") {
+                            return Inertia.post(route("page.store"), {
+                                title: title.trim(),
+                            });
+                        }
+                        return setIsAlertVisible(false);
+                    }}
+                    onCancel={() => setIsAlertVisible(false)}
+                />
+            )}
         </>
     );
 };

@@ -19,11 +19,13 @@ Auth::routes();
 
 Route::post('/comments/{comment}/vote', [CommentsController::class, 'vote'])->name('comments.vote');
 Route::delete('/comments/{comment}', [CommentsController::class, 'destroy'])->name('comments.destroy');
+Route::get('/media/{media}', [MediaController::class, 'show'])->name('page.media.show');
 Route::post('/search', [WikiController::class, 'search'])->name('wiki.search');
 Route::get('/search', fn() => redirect()->route('wiki.index'));
 Route::post('/typeahead', [WikiController::class, 'typeahead'])->name('wiki.typeahead');
 /// Tags Routes
 Route::post('/tags/typeahead', [TagController::class, 'typeahead'])->name('tag.typeahead');
+Route::get('/tags/{tag}', [TagController::class, 'show'])->name('tag.show');
 /// Wiki Routes
 Route::get('/wiki/{page}/revisions/{revision}', [RevisionsController::class, 'show'])->name('wiki.revisions.show');
 Route::get('/wiki/{page}/revisions', [RevisionsController::class, 'index'])->name('wiki.revisions.index');
@@ -58,7 +60,6 @@ Route::group(
             ],
             static function () {
                 /// Media Routes
-                Route::get('/media/{media}', [MediaController::class, 'show'])->name('page.media.show');
                 Route::get('/media/{media}/image', [MediaController::class, 'image'])->name('page.media.image');
                 Route::post('/page/{page}/media/upload', [MediaController::class, 'upload'])->name('page.media.upload');
                 Route::put('/page/{page}/media/{media}', [MediaController::class, 'update'])->name('page.media.update');

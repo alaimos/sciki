@@ -80,6 +80,18 @@ if [ $# -gt 0 ]; then
       exit 1
     fi
 
+    if ! docker-compose exec -u sciki "$APP_SERVICE" npm install; then
+      echo -e "${WHITE}Unable to install node dependencies${NC}" >&2
+
+      exit 1
+    fi
+
+    if ! docker-compose exec -u sciki "$APP_SERVICE" npm run prod; then
+      echo -e "${WHITE}Unable to build frontend interface${NC}" >&2
+
+      exit 1
+    fi
+
     touch ./.deployed
 
   elif [ "$1" == "composer" ]; then
@@ -111,6 +123,21 @@ if [ $# -gt 0 ]; then
     shift 1
 
     docker-compose exec -u sciki "$APP_SERVICE" php artisan schedule:run
+
+  elif [ "$1" == "refresh" ]; then
+    shift 1
+
+    if ! docker-compose exec -u sciki "$APP_SERVICE" npm install; then
+      echo -e "${WHITE}Unable to install node dependencies${NC}" >&2
+
+      exit 1
+    fi
+
+    if ! docker-compose exec -u sciki "$APP_SERVICE" npm run prod; then
+      echo -e "${WHITE}Unable to build frontend interface${NC}" >&2
+
+      exit 1
+    fi
 
   else
 

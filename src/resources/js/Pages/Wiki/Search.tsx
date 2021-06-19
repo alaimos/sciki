@@ -169,7 +169,7 @@ const Search: React.FC<Props> = ({ query, pages, tags, can }: Props) => {
                                                 <ListGroupItem
                                                     key={t.id}
                                                     href={route(
-                                                        "wiki.show",
+                                                        "tag.show",
                                                         t.id
                                                     )}
                                                     tag={InertiaLink}
