@@ -9,7 +9,19 @@ use App\Http\Controllers\TagController;
 use App\Http\Controllers\User\ProfileController;
 use App\Http\Controllers\WikiController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
+
+$proxy_url = config('sciki.proxy_url');
+$proxy_schema = config('sciki.proxy_scheme');
+
+if (!empty($proxy_url)) {
+    URL::forceRootUrl($proxy_url);
+}
+
+if (!empty($proxy_schema)) {
+    URL::forceScheme($proxy_schema);
+}
 
 Route::get('/', [WikiController::class, 'index'])->name('wiki.index');
 Route::get('/contacts', fn() => Inertia::render('Static/Contacts'))->name('static.contacts');
