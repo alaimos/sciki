@@ -74,11 +74,13 @@ class UserController extends Controller
         $data = $request->validated();
         if (isset($data['password'])) {
             $password = $data['password'];
-            if (!empty($data['password'])) {
-                $data['password'] = Hash::make($data['password']);
+            if (!empty($password)) {
+                $data['password'] = Hash::make($password);
             } else {
                 unset($data['password']);
             }
+        } elseif (array_key_exists('password', $data)) {
+            unset($data['password']);
         }
         $user->update($data);
 
