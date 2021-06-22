@@ -41,7 +41,16 @@ if [ $# -gt 0 ]; then
 
     if [ ! -f ./.deployed ]; then
       source ./deploy.conf
-      sed "s/%SCIKI_DOMAIN%/${SCIKI_DOMAIN}/" ./src/.env.deploy | sed "s/%PHENSIM_KEY%/${PHENSIM_KEY}/" | sed "s/%DB_PASSWORD%/${RANDOM_PASSWORD}/" >./src/.env
+      sed "s/%SCIKI_DOMAIN%/${SCIKI_DOMAIN}/" ./src/.env.deploy |
+        sed "s/%PHENSIM_KEY%/${PHENSIM_KEY}/" |
+        sed "s/%DB_PASSWORD%/${RANDOM_PASSWORD}/" |
+        sed "s/%MAIL_HOST%/${MAIL_HOST}/" |
+        sed "s/%MAIL_PORT%/${MAIL_PORT}/" |
+        sed "s/%MAIL_USERNAME%/${MAIL_USERNAME}/" |
+        sed "s/%MAIL_PASSWORD%/${MAIL_PASSWORD}/" |
+        sed "s/%MAIL_ENCRYPTION%/${MAIL_ENCRYPTION}/" |
+        sed "s/%MAIL_FROM_ADDRESS%/${MAIL_FROM_ADDRESS}/" >./src/.env
+
       if [ ! -f ./src/.env ]; then
         echo -e "${WHITE}Unable to create .env file${NC}" >&2
 
