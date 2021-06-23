@@ -36,7 +36,7 @@ class SimulationService
     ])] public function handleSimulationsTableRequest(
         Request $request
     ): array {
-        $simulationsQuery = Simulation::visibleByUser()->with(['organism', 'tags', 'user']);
+        $simulationsQuery = Simulation::visibleByUser(true)->with(['organism', 'tags', 'user']);
         $filters = $request->get("filters");
         if (!empty($filters) && is_array($filters)) {
             foreach ($filters as $field => $description) {
