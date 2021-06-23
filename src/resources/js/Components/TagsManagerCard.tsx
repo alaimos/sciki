@@ -23,6 +23,7 @@ interface Props {
     onAddTag: (newTag: string) => void;
     onDeleteTag: (deletedTag: string) => void;
     dark?: boolean;
+    title?: boolean;
 }
 
 type TypeAheadOption =
@@ -39,13 +40,14 @@ const TagsManagerCard: React.FC<Props> = ({
     onAddTag,
     onDeleteTag,
     dark = true,
+    title = true,
 }: Props) => {
     const typeAheadRef = useRef<AsyncTypeahead<TypeAheadOption>>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [tagInputValue, setTagInputValue] = useState<TypeAheadOption[]>([]);
     const [tagInputOptions, setTagInputOptions] = useState<string[]>([]);
 
-    const getTextTag = (values: TypeAheadOption[]) => {
+    const getTextTag = (values: TypeAheadOption[]): string | undefined => {
         if (values.length > 0) {
             if (typeof values[0] === "object") {
                 return values[0].label;
@@ -60,9 +62,10 @@ const TagsManagerCard: React.FC<Props> = ({
         if (newTag) {
             const newTagParts = newTag.split(/:\s*/, 2);
             onAddTag(
-                newTagParts.length === 1
+                (newTagParts.length === 1
                     ? `unknown: ${newTagParts[0]}`
                     : newTagParts.join(": ")
+                ).toLowerCase()
             );
             // @ts-ignore
             typeAheadRef.current?.clear();
@@ -86,16 +89,22 @@ const TagsManagerCard: React.FC<Props> = ({
         <Card
             className={classNames({ "bg-gradient-dark": dark, shadow: true })}
         >
-            <CardHeader className="bg-transparent">
-                <h6 className="text-uppercase text-light ls-1 mb-1">Tags</h6>
-            </CardHeader>
+            {title && (
+                <CardHeader className="bg-transparent">
+                    <h6 className="text-uppercase text-light ls-1 mb-1">
+                        Tags
+                    </h6>
+                </CardHeader>
+            )}
             <CardBody>
                 <Row>
                     <Col style={{ height: "100px" }} className="overflow-auto">
                         {tags.map((tag) => (
                             <Badge
                                 key={tag}
-                                className="badge-default mx-1 text-light"
+                                className={classNames("badge-default", "mx-1", {
+                                    "text-light": dark,
+                                })}
                                 href="#"
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -172,3 +181,42 @@ const TagsManagerCard: React.FC<Props> = ({
 };
 
 export default TagsManagerCard;
+
+interface PropsWithState {
+    tags: string[];
+    errors?: string;
+    onChange: (tags: string[]) => void;
+    dark?: boolean;
+    title?: boolean;
+}
+
+export const TagsManagerCardWithState: React.FC<PropsWithState> = ({
+    tags,
+    onChange,
+    ...otherProps
+}: PropsWithState) => {
+    const [state, setState] = useState<string[]>(tags);
+
+    return (
+        <TagsManagerCard
+            tags={state}
+            onAddTag={(newTag) =>
+                setState((prevState) => {
+                    if (prevState.includes(newTag)) return prevState;
+                    const newState = [...prevState, newTag];
+                    onChange(newState);
+                    return newState;
+                })
+            }
+            onDeleteTag={(deletedTag) =>
+                setState((prevState) => {
+                    if (!prevState.includes(deletedTag)) return prevState;
+                    const newState = prevState.filter((t) => t !== deletedTag);
+                    onChange(newState);
+                    return newState;
+                })
+            }
+            {...otherProps}
+        />
+    );
+};

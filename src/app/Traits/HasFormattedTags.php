@@ -16,8 +16,10 @@ trait HasFormattedTags
 
     public function syncFormattedTags(array $formattedTags): self
     {
+        $this->syncTags([]);
         $tagsByCategory = [];
         foreach ($formattedTags as $tag) {
+            $tag = strtolower($tag);
             $tagAndCategory = preg_split('/:\s*/', $tag, 2);
             if (count($tagAndCategory) === 2) {
                 [$category, $realTag] = $tagAndCategory;

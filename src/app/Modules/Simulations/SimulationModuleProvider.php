@@ -86,10 +86,13 @@ class SimulationModuleProvider extends ModuleProvider
         Route::get('simulations/{simulation}/publish', [SimulationController::class, 'togglePublic'])->name(
             'simulations.publish'
         );
+        Route::post('simulations/{simulation}/syncTags', [SimulationController::class, 'syncTags'])->name(
+            'simulations.syncTags'
+        );
         Route::resource('simulations', SimulationController::class)->except(['index', 'show']);
     }
 
-    public function exposesGuiResources(): array
+    #[Pure] public function exposesGuiResources(): array
     {
         return [
             new ScikiSidebarLink(

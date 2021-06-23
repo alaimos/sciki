@@ -8,6 +8,7 @@ use App\Modules\Simulations\Jobs\SyncSimulationJob;
 use App\Modules\Simulations\Models\Organism;
 use App\Modules\Simulations\Models\Simulation;
 use App\Modules\Simulations\Requests\SaveSimulationRequest;
+use App\Modules\Simulations\Requests\SyncTagsRequest;
 use App\Modules\Simulations\Services\SimulationParserService;
 use App\Modules\Simulations\Services\SimulationService;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -165,6 +166,24 @@ class SimulationController extends Controller
         $simulation->delete();
 
         return redirect()->route('simulations.index');
+    }
+
+    /**
+     * @throws AuthorizationException
+     */
+    public function syncTags(SyncTagsRequest $request, Simulation $simulation): JsonResponse
+    {
+        $this->authorize('update', $simulation);
+
+        $data = $request->validated();
+
+        $simulation->syncFormattedTags($data['tags']);
+
+        return response()->json(
+            [
+                'tags' => $simulation->formatted_tags,
+            ]
+        );
     }
 
 }

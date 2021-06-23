@@ -82,10 +82,9 @@ class Page extends Model implements HasMedia
 
     public function toSearchableArray(): array
     {
-//        todo: ENABLE IN PRODUCTION
-//        if ($this->draft) {
-//            return [];
-//        }
+        if ($this->draft) {
+            return [];
+        }
 
         return [
             'id'             => $this->id,

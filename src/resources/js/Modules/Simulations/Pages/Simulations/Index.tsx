@@ -33,6 +33,24 @@ import { InertiaLink } from "@inertiajs/inertia-react";
 import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
 import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css";
 import "react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css";
+import { TagsManagerCardWithState } from "../../../../Components/TagsManagerCard";
+
+interface Simulation {
+    id: string;
+    name: string;
+    status: string;
+    formatted_tags: string[];
+    created_at: string;
+    readable_created_at: string;
+    user: {
+        id: number;
+        name: string;
+    };
+    can: {
+        update: boolean;
+        delete: boolean;
+    };
+}
 
 interface Organism {
     id: number;
@@ -40,7 +58,7 @@ interface Organism {
 }
 
 interface State {
-    data?: Node[];
+    data?: Simulation[];
     sizePerPage: number;
     page: number;
     totalSize: number;
@@ -276,7 +294,7 @@ const Index: React.FC<Props> = ({
         },
     });
 
-    const expandRow: ExpandRowProps<any, number> = {
+    const expandRow: ExpandRowProps<Simulation, number> = {
         renderer: (row) => (
             <Row>
                 <Col sm="2">Submitted by:</Col>
@@ -285,14 +303,34 @@ const Index: React.FC<Props> = ({
                 </Col>
                 <Col sm="2">Tags:</Col>
                 <Col sm="10">
-                    {row.formatted_tags.map((tag: string) => (
-                        <Badge
-                            key={tag}
-                            className="badge-default mx-1 text-darker"
-                        >
-                            {tag}
-                        </Badge>
-                    ))}
+                    {!row.can.update &&
+                        row.formatted_tags.map((tag: string) => (
+                            <Badge
+                                key={tag}
+                                className="badge-default mx-1 text-darker"
+                            >
+                                {tag}
+                            </Badge>
+                        ))}
+                    {row.can.update && (
+                        <TagsManagerCardWithState
+                            tags={row.formatted_tags}
+                            dark={false}
+                            title={false}
+                            onChange={(tags) => {
+                                axios
+                                    .post(
+                                        route("simulations.syncTags", row.id),
+                                        {
+                                            tags,
+                                        }
+                                    )
+                                    .catch((e) => {
+                                        console.error(e);
+                                    });
+                            }}
+                        />
+                    )}
                 </Col>
             </Row>
         ),
