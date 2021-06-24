@@ -181,7 +181,7 @@ class CorrelationService
                 $outputFile,
             ],
             $this->directory,
-            60
+            3600
         );
         return $outputFile;
     }
