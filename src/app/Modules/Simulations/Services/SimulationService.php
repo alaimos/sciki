@@ -465,7 +465,7 @@ class SimulationService
                 return Tag::findFromString($name, $type);
             }
         )->filter(fn($t) => $t !== null);
-        $query = Simulation::visibleByUser();
+        $query = Simulation::visibleByUser(true);
         if ($mode === "all") {
             $query = $query->withAllTags($tagsCollection);
         } else {
