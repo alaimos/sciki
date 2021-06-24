@@ -165,7 +165,7 @@ class PartialCorrelationService
                 $outputFile,
             ],
             $this->directory,
-            60
+            3600
         );
         return $outputFile;
     }
