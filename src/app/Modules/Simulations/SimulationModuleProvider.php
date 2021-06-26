@@ -30,7 +30,7 @@ class SimulationModuleProvider extends ModuleProvider
         Artisan::call('import:database');
     }
 
-    #[Pure] public function accessControlService(): ?AccessControlService
+    public function accessControlService(): ?AccessControlService
     {
         return new Services\AccessControlService();
     }
@@ -73,7 +73,7 @@ class SimulationModuleProvider extends ModuleProvider
         Route::resource('simulations', SimulationController::class)
              ->where(
                  [
-                     'simulation' => '[0-9]+'
+                     'simulation' => '[0-9]+',
                  ]
              )->only(['index', 'show']);
     }
@@ -85,6 +85,9 @@ class SimulationModuleProvider extends ModuleProvider
         );
         Route::get('simulations/{simulation}/publish', [SimulationController::class, 'togglePublic'])->name(
             'simulations.publish'
+        );
+        Route::patch('simulations/{simulation}/name', [SimulationController::class, 'updateName'])->name(
+            'simulations.updateName'
         );
         Route::post('simulations/{simulation}/syncTags', [SimulationController::class, 'syncTags'])->name(
             'simulations.syncTags'

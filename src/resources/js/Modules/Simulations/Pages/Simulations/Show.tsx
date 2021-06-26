@@ -21,14 +21,15 @@ import PathwayImageEditor from "../../Components/PathwayImageEditor";
 import SimulationHeatmapEditor from "../../Components/SimulationHeatmapEditor";
 import CorrelationGraphEditor from "../../Components/CorrelationGraphEditor";
 import PartialCorrelationGraphEditor from "../../Components/PartialCorrelationGraphEditor";
+import SimulationNameEditor from "../../Components/SimulationNameEditor";
 
 interface Props extends CommonPageProps {
     simulation: {
         id: number;
         name: string;
     };
+    canUpdate: boolean;
     pathwaysToNames: Record<string, string>;
-    nodesToNames: Record<string, string>;
 }
 
 type SelectedNodesType = Record<string, string[]>;
@@ -38,6 +39,7 @@ const Index: React.FC<Props> = ({
     capabilities: {
         pages: { update: canEditPages },
     },
+    canUpdate: canUpdateSimulation,
     pathwaysToNames,
 }: Props) => {
     const [selectedNav, setSelectedNav] = useState<number>(1);
@@ -82,7 +84,14 @@ const Index: React.FC<Props> = ({
 
     return (
         <>
-            <Header title={simulation.name} />
+            <Header
+                title={
+                    <SimulationNameEditor
+                        simulation={simulation}
+                        update={canUpdateSimulation}
+                    />
+                }
+            />
             <Container className="mt--7" fluid>
                 <Row className="mb-2">
                     <Col>

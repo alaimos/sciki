@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use MeiliSearch\Exceptions\ApiException;
 
 class TagController
 {
@@ -31,7 +32,11 @@ class TagController
 
         $searchResults = [];
         if (!empty($searchQuery)) {
-            $searchResults = Tag::search($searchQuery)->take(10)->get()->pluck('formatted_name');
+            try {
+                $searchResults = Tag::search($searchQuery)->take(10)->get()->pluck('formatted_name');
+            } catch (ApiException) {
+                $searchResults = collect([]);
+            }
         }
 
         return response()->json($searchResults);
