@@ -21,12 +21,15 @@ import PathwayImageEditor from "../../Components/PathwayImageEditor";
 import SimulationHeatmapEditor from "../../Components/SimulationHeatmapEditor";
 import CorrelationGraphEditor from "../../Components/CorrelationGraphEditor";
 import PartialCorrelationGraphEditor from "../../Components/PartialCorrelationGraphEditor";
-import SimulationNameEditor from "../../Components/SimulationNameEditor";
+import InlineTextEditor from "../../../../Components/Common/Forms/InlineTextEditor";
+import axios from "axios";
+import route from "ziggy-js";
 
 interface Props extends CommonPageProps {
     simulation: {
         id: number;
         name: string;
+        short_name: string;
     };
     canUpdate: boolean;
     pathwaysToNames: Record<string, string>;
@@ -86,9 +89,48 @@ const Index: React.FC<Props> = ({
         <>
             <Header
                 title={
-                    <SimulationNameEditor
-                        simulation={simulation}
-                        update={canUpdateSimulation}
+                    <InlineTextEditor
+                        value={simulation.name}
+                        onChange={(name) => {
+                            axios
+                                .patch(
+                                    route(
+                                        "simulations.updateName",
+                                        simulation.id
+                                    ),
+                                    {
+                                        name,
+                                    }
+                                )
+                                .catch((e) => {
+                                    console.error(e);
+                                });
+                        }}
+                        disabled={!canUpdateSimulation}
+                    />
+                }
+                subtitle={
+                    <InlineTextEditor
+                        value={simulation.short_name}
+                        onChange={(short_name) => {
+                            axios
+                                .patch(
+                                    route(
+                                        "simulations.updateShortName",
+                                        simulation.id
+                                    ),
+                                    {
+                                        short_name,
+                                    }
+                                )
+                                .catch((e) => {
+                                    console.error(e);
+                                });
+                        }}
+                        disabled={!canUpdateSimulation}
+                        editButtonProps={{ size: "sm" }}
+                        inputProps={{ bsSize: "sm" }}
+                        submitButtonProps={{ size: "sm" }}
                     />
                 }
             />

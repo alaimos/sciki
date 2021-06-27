@@ -151,7 +151,7 @@ class SimulationService
      * Checks if a remote simulation is completed.
      * Only completed simulations are considered valid.
      *
-     * @param int $remoteId
+     * @param  int  $remoteId
      *
      * @return bool
      */
@@ -172,8 +172,8 @@ class SimulationService
     /**
      * Download a file from a remote phensim simulation
      *
-     * @param string $url
-     * @param string $destination
+     * @param  string  $url
+     * @param  string  $destination
      */
     private function downloadRemotePhensimFile(string $url, string $destination): void
     {
@@ -188,8 +188,8 @@ class SimulationService
      * Pulls the output file from a remote phensim simulation
      * TODO: remove this function as soon as PHENSIM API bug is solved
      *
-     * @param Simulation $simulation
-     * @param array $simulationRemoteLinks
+     * @param  Simulation  $simulation
+     * @param  array  $simulationRemoteLinks
      *
      * @return string
      */
@@ -209,9 +209,9 @@ class SimulationService
     /**
      * Pulls a file from a remote phensim simulation
      *
-     * @param Simulation $simulation
-     * @param string $type
-     * @param array $simulationRemoteLinks
+     * @param  Simulation  $simulation
+     * @param  string  $type
+     * @param  array  $simulationRemoteLinks
      *
      * @return string|null
      */
@@ -230,8 +230,8 @@ class SimulationService
     /**
      * Sync all input nodes from a remote phensim simulation with the local database
      *
-     * @param Simulation $simulation
-     * @param array $simulationRemoteLinks
+     * @param  Simulation  $simulation
+     * @param  array  $simulationRemoteLinks
      */
     private function syncInputNodes(Simulation $simulation, array $simulationRemoteLinks): void
     {
@@ -260,8 +260,8 @@ class SimulationService
     /**
      * Sync all non-expressed nodes from a remote phensim simulation with the local database
      *
-     * @param Simulation $simulation
-     * @param array $simulationRemoteLinks
+     * @param  Simulation  $simulation
+     * @param  array  $simulationRemoteLinks
      */
     private function syncNonExpressedNodes(Simulation $simulation, array $simulationRemoteLinks): void
     {
@@ -283,8 +283,8 @@ class SimulationService
     /**
      * Sync all knocked-out nodes from a remote phensim simulation with the local database
      *
-     * @param Simulation $simulation
-     * @param array $simulationRemoteLinks
+     * @param  Simulation  $simulation
+     * @param  array  $simulationRemoteLinks
      */
     private function syncKnockedOutNodes(Simulation $simulation, array $simulationRemoteLinks): void
     {
@@ -306,8 +306,8 @@ class SimulationService
     /**
      * Pulls output files and parameters from a remote phensim simulation
      *
-     * @param Simulation $simulation
-     * @param bool $syncParameters
+     * @param  Simulation  $simulation
+     * @param  bool  $syncParameters
      */
     public function pullRemotePhensimSimulation(Simulation $simulation, bool $syncParameters = false): void
     {
@@ -343,8 +343,8 @@ class SimulationService
     /**
      * Get accession numbers of a set of nodes
      *
-     * @param Simulation $simulation
-     * @param int $type
+     * @param  Simulation  $simulation
+     * @param  int  $type
      *
      * @return array
      */
@@ -356,7 +356,7 @@ class SimulationService
     /**
      * Submit a simulation to the phensim remote server
      *
-     * @param Simulation $simulation
+     * @param  Simulation  $simulation
      */
     public function submitRemotePhensimSimulation(Simulation $simulation): void
     {
@@ -407,7 +407,7 @@ class SimulationService
     /**
      * Save a local copy of the simulation and submit the details to the phensim remote server
      *
-     * @param array $validatedData
+     * @param  array  $validatedData
      *
      * @return Simulation
      */
@@ -418,6 +418,7 @@ class SimulationService
         $newSimulation = Simulation::create(
             [
                 'name'        => $validatedData['name'],
+                'short_name'  => $validatedData['short_name'],
                 'organism_id' => $validatedData['organism'] ?? null,
                 'remote_id'   => $existing ? $validatedData['remote_id'] : null,
                 'status'      => Simulation::READY,
@@ -452,9 +453,10 @@ class SimulationService
      * Find simulations by tags. Tags are in the format "category: name".
      * The function supports two modes: "all" or "any"
      *
-     * @param array $tags
-     * @param string $mode
-     * @param int[] $exclude
+     * @param  array  $tags
+     * @param  string  $mode
+     * @param  int[]  $exclude
+     *
      * @return Simulation[]|Collection
      */
     public function findSimulationsByTags(array $tags, string $mode = "all", ?array $exclude = []): array|Collection
@@ -462,6 +464,7 @@ class SimulationService
         $tagsCollection = collect($tags)->map(
             static function ($tag) {
                 [$type, $name] = preg_split("/:\\s+/", $tag);
+
                 return Tag::findFromString($name, $type);
             }
         )->filter(fn($t) => $t !== null);
@@ -474,6 +477,7 @@ class SimulationService
         if (!empty($exclude)) {
             $query = $query->whereNotIn('simulations.id', $exclude);
         }
+
         return $query->get();
     }
 }

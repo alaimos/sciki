@@ -8,6 +8,7 @@ use App\Services\Utils;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use JsonException;
 use League\Csv\CannotInsertRecord;
@@ -20,9 +21,9 @@ use League\Csv\Writer;
 class CorrelationService
 {
 
-    private const CSV_DATA_FILE = '/data.tsv';
+    private const CSV_DATA_FILE           = '/data.tsv';
     private const CORRELATION_OUTPUT_FILE = '/correlation.tsv';
-    private const JSON_OUTPUT_FILE = '/correlation.json';
+    private const JSON_OUTPUT_FILE        = '/correlation.json';
 
     private Simulation $simulation;
     private string $id;
@@ -64,7 +65,7 @@ class CorrelationService
                     $this->useEndpoints,
                     $this->usePerturbation,
                     collect($this->findByTags)->map(fn($t) => strtolower($t))->sort()->toArray(),
-                    $this->searchMode
+                    $this->searchMode,
                 ]
             )
         );
@@ -83,7 +84,8 @@ class CorrelationService
     /**
      * Extract relevant information from a simulation
      *
-     * @param Simulation $s
+     * @param  Simulation  $s
+     *
      * @return Collection
      * @throws FileSystemException
      * @throws JsonException
@@ -91,6 +93,7 @@ class CorrelationService
     private function prepareSimulationData(Simulation $s): Collection
     {
         $parser = new SimulationParserService($s);
+
         return $parser->readNodesByPathway()
                       ->flatMap(fn($nodes) => $nodes)
                       ->filter(fn($n) => !$this->useEndpoints || $n['isEndpoint'])
@@ -104,6 +107,8 @@ class CorrelationService
      */
     private function getSimulationsFromTags(): EloquentCollection
     {
+        $count = 0;
+        $names = '';
         if (!empty($this->findByTags)) {
             $simulationService = new SimulationService();
             $foundSimulations = $simulationService->findSimulationsByTags(
@@ -111,17 +116,27 @@ class CorrelationService
                 $this->searchMode,
                 [$this->simulation->id]
             );
-            if ($foundSimulations->count() > 1) {
+            if (($count = $foundSimulations->count()) > 1) {
                 return $foundSimulations;
             }
+            $names = $foundSimulations->pluck('name')->join(', ');
         }
-        throw new InvalidArgumentException('Two or more simulations are needed to compute the correlation heatmap.');
+        throw new InvalidArgumentException(
+            sprintf(
+                'Two or more simulations are needed to compute the correlation heatmap. ' .
+                'You selected only %d %s%s',
+                $count,
+                Str::plural('simulation', $count),
+                ($names !== '') ? ' (' . $names . ').' : '.'
+            )
+        );
     }
 
     /**
      * Get all common array keys from a set of simulations
      *
-     * @param Collection[] $simulationData
+     * @param  Collection[]  $simulationData
+     *
      * @return Collection|string[]
      */
     private function getCommonKeys(Collection $simulationData): Collection
@@ -130,13 +145,15 @@ class CorrelationService
         foreach ($simulationData as $simulation) {
             $keys = $keys->intersect($simulation->keys());
         }
+
         return $keys->keyBy(fn($item) => $item);
     }
 
     /**
      * Prepare the CSV file where simulation data will be stored
      *
-     * @param EloquentCollection $simulations
+     * @param  EloquentCollection  $simulations
+     *
      * @return string
      * @throws FileSystemException
      * @throws JsonException
@@ -157,13 +174,15 @@ class CorrelationService
                      ->setDelimiter("\t");
         $csv->insertOne($keys);
         $csv->insertAll($data);
+
         return $outputFile;
     }
 
     /**
      * Compute the correlation file using the compute_correlation utility
      *
-     * @param string $csvFile
+     * @param  string  $csvFile
+     *
      * @return string
      */
     private function computeCorrelationFile(string $csvFile): string
@@ -183,15 +202,17 @@ class CorrelationService
             $this->directory,
             3600
         );
+
         return $outputFile;
     }
 
     /**
      * Build the results collection and cache the results
      *
-     * @param string $correlationFile
-     * @param string $jsonFile
-     * @param Collection $simulations
+     * @param  string  $correlationFile
+     * @param  string  $jsonFile
+     * @param  Collection  $simulations
+     *
      * @return Collection
      * @throws InvalidArgument
      * @throws Exception
@@ -202,7 +223,7 @@ class CorrelationService
                      ->setDelimiter("\t")
                      ->setHeaderOffset(0);
         $reader = Statement::create()->process($csv);
-        $map = $simulations->pluck('name', 'id');
+        $map = $simulations->pluck('short_name', 'id');
         $data =
             collect(iterator_to_array($reader, false))
                 ->map(
@@ -213,12 +234,15 @@ class CorrelationService
                     ]
                 );
         file_put_contents($jsonFile, $data->toJson());
+
         return $data;
     }
 
     /**
      * Read a cached results collection
+     *
      * @param $jsonFile
+     *
      * @return Collection
      * @throws JsonException
      */
@@ -259,6 +283,7 @@ class CorrelationService
                 $data = $data->take(-$this->n);
             }
         }
+
         return [
             'x'          => $data->pluck('name'),
             'y'          => $data->pluck('correlation'),

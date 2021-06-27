@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
+use JetBrains\PhpStorm\Pure;
 use Laravel\Scout\Searchable;
 use Spatie\Tags\HasTags;
 
@@ -26,12 +28,12 @@ class Simulation extends Model
     use HasTags;
     use Searchable;
 
-    public const READY = 0;
-    public const QUEUED = 1;
-    public const PROCESSING = 2;
-    public const COMPLETED = 3;
-    public const FAILED = 4;
-    public const VALID_STATES = [self::READY, self::QUEUED, self::PROCESSING, self::COMPLETED, self::FAILED];
+    public const READY                 = 0;
+    public const QUEUED                = 1;
+    public const PROCESSING            = 2;
+    public const COMPLETED             = 3;
+    public const FAILED                = 4;
+    public const VALID_STATES          = [self::READY, self::QUEUED, self::PROCESSING, self::COMPLETED, self::FAILED];
     public const HUMAN_READABLE_STATES = [
         self::READY      => [
             'value' => self::READY,
@@ -54,11 +56,11 @@ class Simulation extends Model
             'label' => 'Failed',
         ],
     ];
-    public const OVER_EXPRESSED = 2;
-    public const UNDER_EXPRESSED = 1;
-    public const NON_EXPRESSED = 0;
-    public const KNOCKOUT = -1;
-    public const VALID_NODE_STATES = [
+    public const OVER_EXPRESSED        = 2;
+    public const UNDER_EXPRESSED       = 1;
+    public const NON_EXPRESSED         = 0;
+    public const KNOCKOUT              = -1;
+    public const VALID_NODE_STATES     = [
         self::OVER_EXPRESSED,
         self::UNDER_EXPRESSED,
         self::NON_EXPRESSED,
@@ -67,6 +69,7 @@ class Simulation extends Model
 
     protected $fillable = [
         'name',
+        'short_name',
         'remote_id',
         'status',
         'public',
@@ -92,8 +95,8 @@ class Simulation extends Model
      *
      * An anonymous user can view only public simulations.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param bool $showAll
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  bool  $showAll
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
@@ -124,6 +127,15 @@ class Simulation extends Model
     public function getReadableStatusAttribute(): string
     {
         return self::HUMAN_READABLE_STATES[$this->status]['label'] ?? '';
+    }
+
+    #[Pure] public function getShortNameAttribute($value): string
+    {
+        if (empty($value)) {
+            return Str::limit($this->name, 50);
+        }
+
+        return $value;
     }
 
     /**
@@ -205,6 +217,7 @@ class Simulation extends Model
         if (auth()->id() === $this->user_id) {
             return true;
         }
+
         return auth()->user()->role_id === Role::ADMIN;
     }
 

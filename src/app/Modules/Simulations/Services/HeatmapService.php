@@ -43,7 +43,8 @@ class HeatmapService
     }
 
     /**
-     * @param Simulation $simulation
+     * @param  Simulation  $simulation
+     *
      * @return Collection
      * @throws FileSystemException
      * @throws JsonException
@@ -60,15 +61,17 @@ class HeatmapService
             $this->absolute,
             $this->limit,
             [
-                'simulation' => $simulation->name
+                'simulation' => $simulation->short_name,
             ]
         )->values();
+
         return $simulationData;
     }
 
     /**
-     * @param Simulation $simulation
-     * @param array $selection
+     * @param  Simulation  $simulation
+     * @param  array  $selection
+     *
      * @return Collection
      * @throws FileSystemException
      * @throws JsonException
@@ -78,11 +81,12 @@ class HeatmapService
         $parserService = new SimulationParserService($simulation);
         $methodName = ($this->sortBy === 'perturbation' ? 'perturbed' : 'active') .
             ($this->type === 'pathways' ? 'Pathways' : 'Nodes');
+
         /** @var Collection $simulationData */
         return $parserService->$methodName(
             $selection,
             [
-                'simulation' => $simulation->name
+                'simulation' => $simulation->short_name,
             ]
         )->values();
     }
@@ -112,6 +116,7 @@ class HeatmapService
             );
             if ($foundSimulations->count() > 0) {
                 $this->excludeIds = array_merge($this->excludeIds, $foundSimulations->pluck('id')->toArray());
+
                 return $foundSimulations->flatMap(
                     function (Simulation $s) use ($selectedRows) {
                         return $this->getBySelection($s, $selectedRows);
@@ -119,6 +124,7 @@ class HeatmapService
                 );
             }
         }
+
         return null;
     }
 
@@ -137,6 +143,7 @@ class HeatmapService
                 );
             }
         }
+
         return null;
     }
 
@@ -146,10 +153,11 @@ class HeatmapService
             return [];
         }
         $max = $simulationData->flatMap->map(fn($p) => abs($p['z']))->max();
+
         return [
             'zmin' => -$max,
             'zmid' => 0,
-            'zmax' => $max
+            'zmax' => $max,
         ];
     }
 
@@ -179,6 +187,7 @@ class HeatmapService
                 ];
             }
         )->groupBy('y');
+
         return array_merge(
             [
                 'x' => $simulationData->first()->pluck('x'),

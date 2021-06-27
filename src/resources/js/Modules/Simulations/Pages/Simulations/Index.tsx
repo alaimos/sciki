@@ -153,6 +153,11 @@ const Index: React.FC<Props> = ({
             dataField: "name",
             text: "Name",
             sort: true,
+            style: {
+                wordBreak: "break-word",
+                wordWrap: "break-word",
+                whiteSpace: "normal",
+            },
             filter: textFilter({
                 className: "form-control-sm",
             }),

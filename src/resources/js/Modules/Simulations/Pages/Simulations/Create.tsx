@@ -23,6 +23,7 @@ import TagsManagerCard from "../../../../Components/TagsManagerCard";
 import route from "ziggy-js";
 import classNames from "classnames";
 import NodesTable, { NodeType } from "../../Components/NodesTable";
+import InputWithLabel from "../../../../Components/Common/Forms/InputWithLabel";
 
 interface Organism {
     id: number;
@@ -35,6 +36,7 @@ interface Props extends CommonPageProps {
 
 interface FormType {
     name: string;
+    short_name: string;
     remote_id?: number;
     nodes?: Record<number, NodeType>;
     organism?: number;
@@ -51,6 +53,7 @@ const Create: React.FC<Props> = ({
     if (!canCreateSimulation) return null;
     const { data, setData, errors, post, processing } = useForm<FormType>({
         name: "",
+        short_name: "",
         nodes: {},
         tags: [],
         existing: false,
@@ -116,31 +119,25 @@ const Create: React.FC<Props> = ({
                                 </h6>
                             </CardHeader>
                             <CardBody>
-                                <FormGroup
-                                    className={classNames({
-                                        "has-danger": !!errors.name,
-                                    })}
-                                >
-                                    <Label for="create-simulation-name-field">
-                                        Name:
-                                    </Label>
-                                    <Input
-                                        id="create-simulation-name-field"
-                                        placeholder="Give a name to your simulation"
-                                        type="text"
-                                        value={data.name}
-                                        onChange={(e) =>
-                                            setData("name", e.target.value)
-                                        }
-                                        invalid={!!errors.name}
-                                    />
-                                    <FormFeedback
-                                        tag="span"
-                                        className="invalid-feedback"
-                                    >
-                                        <strong>{errors.name}</strong>
-                                    </FormFeedback>
-                                </FormGroup>
+                                <InputWithLabel
+                                    name="name"
+                                    label="Name:"
+                                    type="text"
+                                    placeholder="Give a name to your simulation"
+                                    error={errors.name}
+                                    value={data.name}
+                                    setValue={setData}
+                                />
+                                <InputWithLabel
+                                    name="short_name"
+                                    label="Short Name:"
+                                    type="text"
+                                    placeholder="A short name used in graph labels"
+                                    error={errors.short_name}
+                                    value={data.short_name}
+                                    setValue={setData}
+                                    maxLength={50}
+                                />
                                 <Row>
                                     <Col xs={1}>
                                         <label className="custom-toggle">

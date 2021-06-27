@@ -89,6 +89,9 @@ class SimulationModuleProvider extends ModuleProvider
         Route::patch('simulations/{simulation}/name', [SimulationController::class, 'updateName'])->name(
             'simulations.updateName'
         );
+        Route::patch('simulations/{simulation}/short_name', [SimulationController::class, 'updateShortName'])->name(
+            'simulations.updateShortName'
+        );
         Route::post('simulations/{simulation}/syncTags', [SimulationController::class, 'syncTags'])->name(
             'simulations.syncTags'
         );
